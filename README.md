@@ -1,6 +1,7 @@
 # GraphQL C# Parser
 
 A GraphQL lexer and parser targeting .NET 10 LTS and the September 2025 GraphQL specification. The conformance scope and parser-versus-validation boundary are recorded in [docs/spec-coverage.md](docs/spec-coverage.md).
+The AST location, immutability, and source-memory rules are recorded in [docs/ast-model.md](docs/ast-model.md).
 
 ## Build and test
 
