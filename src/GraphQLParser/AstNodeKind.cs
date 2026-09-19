@@ -51,4 +51,42 @@ public enum AstNodeKind : byte
     ListType,
     /// <summary>A non-null type reference.</summary>
     NonNullType,
+    /// <summary>A schema definition.</summary>
+    SchemaDefinition,
+    /// <summary>A schema extension.</summary>
+    SchemaExtension,
+    /// <summary>A schema root operation mapping.</summary>
+    OperationTypeDefinition,
+    /// <summary>A scalar type definition.</summary>
+    ScalarTypeDefinition,
+    /// <summary>A scalar type extension.</summary>
+    ScalarTypeExtension,
+    /// <summary>An object type definition.</summary>
+    ObjectTypeDefinition,
+    /// <summary>An object type extension.</summary>
+    ObjectTypeExtension,
+    /// <summary>An interface type definition.</summary>
+    InterfaceTypeDefinition,
+    /// <summary>An interface type extension.</summary>
+    InterfaceTypeExtension,
+    /// <summary>A union type definition.</summary>
+    UnionTypeDefinition,
+    /// <summary>A union type extension.</summary>
+    UnionTypeExtension,
+    /// <summary>An enum type definition.</summary>
+    EnumTypeDefinition,
+    /// <summary>An enum type extension.</summary>
+    EnumTypeExtension,
+    /// <summary>An enum value definition.</summary>
+    EnumValueDefinition,
+    /// <summary>An input-object type definition.</summary>
+    InputObjectTypeDefinition,
+    /// <summary>An input-object type extension.</summary>
+    InputObjectTypeExtension,
+    /// <summary>A field definition within an object or interface.</summary>
+    FieldDefinition,
+    /// <summary>An input-value definition.</summary>
+    InputValueDefinition,
+    /// <summary>A directive definition.</summary>
+    DirectiveDefinition,
 }

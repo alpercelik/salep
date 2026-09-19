@@ -18,4 +18,8 @@ AST child sequences use `AstNodeList<TNode>`. Its constructor copies the input s
 
 Selection sets are non-empty. Fields require a name and have optional alias and nested selection set, with ordered argument and directive lists. Fragment spreads require a name; inline fragments require a selection set and may omit the type condition. Arguments, directive applications, object fields, variables, and variable definitions hold their required children as immutable node properties.
 
+## SDL node shapes
+
+Schema and named type definitions preserve optional descriptions and ordered directives and children. The model covers schema root mappings; scalar, object, interface, union, enum, and input-object definitions and extensions; field and input-value definitions; enum-value definitions; and directive definitions. Object and interface nodes preserve implemented interfaces. Union nodes preserve member types. Directive definitions retain their argument definitions, repeatable flag, and ordered source locations. Syntax-required extension content and schema root mappings are enforced by constructors; schema validity and cross-definition rules remain parser-independent semantic validation.
+
 Value nodes cover variable references, integer and float source spellings, evaluated strings with a block-string flag, booleans, null, enum text, ordered list values, and ordered object fields. List and object values may be empty. Type references are named types wrapped by list or non-null nodes; a non-null node cannot directly wrap another non-null node. Optional syntax is represented by nullable node properties, while child lists are always present and empty when the syntax has no children, matching the canonical comparison contract.
