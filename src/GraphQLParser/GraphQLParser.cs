@@ -13,6 +13,7 @@ public sealed class GraphQLParser
     };
 
     private readonly SourceText _source;
+    private readonly GraphQLParserOptions _options;
     private readonly List<Token> _tokens = [];
     private int _index;
     private int _braceDepth;
@@ -24,17 +25,59 @@ public sealed class GraphQLParser
 
     /// <summary>Creates a parser over caller-owned source memory.</summary>
     public GraphQLParser(SourceText source)
+        : this(source, GraphQLParserOptions.Default)
     {
+    }
+
+    /// <summary>Creates a parser with explicit input and work limits.</summary>
+    public GraphQLParser(SourceText source, GraphQLParserOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        if (source.Length > options.MaximumSourceLength)
+        {
+            throw new GraphQLResourceLimitException("source length", options.MaximumSourceLength, source.Length,
+                new SourceLocation(options.MaximumSourceLength, source.Length));
+        }
+
         _source = source;
+        _options = options;
         var lexer = new GraphQLLexer(source);
+        var tokenCount = 0;
+        var nestingDepth = 0;
         try
         {
             Token token;
             do
             {
                 token = lexer.NextToken();
+                if (token.Kind != TokenKind.EndOfFile)
+                {
+                    tokenCount++;
+                    if (tokenCount > options.MaximumTokenCount)
+                    {
+                        throw new GraphQLResourceLimitException("token count", options.MaximumTokenCount, tokenCount, new SourceLocation(token.Start, token.End));
+                    }
+
+                    if (token.Kind is TokenKind.BraceLeft or TokenKind.ParenthesisLeft or TokenKind.BracketLeft)
+                    {
+                        nestingDepth++;
+                        if (nestingDepth > options.MaximumNestingDepth)
+                        {
+                            throw new GraphQLResourceLimitException("nesting depth", options.MaximumNestingDepth, nestingDepth, new SourceLocation(token.Start, token.End));
+                        }
+                    }
+                    else if (token.Kind is TokenKind.BraceRight or TokenKind.ParenthesisRight or TokenKind.BracketRight)
+                    {
+                        nestingDepth = Math.Max(0, nestingDepth - 1);
+                    }
+                }
+
                 _tokens.Add(token);
             } while (token.Kind != TokenKind.EndOfFile);
+        }
+        catch (GraphQLResourceLimitException)
+        {
+            throw;
         }
         catch (GraphQLLexicalException exception)
         {
@@ -44,10 +87,16 @@ public sealed class GraphQLParser
     }
 
     /// <summary>Parses one non-empty GraphQL document.</summary>
-    public static DocumentNode Parse(SourceText source) => new GraphQLParser(source).ParseDocument();
+    public static DocumentNode Parse(SourceText source) => Parse(source, GraphQLParserOptions.Default);
+
+    /// <summary>Parses one non-empty GraphQL document with explicit resource limits.</summary>
+    public static DocumentNode Parse(SourceText source, GraphQLParserOptions options) => new GraphQLParser(source, options).ParseDocument();
 
     /// <summary>Parses a document while collecting diagnostics and recovering at later definitions.</summary>
-    public static GraphQLParseResult ParseWithDiagnostics(SourceText source) => new GraphQLParser(source).ParseDocumentWithDiagnostics();
+    public static GraphQLParseResult ParseWithDiagnostics(SourceText source) => ParseWithDiagnostics(source, GraphQLParserOptions.Default);
+
+    /// <summary>Parses a document with explicit resource limits and diagnostic recovery.</summary>
+    public static GraphQLParseResult ParseWithDiagnostics(SourceText source, GraphQLParserOptions options) => new GraphQLParser(source, options).ParseDocumentWithDiagnostics();
 
     /// <summary>Parses one non-empty GraphQL document.</summary>
     public DocumentNode ParseDocument()
@@ -107,9 +156,18 @@ public sealed class GraphQLParser
             }
         }
 
-        if (_lexicalError is not null && !lexicalDiagnosticAdded && diagnostics.Count < MaximumDiagnosticCount)
+        if (_lexicalError is not null && !lexicalDiagnosticAdded)
         {
-            AddDiagnostic(CreateLexicalDiagnostic(_lexicalError));
+            _ = AddDiagnostic(CreateLexicalDiagnostic(_lexicalError));
+        }
+        else if (definitions.Count == 0 && diagnostics.Count == 0)
+        {
+            var emptyDocumentError = Error("A document must contain at least one definition.");
+            if (emptyDocumentError is GraphQLSyntaxException syntaxError)
+            {
+                AddDiagnostic(new GraphQLDiagnostic("syntax", syntaxError.Message, syntaxError.Expected, syntaxError.Actual,
+                    new SourceLocation(syntaxError.Position, syntaxError.Position + syntaxError.Length)));
+            }
         }
 
         DocumentNode? document = definitions.Count == 0 ? null : new DocumentNode(_source, definitions, new SourceLocation(0, _source.Length));
@@ -120,7 +178,7 @@ public sealed class GraphQLParser
     private bool AddDiagnostic(GraphQLDiagnostic diagnostic)
     {
         var diagnostics = _activeDiagnostics ?? throw new InvalidOperationException("Diagnostic collection is not active.");
-        if (diagnostics.Count >= MaximumDiagnosticCount)
+        if (diagnostics.Count >= _options.MaximumDiagnosticCount)
         {
             _diagnosticsTruncated = true;
             return false;

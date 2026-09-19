@@ -28,7 +28,9 @@ Schema and named type definitions preserve optional descriptions and ordered dir
 
 Call `GraphQLParser.ParseWithDiagnostics(SourceText)` for opt-in recovery. It returns `GraphQLParseResult`, with valid recovered definitions (or a null document), plus immutable source-ordered diagnostics that include category, expected context, actual token, and location. The strict entry point continues to throw on the first failure.
 
-Diagnostic mode synchronizes at selection boundaries and top-level definition starts while tracking nested braces, parentheses, and brackets. It reports at most `GraphQLParser.MaximumDiagnosticCount` diagnostics (100); `GraphQLParseResult.DiagnosticsTruncated` indicates that more errors were found. Recovery always advances or stops at a closing grammar boundary or end of input.
+Diagnostic mode synchronizes at selection boundaries and top-level definition starts while tracking nested braces, parentheses, and brackets. The default is 100 diagnostics; `GraphQLParseResult.DiagnosticsTruncated` indicates that more errors were found. Set `GraphQLParserOptions.MaximumDiagnosticCount` for a different bound (1 through 10,000). Recovery always advances or stops at a closing grammar boundary or end of input.
+
+`GraphQLParserOptions.Default` limits source length to 1,048,576 UTF-16 code units, non-EOF tokens to 250,000, and combined brace/parenthesis/bracket nesting to 128. The parser checks source length before lexing and token count and nesting while materializing tokens, before recursive descent. Call `Parse(source, options)` or `ParseWithDiagnostics(source, options)` to choose smaller or larger limits. Exceeding a limit throws `GraphQLResourceLimitException` in either mode; it includes the resource, configured limit, observed value, and source span. `GraphQLParserOptions` rejects non-positive limits and diagnostic bounds above 10,000.
 
 Executable parsing preserves operation and fragment definition order, aliases, argument and directive order, nested selection sets, fragment spreads, and typed or type-less inline fragments. Empty argument and selection sets are rejected according to the grammar.
 
