@@ -67,6 +67,49 @@ public sealed class OracleCorpusTests
         }
     }
 
+    [Fact]
+    public void EveryInvalidFixtureMatchesOracleRejectionCategoryAndLocation()
+    {
+        var oracleDirectory = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Oracle");
+        using var manifestDocument = JsonDocument.Parse(File.ReadAllText(Path.Combine(oracleDirectory, "manifest.json")));
+
+        foreach (var fixture in manifestDocument.RootElement.EnumerateArray().Where(item => item.GetProperty("expect").GetString() == "invalid"))
+        {
+            var id = fixture.GetProperty("id").GetString()!;
+            var file = fixture.GetProperty("file").GetString()!;
+            var expectedCategory = fixture.GetProperty("failureCategory").GetString()!;
+            var source = File.ReadAllText(Path.Combine(oracleDirectory, file));
+            using var expectedDocument = JsonDocument.Parse(File.ReadAllText(Path.Combine(oracleDirectory, "expected", $"{id}.json")));
+            var errorJson = expectedDocument.RootElement.GetProperty("errors")[0];
+            var oraclePosition = errorJson.GetProperty("positions")[0].GetInt32();
+            var oracleLocation = errorJson.GetProperty("locations")[0];
+
+            string actualCategory;
+            int actualPosition;
+            try
+            {
+                _ = GraphQLParser.Parse(new SourceText(source.AsMemory()));
+                throw new Xunit.Sdk.XunitException($"{id}: acceptance mismatch; parser accepted oracle-invalid input ({expectedCategory})");
+            }
+            catch (GraphQLLexicalException exception)
+            {
+                actualCategory = "lexical";
+                actualPosition = exception.Position;
+            }
+            catch (GraphQLSyntaxException exception)
+            {
+                actualCategory = "syntax";
+                actualPosition = exception.Position;
+            }
+
+            Assert.True(actualCategory == expectedCategory, $"{id}: failure category mismatch; expected {expectedCategory}, actual {actualCategory}");
+            Assert.True(actualPosition == oraclePosition, $"{id}: {actualCategory} source offset mismatch; expected {oraclePosition}, actual {actualPosition}");
+            var (line, column) = GetGraphqlJsLocation(source, oraclePosition);
+            Assert.True(oracleLocation.GetProperty("line").GetInt32() == line && oracleLocation.GetProperty("column").GetInt32() == column,
+                $"{id}: oracle location convention mismatch at offset {oraclePosition}; expected line {line}, column {column}");
+        }
+    }
+
     private static string? FirstMismatch(JsonNode? expected, JsonNode? actual, string path)
     {
         if (JsonNode.DeepEquals(expected, actual)) return null;
@@ -100,5 +143,21 @@ public sealed class OracleCorpusTests
         }
 
         return $"{path} differs";
+    }
+
+    private static (int Line, int Column) GetGraphqlJsLocation(string source, int offset)
+    {
+        var line = 1;
+        var lineStart = 0;
+        for (var index = 0; index < offset; index++)
+        {
+            if (source[index] == '\n')
+            {
+                line++;
+                lineStart = index + 1;
+            }
+        }
+
+        return (line, offset - lineStart + 1);
     }
 }

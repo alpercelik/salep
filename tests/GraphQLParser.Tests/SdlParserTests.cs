@@ -121,7 +121,7 @@ public sealed class SdlParserTests
     [Theory]
     [InlineData("\"orphan description\"", 20, 0)]
     [InlineData("\"description\" query { field }", 14, 5)]
-    [InlineData("\"\"\"description\"\"\" extend scalar Date @tag", 18, 6)]
+    [InlineData("\"\"\"description\"\"\" extend scalar Date @tag", 0, 17)]
     public void MalformedDescriptionsFailAtTheFirstTokenWithoutAValidTarget(string source, int expectedPosition, int expectedLength)
     {
         var error = Assert.Throws<GraphQLSyntaxException>(() => GraphQLParser.Parse(new SourceText(source.AsMemory())));

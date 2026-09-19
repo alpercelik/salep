@@ -1,19 +1,19 @@
 {
-  "fixtureId": "invalid-leading-zero",
+  "fixtureId": "invalid-empty-arguments",
   "graphqlJsVersion": "16.14.0",
   "outcome": "invalid",
-  "failureCategory": "lexical",
+  "failureCategory": "syntax",
   "errors": [
     {
-      "message": "Syntax Error: Invalid number, unexpected digit after 0: \"1\".",
+      "message": "Syntax Error: Expected Name, found \")\".",
       "locations": [
         {
           "line": 1,
-          "column": 17
+          "column": 15
         }
       ],
       "positions": [
-        16
+        14
       ]
     }
   ]

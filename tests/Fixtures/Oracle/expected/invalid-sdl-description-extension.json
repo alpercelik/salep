@@ -1,19 +1,19 @@
 {
-  "fixtureId": "invalid-unclosed-selection",
+  "fixtureId": "invalid-sdl-description-extension",
   "graphqlJsVersion": "16.14.0",
   "outcome": "invalid",
   "failureCategory": "syntax",
   "errors": [
     {
-      "message": "Syntax Error: Expected Name, found <EOF>.",
+      "message": "Syntax Error: Unexpected description, only GraphQL definitions support descriptions.",
       "locations": [
         {
-          "line": 2,
+          "line": 1,
           "column": 1
         }
       ],
       "positions": [
-        14
+        0
       ]
     }
   ]

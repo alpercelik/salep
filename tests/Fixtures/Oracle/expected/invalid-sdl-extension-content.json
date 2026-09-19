@@ -1,11 +1,11 @@
 {
-  "fixtureId": "invalid-unclosed-selection",
+  "fixtureId": "invalid-sdl-extension-content",
   "graphqlJsVersion": "16.14.0",
   "outcome": "invalid",
   "failureCategory": "syntax",
   "errors": [
     {
-      "message": "Syntax Error: Expected Name, found <EOF>.",
+      "message": "Syntax Error: Unexpected <EOF>.",
       "locations": [
         {
           "line": 2,
@@ -13,7 +13,7 @@
         }
       ],
       "positions": [
-        14
+        18
       ]
     }
   ]

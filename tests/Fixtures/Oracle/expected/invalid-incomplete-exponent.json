@@ -2,6 +2,7 @@
   "fixtureId": "invalid-incomplete-exponent",
   "graphqlJsVersion": "16.14.0",
   "outcome": "invalid",
+  "failureCategory": "lexical",
   "errors": [
     {
       "message": "Syntax Error: Invalid number, expected digit but got: \")\".",

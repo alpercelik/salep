@@ -2,6 +2,7 @@
   "fixtureId": "invalid-malformed-spread",
   "graphqlJsVersion": "16.14.0",
   "outcome": "invalid",
+  "failureCategory": "lexical",
   "errors": [
     {
       "message": "Syntax Error: Unexpected character: \".\".",

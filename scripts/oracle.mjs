@@ -31,6 +31,12 @@ for (const item of manifest) {
   if (item.expect !== 'valid' && item.expect !== 'invalid') {
     throw new Error(`Invalid expected outcome for ${item.id}: ${item.expect}`);
   }
+  if (item.expect === 'invalid' && item.failureCategory !== 'lexical' && item.failureCategory !== 'syntax') {
+    throw new Error(`Invalid failureCategory for ${item.id}: expected lexical or syntax`);
+  }
+  if (item.expect === 'valid' && 'failureCategory' in item) {
+    throw new Error(`Valid fixture ${item.id} must not declare a failureCategory`);
+  }
   ids.add(item.id);
   files.add(item.file);
 }
@@ -129,7 +135,7 @@ for (const item of [...manifest].sort((left, right) => left.id.localeCompare(rig
     generated = { fixtureId: item.id, graphqlJsVersion: version, outcome: 'valid', ast: canonicalNode(ast) };
   } catch (error) {
     if (error.name !== 'GraphQLError') throw error;
-    generated = { fixtureId: item.id, graphqlJsVersion: version, outcome: 'invalid', errors: [canonicalError(error)] };
+    generated = { fixtureId: item.id, graphqlJsVersion: version, outcome: 'invalid', failureCategory: item.failureCategory, errors: [canonicalError(error)] };
   }
   if (generated.outcome !== item.expect) {
     throw new Error(`${item.id}: expected ${item.expect} but graphql-js returned ${generated.outcome}`);

@@ -37,46 +37,97 @@
   {
     "id": "invalid-unclosed-selection",
     "file": "invalid-unclosed-selection.graphql",
-    "expect": "invalid"
+    "expect": "invalid",
+    "failureCategory": "syntax"
   },
   {
     "id": "invalid-leading-zero",
     "file": "invalid-leading-zero.graphql",
-    "expect": "invalid"
+    "expect": "invalid",
+    "failureCategory": "lexical"
   },
   {
     "id": "invalid-malformed-spread",
     "file": "invalid-malformed-spread.graphql",
-    "expect": "invalid"
+    "expect": "invalid",
+    "failureCategory": "lexical"
   },
   {
     "id": "invalid-incomplete-exponent",
     "file": "invalid-incomplete-exponent.graphql",
-    "expect": "invalid"
+    "expect": "invalid",
+    "failureCategory": "lexical"
   },
   {
     "id": "invalid-number-continuation",
     "file": "invalid-number-continuation.graphql",
-    "expect": "invalid"
+    "expect": "invalid",
+    "failureCategory": "lexical"
   },
   {
     "id": "invalid-lone-surrogate",
     "file": "invalid-lone-surrogate.graphql",
-    "expect": "invalid"
+    "expect": "invalid",
+    "failureCategory": "lexical"
   },
   {
     "id": "invalid-string-escape",
     "file": "invalid-string-escape.graphql",
-    "expect": "invalid"
+    "expect": "invalid",
+    "failureCategory": "lexical"
   },
   {
     "id": "invalid-unterminated-string",
     "file": "invalid-unterminated-string.graphql",
-    "expect": "invalid"
+    "expect": "invalid",
+    "failureCategory": "lexical"
   },
   {
     "id": "invalid-unterminated-block-string",
     "file": "invalid-unterminated-block-string.graphql",
-    "expect": "invalid"
+    "expect": "invalid",
+    "failureCategory": "lexical"
+  },
+  {
+    "id": "invalid-empty-selection",
+    "file": "invalid-empty-selection.graphql",
+    "expect": "invalid",
+    "failureCategory": "syntax"
+  },
+  {
+    "id": "invalid-empty-arguments",
+    "file": "invalid-empty-arguments.graphql",
+    "expect": "invalid",
+    "failureCategory": "syntax"
+  },
+  {
+    "id": "invalid-variable-default",
+    "file": "invalid-variable-default.graphql",
+    "expect": "invalid",
+    "failureCategory": "syntax"
+  },
+  {
+    "id": "invalid-nonnull-nesting",
+    "file": "invalid-nonnull-nesting.graphql",
+    "expect": "invalid",
+    "failureCategory": "syntax"
+  },
+  {
+    "id": "invalid-sdl-extension-content",
+    "file": "invalid-sdl-extension-content.graphql",
+    "expect": "invalid",
+    "failureCategory": "syntax"
+  },
+  {
+    "id": "invalid-sdl-directive-location",
+    "file": "invalid-sdl-directive-location.graphql",
+    "expect": "invalid",
+    "failureCategory": "syntax"
+  },
+  {
+    "id": "invalid-sdl-description-extension",
+    "file": "invalid-sdl-description-extension.graphql",
+    "expect": "invalid",
+    "failureCategory": "syntax"
   }
 ]

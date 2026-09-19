@@ -1,11 +1,11 @@
 {
-  "fixtureId": "invalid-number-continuation",
+  "fixtureId": "invalid-variable-default",
   "graphqlJsVersion": "16.14.0",
   "outcome": "invalid",
-  "failureCategory": "lexical",
+  "failureCategory": "syntax",
   "errors": [
     {
-      "message": "Syntax Error: Invalid number, expected digit but got: \"a\".",
+      "message": "Syntax Error: Unexpected variable \"$other\" in constant value.",
       "locations": [
         {
           "line": 1,

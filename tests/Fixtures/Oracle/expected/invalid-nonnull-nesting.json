@@ -1,11 +1,11 @@
 {
-  "fixtureId": "invalid-leading-zero",
+  "fixtureId": "invalid-nonnull-nesting",
   "graphqlJsVersion": "16.14.0",
   "outcome": "invalid",
-  "failureCategory": "lexical",
+  "failureCategory": "syntax",
   "errors": [
     {
-      "message": "Syntax Error: Invalid number, unexpected digit after 0: \"1\".",
+      "message": "Syntax Error: Expected \"$\", found \"!\".",
       "locations": [
         {
           "line": 1,

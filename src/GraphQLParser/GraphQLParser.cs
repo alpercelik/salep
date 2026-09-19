@@ -99,7 +99,7 @@ public sealed class GraphQLParser
         if (IsName("directive")) return ParseDirectiveDefinition(start, description);
         if (IsName("extend"))
         {
-            if (description is not null) throw Error("Descriptions cannot be applied to extensions.");
+            if (description is not null) throw Error("Descriptions cannot be applied to extensions.", description.Location);
             return ParseTypeSystemExtension();
         }
         throw Error("Expected a schema or type-system definition.");

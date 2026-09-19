@@ -20,6 +20,8 @@ Fixtures store the exact UTF-8 source text, including any final line feed, and c
 
 `OracleCorpusTests.EveryValidFixtureHasTheSameCanonicalAstAsGraphqlJs` parses every fixture marked valid and compares its C# projection with the pinned snapshot. Failure output separates parser rejection of an oracle-valid fixture (a grammar/parser failure), serializer exceptions, and the first structural, decoded-value, or source-location mismatch path. The comprehensive executable and SDL fixtures keep the supported production branches in the differential corpus.
 
+Invalid fixtures are compared by rejection, a fixture-declared `failureCategory` (`lexical` or `syntax`), and the first source offset. The pinned oracle reports both zero-based UTF-16 `positions` and one-based `locations` (`line`, `column`); the test checks that these agree under graphql-js's LF-based location calculation. graphql-js reports lexical and grammar failures through the same `GraphQLError` parse category, so the manifest records the expected finer C# category while the oracle snapshot proves rejection and source location. Error wording is intentionally ignored.
+
 ## Executable example
 
 Source (`query Q { hello }`):
