@@ -129,6 +129,7 @@ public sealed class GraphQLParser
 
         if (Current.Kind == TokenKind.Bang)
         {
+            if (type is NonNullTypeNode) throw Error("A non-null type cannot wrap another non-null type.");
             var start = type.Location.Start;
             var bang = Advance();
             type = new NonNullTypeNode(type, new SourceLocation(start, bang.End));
@@ -140,6 +141,36 @@ public sealed class GraphQLParser
     private ValueNode ParseConstantValue()
     {
         var token = Current;
+        if (token.Kind == TokenKind.Dollar) throw Error("Variables are not allowed in constant values.");
+        if (token.Kind == TokenKind.BracketLeft)
+        {
+            var start = Advance().Start;
+            var values = new List<ValueNode>();
+            while (Current.Kind != TokenKind.BracketRight)
+            {
+                if (Current.Kind == TokenKind.EndOfFile) throw Error("Unterminated constant list value.");
+                values.Add(ParseConstantValue());
+            }
+
+            return new ListValueNode(values, new SourceLocation(start, Advance().End));
+        }
+
+        if (token.Kind == TokenKind.BraceLeft)
+        {
+            var start = Advance().Start;
+            var fields = new List<ObjectFieldNode>();
+            while (Current.Kind != TokenKind.BraceRight)
+            {
+                if (Current.Kind == TokenKind.EndOfFile) throw Error("Unterminated constant object value.");
+                var fieldName = ReadRequiredName("Expected a constant input-object field name.");
+                Expect(TokenKind.Colon, "Expected ':' after the constant input-object field name.");
+                var value = ParseConstantValue();
+                fields.Add(new ObjectFieldNode(fieldName, value, new SourceLocation(fieldName.Location.Start, value.Location.End)));
+            }
+
+            return new ObjectValueNode(fields, new SourceLocation(start, Advance().End));
+        }
+
         if (token.Kind is TokenKind.Integer or TokenKind.Float or TokenKind.String or TokenKind.BlockString)
         {
             Advance();

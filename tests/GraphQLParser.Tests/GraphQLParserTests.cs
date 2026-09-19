@@ -97,4 +97,50 @@ public sealed class GraphQLParserTests
         var inline = Assert.IsType<InlineFragmentNode>(Assert.Single(operation.SelectionSet.Selections));
         Assert.Null(inline.TypeCondition);
     }
+
+    [Fact]
+    public void ParsesNestedTypeReferencesValuesAndConstantDefaults()
+    {
+        const string source = "query Q($data: [[Int!]!]! = [[1], []]) { field(value: { a: [true, null, ENUM], text: \"ok\" }) }";
+        var operation = Assert.IsType<OperationDefinitionNode>(Assert.Single(GraphQLParser.Parse(new SourceText(source.AsMemory())).Definitions));
+        var variable = Assert.Single(operation.VariableDefinitions);
+        var outerNonNull = Assert.IsType<NonNullTypeNode>(variable.Type);
+        var list = Assert.IsType<ListTypeNode>(outerNonNull.Type);
+        Assert.IsType<ListTypeNode>(Assert.IsType<NonNullTypeNode>(list.Type).Type);
+        var defaultList = Assert.IsType<ListValueNode>(variable.DefaultValue);
+        Assert.Equal(2, defaultList.Values.Count);
+        Assert.Single(Assert.IsType<ListValueNode>(defaultList.Values[0]).Values);
+        Assert.Empty(Assert.IsType<ListValueNode>(defaultList.Values[1]).Values);
+
+        var field = Assert.IsType<FieldNode>(Assert.Single(operation.SelectionSet.Selections));
+        var objectValue = Assert.IsType<ObjectValueNode>(field.Arguments[0].Value);
+        var values = Assert.IsType<ListValueNode>(objectValue.Fields[0].Value).Values;
+        Assert.IsType<BooleanValueNode>(values[0]);
+        Assert.IsType<NullValueNode>(values[1]);
+        Assert.IsType<EnumValueNode>(values[2]);
+    }
+
+    [Theory]
+    [InlineData("query Q($x: Int = $other) { field }")]
+    [InlineData("query Q($x: Int = [1, $other]) { field }")]
+    [InlineData("query Q($x: Int!!) { field }")]
+    [InlineData("{ field(value: [1, 2) }")]
+    [InlineData("{ field(value: { a 1 }) }")]
+    [InlineData("query Q($x: [Int) { field }")]
+    public void RejectsVariablesInConstantsAndMalformedValuesOrTypes(string source)
+    {
+        var error = Assert.Throws<GraphQLSyntaxException>(() => GraphQLParser.Parse(new SourceText(source.AsMemory())));
+        Assert.InRange(error.Position, 0, source.Length);
+    }
+
+    [Fact]
+    public void AllowsVariablesOnlyInExecutableValues()
+    {
+        const string source = "query Q($x: Int) { field(values: [$x, { nested: $x }]) }";
+        var operation = Assert.IsType<OperationDefinitionNode>(Assert.Single(GraphQLParser.Parse(new SourceText(source.AsMemory())).Definitions));
+        var field = Assert.IsType<FieldNode>(Assert.Single(operation.SelectionSet.Selections));
+        var list = Assert.IsType<ListValueNode>(field.Arguments[0].Value);
+        Assert.IsType<VariableNode>(list.Values[0]);
+        Assert.IsType<VariableNode>(Assert.IsType<ObjectValueNode>(list.Values[1]).Fields[0].Value);
+    }
 }
