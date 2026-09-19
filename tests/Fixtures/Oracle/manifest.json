@@ -20,6 +20,11 @@
     "expect": "valid"
   },
   {
+    "id": "valid-block-string",
+    "file": "valid-block-string.graphql",
+    "expect": "valid"
+  },
+  {
     "id": "invalid-unclosed-selection",
     "file": "invalid-unclosed-selection.graphql",
     "expect": "invalid"
@@ -57,6 +62,11 @@
   {
     "id": "invalid-unterminated-string",
     "file": "invalid-unterminated-string.graphql",
+    "expect": "invalid"
+  },
+  {
+    "id": "invalid-unterminated-block-string",
+    "file": "invalid-unterminated-block-string.graphql",
     "expect": "invalid"
   }
 ]

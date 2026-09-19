@@ -243,6 +243,70 @@ public sealed class GraphQLLexerTests
         { "\"\\u{10FFFF}\"", "\U0010FFFF" },
     };
 
+    public static TheoryData<string, string> ValidBlockStrings => new()
+    {
+        { "\"\"\"first\n  second\"\"\"", "first\nsecond" },
+        { "\"\"\"\r\n  alpha\r\n \t\r\n  beta\r\n\"\"\"", "alpha\n\nbeta" },
+        { "\"\"\"\n    Hello,\n      World!\n\n    Yours,\n      GraphQL.\n  \n\"\"\"", "Hello,\n  World!\n\nYours,\n  GraphQL." },
+        { "\"\"\"\n \t\n\"\"\"", "" },
+    };
+
+    [Theory]
+    [MemberData(nameof(ValidBlockStrings))]
+    public void BlockStringsNormalizeIndentationLineEndingsAndBlankLines(string input, string expectedValue)
+    {
+        var lexer = new GraphQLLexer(new SourceText(input.AsMemory()));
+
+        var token = lexer.NextToken();
+
+        Assert.Equal(TokenKind.BlockString, token.Kind);
+        Assert.Equal(0, token.Start);
+        Assert.Equal(input.Length, token.End);
+        Assert.Equal(input, token.RawValue.ToString());
+        Assert.Equal(expectedValue, token.Value.ToString());
+        Assert.Equal(TokenKind.EndOfFile, lexer.NextToken().Kind);
+    }
+
+    [Fact]
+    public void BlockStringEscapesOnlyTripleQuotesAndPreservesOtherBackslashes()
+    {
+        var source = "\"\"\"left " + '\\' + "\"\"\" and C:\\new\\path\"\"\"";
+        var lexer = new GraphQLLexer(new SourceText(source.AsMemory()));
+
+        var token = lexer.NextToken();
+
+        Assert.Equal(TokenKind.BlockString, token.Kind);
+        Assert.Equal("left \"\"\" and C:\\new\\path", token.Value.ToString());
+        Assert.Equal(source, token.RawValue.ToString());
+    }
+
+    [Fact]
+    public void EmptyAndUnterminatedBlockStringsHaveDefinedResults()
+    {
+        var emptyLexer = new GraphQLLexer(new SourceText("\"\"\"\"\"\"".AsMemory()));
+        var emptyToken = emptyLexer.NextToken();
+        Assert.Equal(TokenKind.BlockString, emptyToken.Kind);
+        Assert.Empty(emptyToken.Value.ToArray());
+
+        const string unterminated = "\"\"\"unterminated";
+        var unterminatedLexer = new GraphQLLexer(new SourceText(unterminated.AsMemory()));
+        var error = ReadUntilLexicalException(ref unterminatedLexer);
+        Assert.Equal(unterminated.Length, error.Position);
+        Assert.Equal(0, error.Length);
+    }
+
+    [Fact]
+    public void BlockStringsRejectRawControlsAndUnpairedSurrogates()
+    {
+        var controlInput = new string(['"', '"', '"', '\u0001', '"', '"', '"']);
+        var controlLexer = new GraphQLLexer(new SourceText(controlInput.AsMemory()));
+        Assert.Equal(3, ReadUntilLexicalException(ref controlLexer).Position);
+
+        var surrogateInput = "\"\"\"\uD800\"\"\"";
+        var surrogateLexer = new GraphQLLexer(new SourceText(surrogateInput.AsMemory()));
+        Assert.Equal(3, ReadUntilLexicalException(ref surrogateLexer).Position);
+    }
+
     [Theory]
     [MemberData(nameof(ValidQuotedStrings))]
     public void QuotedStringsDecodeEscapesAndRetainTheRawSpan(string input, string expectedValue)

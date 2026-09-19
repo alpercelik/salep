@@ -41,4 +41,6 @@ public enum TokenKind : byte
     Float,
     /// <summary>A quoted string literal.</summary>
     String,
+    /// <summary>A triple-quoted block string literal.</summary>
+    BlockString,
 }

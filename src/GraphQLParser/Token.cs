@@ -30,9 +30,10 @@ public readonly struct Token
     public ReadOnlyMemory<char> RawValue { get; }
 
     /// <summary>
-    /// Gets the token value. For strings this is decoded content and references the source when
-    /// no escapes require decoding; escaped strings use memory backed by the decoded string.
-    /// For other tokens this is the same source-backed slice as <see cref="RawValue"/>.
+    /// Gets the token value. For quoted strings this is decoded content and references the source
+    /// when no escapes require decoding; escaped strings use memory backed by the decoded string.
+    /// For block strings this is the normalized value. For other tokens this is the same
+    /// source-backed slice as <see cref="RawValue"/>.
     /// </summary>
     public ReadOnlyMemory<char> Value { get; }
 }

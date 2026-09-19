@@ -1,0 +1,85 @@
+{
+  "fixtureId": "valid-block-string",
+  "graphqlJsVersion": "16.14.0",
+  "outcome": "valid",
+  "ast": {
+    "kind": "Document",
+    "definitions": [
+      {
+        "kind": "OperationDefinition",
+        "operation": "query",
+        "name": {
+          "kind": "Name",
+          "value": "Block",
+          "loc": [
+            6,
+            11
+          ]
+        },
+        "variableDefinitions": [],
+        "directives": [],
+        "selectionSet": {
+          "kind": "SelectionSet",
+          "selections": [
+            {
+              "kind": "Field",
+              "alias": null,
+              "name": {
+                "kind": "Name",
+                "value": "f",
+                "loc": [
+                  14,
+                  15
+                ]
+              },
+              "arguments": [
+                {
+                  "kind": "Argument",
+                  "name": {
+                    "kind": "Name",
+                    "value": "value",
+                    "loc": [
+                      16,
+                      21
+                    ]
+                  },
+                  "value": {
+                    "kind": "StringValue",
+                    "value": "literal \"\"\" quote\nC:\\new\\path",
+                    "block": true,
+                    "loc": [
+                      23,
+                      65
+                    ]
+                  },
+                  "loc": [
+                    16,
+                    65
+                  ]
+                }
+              ],
+              "directives": [],
+              "selectionSet": null,
+              "loc": [
+                14,
+                66
+              ]
+            }
+          ],
+          "loc": [
+            12,
+            68
+          ]
+        },
+        "loc": [
+          0,
+          68
+        ]
+      }
+    ],
+    "loc": [
+      0,
+      69
+    ]
+  }
+}

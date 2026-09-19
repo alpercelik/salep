@@ -1,0 +1,19 @@
+{
+  "fixtureId": "invalid-unterminated-block-string",
+  "graphqlJsVersion": "16.14.0",
+  "outcome": "invalid",
+  "errors": [
+    {
+      "message": "Syntax Error: Unterminated string.",
+      "locations": [
+        {
+          "line": 2,
+          "column": 1
+        }
+      ],
+      "positions": [
+        36
+      ]
+    }
+  ]
+}

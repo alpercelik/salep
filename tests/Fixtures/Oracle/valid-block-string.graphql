@@ -1,0 +1,4 @@
+query Block { f(value: """
+  literal \""" quote
+  C:\new\path
+""") }

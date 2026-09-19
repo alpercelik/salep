@@ -44,6 +44,12 @@ public ref struct GraphQLLexer
 
         if (current == '"')
         {
+            var remaining = _source.Content.Span[_position..];
+            if (remaining.Length >= 3 && remaining[1] == '"' && remaining[2] == '"')
+            {
+                return ReadBlockString();
+            }
+
             return ReadQuotedString();
         }
 
@@ -229,6 +235,187 @@ public ref struct GraphQLLexer
 
         throw new GraphQLLexicalException("Unterminated quoted string.", _position, 0);
     }
+
+    private Token ReadBlockString()
+    {
+        var start = _position;
+        _position += 3;
+        var contentStart = _position;
+        var chunkStart = contentStart;
+        StringBuilder? rawBuilder = null;
+        var source = _source.Content.Span;
+
+        while (_position < source.Length)
+        {
+            if (source[_position] == '\\' && HasTripleQuoteAt(_position + 1))
+            {
+                rawBuilder ??= new StringBuilder();
+                rawBuilder.Append(source[chunkStart.._position]);
+                rawBuilder.Append("\"\"\"");
+                _position += 4;
+                chunkStart = _position;
+                continue;
+            }
+
+            if (HasTripleQuoteAt(_position))
+            {
+                var contentEnd = _position;
+                string normalized;
+                if (rawBuilder is null)
+                {
+                    normalized = NormalizeBlockString(source[contentStart..contentEnd]);
+                }
+                else
+                {
+                    rawBuilder.Append(source[chunkStart..contentEnd]);
+                    normalized = NormalizeBlockString(rawBuilder.ToString());
+                }
+
+                _position += 3;
+                return new Token(
+                    TokenKind.BlockString,
+                    start,
+                    _position,
+                    _source.Slice(start, _position - start),
+                    normalized.AsMemory());
+            }
+
+            var current = source[_position];
+            if (current < 0x20 && current is not '\t' and not '\r' and not '\n')
+            {
+                throw new GraphQLLexicalException("Block strings cannot contain raw control characters.", _position, 1);
+            }
+
+            if (char.IsHighSurrogate(current))
+            {
+                if (_position + 1 >= source.Length || !char.IsLowSurrogate(source[_position + 1]))
+                {
+                    throw new GraphQLLexicalException("Block strings must contain valid Unicode scalar values.", _position, 1);
+                }
+
+                _position += 2;
+                continue;
+            }
+
+            if (char.IsLowSurrogate(current))
+            {
+                throw new GraphQLLexicalException("Block strings must contain valid Unicode scalar values.", _position, 1);
+            }
+
+            _position++;
+        }
+
+        throw new GraphQLLexicalException("Unterminated block string.", _position, 0);
+    }
+
+    private bool HasTripleQuoteAt(int position)
+    {
+        var source = _source.Content.Span;
+        return position + 2 < source.Length
+            && source[position] == '"'
+            && source[position + 1] == '"'
+            && source[position + 2] == '"';
+    }
+
+    private static string NormalizeBlockString(ReadOnlySpan<char> raw)
+    {
+        var lines = new List<(int Start, int Length)>();
+        var lineStart = 0;
+        for (var index = 0; index < raw.Length; index++)
+        {
+            if (raw[index] is not '\r' and not '\n')
+            {
+                continue;
+            }
+
+            lines.Add((lineStart, index - lineStart));
+            if (raw[index] == '\r' && index + 1 < raw.Length && raw[index + 1] == '\n')
+            {
+                index++;
+            }
+
+            lineStart = index + 1;
+        }
+
+        lines.Add((lineStart, raw.Length - lineStart));
+
+        int? commonIndent = null;
+        for (var index = 1; index < lines.Count; index++)
+        {
+            var line = lines[index];
+            var content = raw.Slice(line.Start, line.Length);
+            var indent = CountLeadingWhitespace(content);
+            if (indent < line.Length && (commonIndent is null || indent < commonIndent.Value))
+            {
+                commonIndent = indent;
+            }
+        }
+
+        if (commonIndent is { } indentation)
+        {
+            for (var index = 1; index < lines.Count; index++)
+            {
+                var line = lines[index];
+                var removed = Math.Min(indentation, line.Length);
+                lines[index] = (line.Start + removed, line.Length - removed);
+            }
+        }
+
+        while (lines.Count > 0 && IsBlankLine(raw.Slice(lines[0].Start, lines[0].Length)))
+        {
+            lines.RemoveAt(0);
+        }
+
+        while (lines.Count > 0 && IsBlankLine(raw.Slice(lines[^1].Start, lines[^1].Length)))
+        {
+            lines.RemoveAt(lines.Count - 1);
+        }
+
+        if (lines.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var normalized = new StringBuilder();
+        for (var index = 0; index < lines.Count; index++)
+        {
+            if (index > 0)
+            {
+                normalized.Append('\n');
+            }
+
+            var line = lines[index];
+            normalized.Append(raw.Slice(line.Start, line.Length));
+        }
+
+        return normalized.ToString();
+    }
+
+    private static int CountLeadingWhitespace(ReadOnlySpan<char> line)
+    {
+        var count = 0;
+        while (count < line.Length && IsWhitespace(line[count]))
+        {
+            count++;
+        }
+
+        return count;
+    }
+
+    private static bool IsBlankLine(ReadOnlySpan<char> line)
+    {
+        foreach (var character in line)
+        {
+            if (!IsWhitespace(character))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool IsWhitespace(char character) => character is ' ' or '\t';
 
     private void AppendEscape(StringBuilder decoded, int escapeStart)
     {
