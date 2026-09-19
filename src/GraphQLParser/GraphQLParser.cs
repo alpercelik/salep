@@ -97,7 +97,11 @@ public sealed class GraphQLParser
         if (IsName("enum")) return ParseEnumTypeDefinition(start, description);
         if (IsName("input")) return ParseInputObjectTypeDefinition(start, description);
         if (IsName("directive")) return ParseDirectiveDefinition(start, description);
-        if (IsName("extend")) return ParseTypeSystemExtension();
+        if (IsName("extend"))
+        {
+            if (description is not null) throw Error("Descriptions cannot be applied to extensions.");
+            return ParseTypeSystemExtension();
+        }
         throw Error("Expected a schema or type-system definition.");
     }
 

@@ -117,4 +117,34 @@ public sealed class SdlParserTests
         Assert.Equal(source.IndexOf("UNKNOWN", StringComparison.Ordinal), error.Position);
         Assert.Equal("UNKNOWN".Length, error.Length);
     }
+
+    [Theory]
+    [InlineData("\"orphan description\"", 20, 0)]
+    [InlineData("\"description\" query { field }", 14, 5)]
+    [InlineData("\"\"\"description\"\"\" extend scalar Date @tag", 18, 6)]
+    public void MalformedDescriptionsFailAtTheFirstTokenWithoutAValidTarget(string source, int expectedPosition, int expectedLength)
+    {
+        var error = Assert.Throws<GraphQLSyntaxException>(() => GraphQLParser.Parse(new SourceText(source.AsMemory())));
+        Assert.Equal(expectedPosition, error.Position);
+        Assert.Equal(expectedLength, error.Length);
+    }
+
+    [Fact]
+    public void AcceptsEveryExecutableAndTypeSystemDirectiveLocation()
+    {
+        const string source = "directive @all on QUERY | MUTATION | SUBSCRIPTION | FIELD | FRAGMENT_DEFINITION | FRAGMENT_SPREAD | INLINE_FRAGMENT | VARIABLE_DEFINITION | SCHEMA | SCALAR | OBJECT | FIELD_DEFINITION | ARGUMENT_DEFINITION | INTERFACE | UNION | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION";
+        var directive = Assert.IsType<DirectiveDefinitionNode>(Assert.Single(GraphQLParser.Parse(new SourceText(source.AsMemory())).Definitions));
+        Assert.Equal(19, directive.Locations.Count);
+    }
+
+    [Theory]
+    [InlineData("input Filter { value: Int = $variable }")]
+    [InlineData("type Query { field(arg: Int @tag(value: $variable)): String }")]
+    [InlineData("directive @tag(value: Int = $variable) on FIELD")]
+    public void RejectsVariablesInSDLConstantValuePositions(string source)
+    {
+        var error = Assert.Throws<GraphQLSyntaxException>(() => GraphQLParser.Parse(new SourceText(source.AsMemory())));
+        Assert.Equal(source.IndexOf('$'), error.Position);
+        Assert.Equal(1, error.Length);
+    }
 }
