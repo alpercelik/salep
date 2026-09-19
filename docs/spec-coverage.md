@@ -87,4 +87,4 @@ The grammar still determines syntax restrictions. For example, a directive defin
 
 ## Implementation evidence
 
-Current status: baseline established for TASK-0001. The runnable harness, pinned oracle, detailed fixture corpus, implementation coverage, fuzzing, and resource-limit tests remain assigned to their respective Backlog tasks. Do not claim parser conformance until those tasks pass their acceptance criteria.
+Current status: lexer, immutable AST, executable parser, and executable grammar rejection coverage have been implemented through TASK-0014. SDL parser coverage, canonical parser-to-oracle comparison, recovery, performance baselines, fuzzing, and resource-limit tests remain tracked in Backlog. Do not claim full parser conformance until those tasks pass their acceptance criteria.

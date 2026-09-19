@@ -59,7 +59,7 @@ public sealed class GraphQLParserTests
 
         Assert.Equal("alias", field.Alias!.Value.ToString());
         Assert.Equal("user", field.Name.Value.ToString());
-        Assert.Equal("$id", field.Arguments.Single().Value is VariableNode variable ? "$" + variable.Name.Value.ToString() : "");
+        Assert.Equal("id", Assert.IsType<VariableNode>(field.Arguments.Single().Value).Name.Value.ToString());
         Assert.Equal("include", Assert.Single(field.Directives).Name.Value.ToString());
         Assert.Equal(new SourceLocation(source.IndexOf("alias", StringComparison.Ordinal), source.IndexOf("} } fragment", StringComparison.Ordinal) + 1), field.Location);
 
@@ -80,6 +80,7 @@ public sealed class GraphQLParserTests
     [InlineData("{ ... }")]
     [InlineData("fragment F Type { field }")]
     [InlineData("fragment F on { field }")]
+    [InlineData("fragment on on Type { field }")]
     [InlineData("{ ... on Type }")]
     public void RejectsMissingSelectionAndFragmentComponents(string source)
     {
@@ -142,5 +143,41 @@ public sealed class GraphQLParserTests
         var list = Assert.IsType<ListValueNode>(field.Arguments[0].Value);
         Assert.IsType<VariableNode>(list.Values[0]);
         Assert.IsType<VariableNode>(Assert.IsType<ObjectValueNode>(list.Values[1]).Fields[0].Value);
+    }
+
+    [Theory]
+    [InlineData("{ field }")]
+    [InlineData("mutation M($x: Int = 1 @arg(value: [true])) @op { change }")]
+    [InlineData("subscription S { event { id } }")]
+    [InlineData("query Q($x: [String!]!) { field(arg: {a: \"text\", b: \"\"\"block\"\"\"}) }")]
+    [InlineData("query Q { field(a: 1.25, b: false, c: null, d: ENUM, e: [], f: {}) }")]
+    [InlineData("query Q { ... on Type { field } ... @skip(if: true) { other } }")]
+    [InlineData("fragment F on Type { ...Other @include(if: true) }")]
+    [InlineData("query Q { field @one @two(arg: \"value\") }")]
+    public void AcceptsEveryExecutableProductionGroup(string source)
+    {
+        Assert.NotEmpty(GraphQLParser.Parse(new SourceText(source.AsMemory())).Definitions);
+    }
+
+    [Fact]
+    public void VariableDefinitionDirectivesUseConstantValueGrammar()
+    {
+        const string source = "query Q($x: Int @bound(values: [1, {nested: true}])) { field }";
+        var operation = Assert.IsType<OperationDefinitionNode>(Assert.Single(GraphQLParser.Parse(new SourceText(source.AsMemory())).Definitions));
+        Assert.Equal("bound", Assert.Single(Assert.Single(operation.VariableDefinitions).Directives).Name.Value.ToString());
+
+        const string invalid = "query Q($x: Int @bound(value: $other)) { field }";
+        var error = Assert.Throws<GraphQLSyntaxException>(() => GraphQLParser.Parse(new SourceText(invalid.AsMemory())));
+        Assert.Equal(invalid.IndexOf('$', invalid.IndexOf('@')), error.Position);
+    }
+
+    [Fact]
+    public void StrictParserStopsAtTheFirstMalformedDefinitionWithoutRecovery()
+    {
+        const string source = "query Good { field } query Broken { } query Unreachable { field }";
+        var error = Assert.Throws<GraphQLSyntaxException>(() => GraphQLParser.Parse(new SourceText(source.AsMemory())));
+
+        Assert.Equal(source.IndexOf('}', source.IndexOf("Broken", StringComparison.Ordinal)), error.Position);
+        Assert.Equal(1, error.Length);
     }
 }

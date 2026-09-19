@@ -102,7 +102,9 @@ public sealed class GraphQLParser
                 defaultValue = ParseConstantValue();
             }
 
-            variables.Add(new VariableDefinitionNode(variable, type, defaultValue, [], new SourceLocation(start, (defaultValue ?? (AstNode)type).Location.End)));
+            var directives = ParseDirectives(constantArguments: true);
+            var end = directives.Count > 0 ? directives[^1].Location.End : (defaultValue ?? (AstNode)type).Location.End;
+            variables.Add(new VariableDefinitionNode(variable, type, defaultValue, directives, new SourceLocation(start, end)));
         }
 
         if (variables.Count == 0) throw Error("Variable definitions cannot be empty.");
@@ -254,7 +256,7 @@ public sealed class GraphQLParser
         return new FragmentSpreadNode(name, spreadDirectives, new SourceLocation(start, end));
     }
 
-    private List<ArgumentNode> ParseArguments()
+    private List<ArgumentNode> ParseArguments(bool constantValues = false)
     {
         var arguments = new List<ArgumentNode>();
         if (Current.Kind != TokenKind.ParenthesisLeft) return arguments;
@@ -265,7 +267,7 @@ public sealed class GraphQLParser
             var start = Current.Start;
             var name = ReadRequiredName("Expected an argument name.");
             Expect(TokenKind.Colon, "Expected ':' after the argument name.");
-            var value = ParseValue();
+            var value = constantValues ? ParseConstantValue() : ParseValue();
             arguments.Add(new ArgumentNode(name, value, new SourceLocation(start, value.Location.End)));
         }
 
@@ -274,14 +276,14 @@ public sealed class GraphQLParser
         return arguments;
     }
 
-    private List<DirectiveNode> ParseDirectives()
+    private List<DirectiveNode> ParseDirectives(bool constantArguments = false)
     {
         var directives = new List<DirectiveNode>();
         while (Current.Kind == TokenKind.At)
         {
             var start = Advance().Start;
             var name = ReadRequiredName("Expected a directive name after '@'.");
-            var arguments = ParseArguments();
+            var arguments = ParseArguments(constantArguments);
             var end = arguments.Count > 0 ? _tokens[_index - 1].End : name.Location.End;
             directives.Add(new DirectiveNode(name, arguments, new SourceLocation(start, end)));
         }
