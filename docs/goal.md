@@ -224,16 +224,16 @@ When encountering an unexpected token:
 
 ---
 
-## Milestone 6: Allocation-Free Optimization Pass
+## Milestone 6: Measured Optimization and Release Gates
 
-Refine the implementation to eliminate unnecessary heap allocations during lexing and parsing.
+Measure allocation and throughput on representative lexer, valid parse, SDL parse, and malformed recovery inputs. Make a change only when repeated before-and-after measurements show a net benefit without weakening correctness, source ownership, or public API behavior.
 
-### 6.1 Memory Optimization Checklist
+### 6.1 Optimization Review
 
-* [ ] **String Deduplication:** Ensure field names, operation keywords, and directives reuse static singletons or string tables where appropriate.
-* [ ] **Zero-Allocation Slicing:** Verify `NameNode` and `StringValueNode` slice source text via `ReadOnlyMemory<char>.Slice()` without allocating new strings.
-* [ ] **Custom List Allocations:** Evaluate replacing standard `List<T>` allocations in parser loops with a temporary array pool (`ArrayPool<T>.Shared`) before finalizing node arrays.
-* [ ] **Struct Lexer Validation:** Confirm `GraphQLLexer` remains a `ref struct` that generates zero GC pressure on hot tokenization paths.
+* Keep exact source-backed values as `ReadOnlyMemory<char>` where semantics permit; decoded and normalized strings may allocate.
+* Evaluate pooling, interning, token storage, and child collection changes with the benchmark harness before retaining them.
+* Keep the lexer allocation-free on the baseline plain-name/punctuator inputs when future changes allow it.
+* Record a reason and measurements when a candidate optimization is rejected or retained.
 
 ---
 

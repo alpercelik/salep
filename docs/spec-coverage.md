@@ -87,4 +87,4 @@ The grammar still determines syntax restrictions. For example, a directive defin
 
 ## Implementation evidence
 
-Current status: lexer, immutable AST, executable parser, and executable grammar rejection coverage have been implemented through TASK-0014. SDL parser coverage, canonical parser-to-oracle comparison, recovery, performance baselines, fuzzing, and resource-limit tests remain tracked in Backlog. Do not claim full parser conformance until those tasks pass their acceptance criteria.
+Current status: the September 2025 lexical, executable, and SDL grammar implementation, immutable AST, canonical parser-to-oracle comparison, diagnostic recovery, measured performance baseline, deterministic mutation fuzzing, and configurable resource limits are implemented. The pinned `graphql-js` 16.14.0 corpus contains 23 fixtures (7 valid and 16 invalid); all pass. This finite corpus and the parser-only scope do not establish exhaustive GraphQL conformance or validation parity. See [release readiness](release-readiness.md) for the final verified gates and explicit exclusions.
