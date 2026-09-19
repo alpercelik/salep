@@ -208,6 +208,101 @@ public sealed class GraphQLLexerTests
         Assert.Equal(1, error.Position);
     }
 
+    [Fact]
+    public void PlainQuotedStringUsesSourceMemoryForDecodedContentsAndKeepsTheRawLexeme()
+    {
+        var buffer = "\"plain text\"".ToCharArray();
+        var lexer = new GraphQLLexer(new SourceText(buffer.AsMemory()));
+
+        var token = lexer.NextToken();
+
+        Assert.Equal(TokenKind.String, token.Kind);
+        Assert.Equal(0, token.Start);
+        Assert.Equal(buffer.Length, token.End);
+        Assert.Equal("\"plain text\"", token.RawValue.ToString());
+        Assert.Equal("plain text", token.Value.ToString());
+        Assert.True(MemoryMarshal.TryGetArray(token.Value, out ArraySegment<char> valueSegment));
+        Assert.Same(buffer, valueSegment.Array);
+    }
+
+    public static TheoryData<string, string> ValidQuotedStrings => new()
+    {
+        { "\"plain\"", "plain" },
+        { "\"\\\"\"", "\"" },
+        { "\"\\\\\"", "\\" },
+        { "\"\\/\"", "/" },
+        { "\"\\b\"", "\b" },
+        { "\"\\f\"", "\f" },
+        { "\"\\n\"", "\n" },
+        { "\"\\r\"", "\r" },
+        { "\"\\t\"", "\t" },
+        { "\"\\u0041\"", "A" },
+        { "\"\\u0000\"", "\0" },
+        { "\"\\uD83D\\uDE00\"", "😀" },
+        { "\"\\u{1F600}\"", "😀" },
+        { "\"\\u{10FFFF}\"", "\U0010FFFF" },
+    };
+
+    [Theory]
+    [MemberData(nameof(ValidQuotedStrings))]
+    public void QuotedStringsDecodeEscapesAndRetainTheRawSpan(string input, string expectedValue)
+    {
+        var lexer = new GraphQLLexer(new SourceText(input.AsMemory()));
+
+        var token = lexer.NextToken();
+
+        Assert.Equal(TokenKind.String, token.Kind);
+        Assert.Equal(0, token.Start);
+        Assert.Equal(input.Length, token.End);
+        Assert.Equal(input, token.RawValue.ToString());
+        Assert.Equal(expectedValue, token.Value.ToString());
+        Assert.Equal(TokenKind.EndOfFile, lexer.NextToken().Kind);
+    }
+
+    [Theory]
+    [InlineData("\"\\x\"", 1)]
+    [InlineData("\"\\u12G4\"", 1)]
+    [InlineData("\"\\u123\"", 1)]
+    [InlineData("\"\\u{}\"", 1)]
+    [InlineData("\"\\u{D800}\"", 1)]
+    [InlineData("\"\\u{110000}\"", 1)]
+    [InlineData("\"\\u{1234567}\"", 1)]
+    [InlineData("\"\\uD800\"", 1)]
+    [InlineData("\"\\uDC00\"", 1)]
+    [InlineData("\"\\uD83D\\u0041\"", 1)]
+    [InlineData("\"unterminated", 13)]
+    public void InvalidQuotedStringsReportTheEscapeOrEofOffset(string input, int expectedPosition)
+    {
+        var lexer = new GraphQLLexer(new SourceText(input.AsMemory()));
+
+        var error = ReadUntilLexicalException(ref lexer);
+
+        Assert.Equal(expectedPosition, error.Position);
+        Assert.Equal(expectedPosition == input.Length ? 0 : 1, Math.Sign(error.Length));
+    }
+
+    [Theory]
+    [InlineData("\"a\nb\"", 2)]
+    [InlineData("\"a\rb\"", 2)]
+    public void RawLineTerminatorsAreRejected(string input, int expectedPosition)
+    {
+        var newlineLexer = new GraphQLLexer(new SourceText(input.AsMemory()));
+        var newlineError = ReadUntilLexicalException(ref newlineLexer);
+        Assert.Equal(expectedPosition, newlineError.Position);
+    }
+
+    [Fact]
+    public void RawControlsAndUnpairedSurrogatesAreRejected()
+    {
+        var controlInput = new string(['"', '\u0001', '"']);
+        var controlLexer = new GraphQLLexer(new SourceText(controlInput.AsMemory()));
+        Assert.Equal(1, ReadUntilLexicalException(ref controlLexer).Position);
+
+        var surrogateLexer = new GraphQLLexer(new SourceText("\"\uD800\"".AsMemory()));
+        var surrogateError = ReadUntilLexicalException(ref surrogateLexer);
+        Assert.Equal(1, surrogateError.Position);
+    }
+
     private static GraphQLLexicalException ReadUntilLexicalException(ref GraphQLLexer lexer)
     {
         try

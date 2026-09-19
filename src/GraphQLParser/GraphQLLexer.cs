@@ -1,6 +1,8 @@
+using System.Text;
+
 namespace GraphQLParser;
 
-/// <summary>Reads GraphQL punctuators while skipping ignored source characters.</summary>
+/// <summary>Tokenizes GraphQL names, numeric literals, quoted strings, and punctuators.</summary>
 /// <remarks>
 /// The source memory must remain alive and unchanged for the lifetime of this lexer and its tokens.
 /// Offsets are measured in UTF-16 code units.
@@ -18,7 +20,7 @@ public ref struct GraphQLLexer
     }
 
     /// <summary>Reads the next token, returning the same end-of-file token after the source ends.</summary>
-    /// <exception cref="GraphQLLexicalException">A malformed spread or unexpected character was found.</exception>
+    /// <exception cref="GraphQLLexicalException">An invalid character sequence or literal was found.</exception>
     public Token NextToken()
     {
         SkipIgnoredInput();
@@ -38,6 +40,11 @@ public ref struct GraphQLLexer
         if (current == '-' || IsDigit(current))
         {
             return ReadNumber();
+        }
+
+        if (current == '"')
+        {
+            return ReadQuotedString();
         }
 
         var kind = current switch
@@ -151,6 +158,220 @@ public ref struct GraphQLLexer
         }
 
         return new Token(kind, start, _position, _source.Slice(start, _position - start));
+    }
+
+    private Token ReadQuotedString()
+    {
+        var start = _position++;
+        var contentStart = _position;
+        var chunkStart = contentStart;
+        StringBuilder? decoded = null;
+        var source = _source.Content.Span;
+
+        while (_position < source.Length)
+        {
+            var current = source[_position];
+            if (current == '"')
+            {
+                ReadOnlyMemory<char> value;
+                if (decoded is null)
+                {
+                    value = _source.Slice(contentStart, _position - contentStart);
+                }
+                else
+                {
+                    decoded.Append(source[chunkStart.._position]);
+                    value = decoded.ToString().AsMemory();
+                }
+
+                var end = ++_position;
+                return new Token(
+                    TokenKind.String,
+                    start,
+                    end,
+                    _source.Slice(start, end - start),
+                    value);
+            }
+
+            if (current == '\\')
+            {
+                decoded ??= new StringBuilder();
+                decoded.Append(source[chunkStart.._position]);
+                var escapeStart = _position;
+                AppendEscape(decoded, escapeStart);
+                chunkStart = _position;
+                continue;
+            }
+
+            if (current < 0x20)
+            {
+                throw new GraphQLLexicalException("Quoted strings cannot contain raw control characters or line terminators.", _position, 1);
+            }
+
+            if (char.IsHighSurrogate(current))
+            {
+                if (_position + 1 >= source.Length || !char.IsLowSurrogate(source[_position + 1]))
+                {
+                    throw new GraphQLLexicalException("Quoted strings must contain valid Unicode scalar values.", _position, 1);
+                }
+
+                _position += 2;
+                continue;
+            }
+
+            if (char.IsLowSurrogate(current))
+            {
+                throw new GraphQLLexicalException("Quoted strings must contain valid Unicode scalar values.", _position, 1);
+            }
+
+            _position++;
+        }
+
+        throw new GraphQLLexicalException("Unterminated quoted string.", _position, 0);
+    }
+
+    private void AppendEscape(StringBuilder decoded, int escapeStart)
+    {
+        var source = _source.Content.Span;
+        _position++;
+        if (_position == source.Length)
+        {
+            throw InvalidEscape(escapeStart, 1);
+        }
+
+        var escape = source[_position++];
+        switch (escape)
+        {
+            case '"': decoded.Append('"'); return;
+            case '/': decoded.Append('/'); return;
+            case '\\': decoded.Append('\\'); return;
+            case 'b': decoded.Append('\b'); return;
+            case 'f': decoded.Append('\f'); return;
+            case 'n': decoded.Append('\n'); return;
+            case 'r': decoded.Append('\r'); return;
+            case 't': decoded.Append('\t'); return;
+            case 'u': AppendUnicodeEscape(decoded, escapeStart); return;
+            default: throw InvalidEscape(escapeStart, _position - escapeStart);
+        }
+    }
+
+    private void AppendUnicodeEscape(StringBuilder decoded, int escapeStart)
+    {
+        var source = _source.Content.Span;
+        if (_position < source.Length && source[_position] == '{')
+        {
+            _position++;
+            var scalar = 0;
+            var digits = 0;
+            while (_position < source.Length && TryHexValue(source[_position], out var digit))
+            {
+                if (digits == 6)
+                {
+                    throw InvalidEscape(escapeStart, _position - escapeStart + 1);
+                }
+
+                scalar = (scalar * 16) + digit;
+                digits++;
+                _position++;
+            }
+
+            if (digits == 0 || _position == source.Length || source[_position] != '}')
+            {
+                throw InvalidEscape(escapeStart, Math.Max(1, _position - escapeStart));
+            }
+
+            _position++;
+            if (!Rune.IsValid(scalar))
+            {
+                throw InvalidEscape(escapeStart, _position - escapeStart);
+            }
+
+            AppendScalar(decoded, scalar);
+            return;
+        }
+
+        var first = ReadFixedUnicodeCodeUnit(escapeStart);
+        if (char.IsLowSurrogate(first))
+        {
+            throw InvalidEscape(escapeStart, _position - escapeStart);
+        }
+
+        if (!char.IsHighSurrogate(first))
+        {
+            decoded.Append(first);
+            return;
+        }
+
+        if (_position + 2 > source.Length || source[_position] != '\\' || source[_position + 1] != 'u')
+        {
+            throw InvalidEscape(escapeStart, _position - escapeStart);
+        }
+
+        _position += 2;
+        var second = ReadFixedUnicodeCodeUnit(escapeStart);
+        if (!char.IsLowSurrogate(second))
+        {
+            throw InvalidEscape(escapeStart, _position - escapeStart);
+        }
+
+        AppendScalar(decoded, char.ConvertToUtf32(first, second));
+    }
+
+    private char ReadFixedUnicodeCodeUnit(int escapeStart)
+    {
+        var source = _source.Content.Span;
+        if (_position + 4 > source.Length)
+        {
+            throw InvalidEscape(escapeStart, source.Length - escapeStart);
+        }
+
+        var codeUnit = 0;
+        for (var digitIndex = 0; digitIndex < 4; digitIndex++)
+        {
+            if (!TryHexValue(source[_position], out var digit))
+            {
+                throw InvalidEscape(escapeStart, _position - escapeStart + 1);
+            }
+
+            codeUnit = (codeUnit * 16) + digit;
+            _position++;
+        }
+
+        return (char)codeUnit;
+    }
+
+    private static void AppendScalar(StringBuilder decoded, int scalar)
+    {
+        Span<char> utf16 = stackalloc char[2];
+        var count = new Rune(scalar).EncodeToUtf16(utf16);
+        decoded.Append(utf16[..count]);
+    }
+
+    private GraphQLLexicalException InvalidEscape(int start, int length) =>
+        new("Invalid string escape sequence or Unicode scalar.", start, length);
+
+    private static bool TryHexValue(char character, out int value)
+    {
+        if (character is >= '0' and <= '9')
+        {
+            value = character - '0';
+            return true;
+        }
+
+        if (character is >= 'a' and <= 'f')
+        {
+            value = character - 'a' + 10;
+            return true;
+        }
+
+        if (character is >= 'A' and <= 'F')
+        {
+            value = character - 'A' + 10;
+            return true;
+        }
+
+        value = 0;
+        return false;
     }
 
     private TokenKind ReadSpread()

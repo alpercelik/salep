@@ -15,6 +15,11 @@
     "expect": "valid"
   },
   {
+    "id": "valid-string-escapes",
+    "file": "valid-string-escapes.graphql",
+    "expect": "valid"
+  },
+  {
     "id": "invalid-unclosed-selection",
     "file": "invalid-unclosed-selection.graphql",
     "expect": "invalid"
@@ -37,6 +42,21 @@
   {
     "id": "invalid-number-continuation",
     "file": "invalid-number-continuation.graphql",
+    "expect": "invalid"
+  },
+  {
+    "id": "invalid-lone-surrogate",
+    "file": "invalid-lone-surrogate.graphql",
+    "expect": "invalid"
+  },
+  {
+    "id": "invalid-string-escape",
+    "file": "invalid-string-escape.graphql",
+    "expect": "invalid"
+  },
+  {
+    "id": "invalid-unterminated-string",
+    "file": "invalid-unterminated-string.graphql",
     "expect": "invalid"
   }
 ]

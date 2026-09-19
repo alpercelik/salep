@@ -39,4 +39,6 @@ public enum TokenKind : byte
     Integer,
     /// <summary>A floating-point literal.</summary>
     Float,
+    /// <summary>A quoted string literal.</summary>
+    String,
 }

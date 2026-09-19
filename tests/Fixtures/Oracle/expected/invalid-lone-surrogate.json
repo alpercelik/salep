@@ -1,0 +1,19 @@
+{
+  "fixtureId": "invalid-lone-surrogate",
+  "graphqlJsVersion": "16.14.0",
+  "outcome": "invalid",
+  "errors": [
+    {
+      "message": "Syntax Error: Invalid Unicode escape sequence: \"\\uD800\".",
+      "locations": [
+        {
+          "line": 1,
+          "column": 19
+        }
+      ],
+      "positions": [
+        18
+      ]
+    }
+  ]
+}

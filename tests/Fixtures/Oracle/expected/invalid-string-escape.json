@@ -1,0 +1,19 @@
+{
+  "fixtureId": "invalid-string-escape",
+  "graphqlJsVersion": "16.14.0",
+  "outcome": "invalid",
+  "errors": [
+    {
+      "message": "Syntax Error: Invalid character escape sequence: \"\\x\".",
+      "locations": [
+        {
+          "line": 1,
+          "column": 19
+        }
+      ],
+      "positions": [
+        18
+      ]
+    }
+  ]
+}

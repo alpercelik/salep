@@ -1,0 +1,133 @@
+{
+  "fixtureId": "valid-string-escapes",
+  "graphqlJsVersion": "16.14.0",
+  "outcome": "valid",
+  "ast": {
+    "kind": "Document",
+    "definitions": [
+      {
+        "kind": "OperationDefinition",
+        "operation": "query",
+        "name": {
+          "kind": "Name",
+          "value": "Strings",
+          "loc": [
+            6,
+            13
+          ]
+        },
+        "variableDefinitions": [],
+        "directives": [],
+        "selectionSet": {
+          "kind": "SelectionSet",
+          "selections": [
+            {
+              "kind": "Field",
+              "alias": null,
+              "name": {
+                "kind": "Name",
+                "value": "f",
+                "loc": [
+                  16,
+                  17
+                ]
+              },
+              "arguments": [
+                {
+                  "kind": "Argument",
+                  "name": {
+                    "kind": "Name",
+                    "value": "simple",
+                    "loc": [
+                      18,
+                      24
+                    ]
+                  },
+                  "value": {
+                    "kind": "StringValue",
+                    "value": "plain\n",
+                    "block": false,
+                    "loc": [
+                      26,
+                      35
+                    ]
+                  },
+                  "loc": [
+                    18,
+                    35
+                  ]
+                },
+                {
+                  "kind": "Argument",
+                  "name": {
+                    "kind": "Name",
+                    "value": "pair",
+                    "loc": [
+                      37,
+                      41
+                    ]
+                  },
+                  "value": {
+                    "kind": "StringValue",
+                    "value": "😀",
+                    "block": false,
+                    "loc": [
+                      43,
+                      57
+                    ]
+                  },
+                  "loc": [
+                    37,
+                    57
+                  ]
+                },
+                {
+                  "kind": "Argument",
+                  "name": {
+                    "kind": "Name",
+                    "value": "codepoint",
+                    "loc": [
+                      59,
+                      68
+                    ]
+                  },
+                  "value": {
+                    "kind": "StringValue",
+                    "value": "😀",
+                    "block": false,
+                    "loc": [
+                      70,
+                      81
+                    ]
+                  },
+                  "loc": [
+                    59,
+                    81
+                  ]
+                }
+              ],
+              "directives": [],
+              "selectionSet": null,
+              "loc": [
+                16,
+                82
+              ]
+            }
+          ],
+          "loc": [
+            14,
+            84
+          ]
+        },
+        "loc": [
+          0,
+          84
+        ]
+      }
+    ],
+    "loc": [
+      0,
+      85
+    ]
+  }
+}

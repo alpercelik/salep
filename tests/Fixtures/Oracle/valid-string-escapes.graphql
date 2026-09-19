@@ -1,0 +1,1 @@
+query Strings { f(simple: "plain\n", pair: "\uD83D\uDE00", codepoint: "\u{1F600}") }
