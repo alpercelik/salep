@@ -26,6 +26,8 @@ Schema and named type definitions preserve optional descriptions and ordered dir
 
 `GraphQLParser.Parse(SourceText)` is the strict document entry point. A parsed document spans the complete source, including ignored leading and trailing input; definition and child spans cover their syntax tokens. `GraphQLSyntaxException` reports the zero-based UTF-16 start and length of the unexpected token, with a zero-length position at end of input. Lexical failures remain `GraphQLLexicalException` instances from the lexer.
 
+Call `GraphQLParser.ParseWithDiagnostics(SourceText)` for opt-in recovery. It returns `GraphQLParseResult`, with valid recovered definitions (or a null document), plus immutable source-ordered diagnostics that include category, expected context, actual token, and location. The strict entry point continues to throw on the first failure.
+
 Executable parsing preserves operation and fragment definition order, aliases, argument and directive order, nested selection sets, fragment spreads, and typed or type-less inline fragments. Empty argument and selection sets are rejected according to the grammar.
 
 SDL parsing preserves descriptions and ordered definitions, schema root mappings, type directives, object/interface implementation lists, field arguments, union members, enum values, and input-object fields. GraphQL directive uses and SDL defaults parse constant values, so variable nodes cannot appear in those positions.

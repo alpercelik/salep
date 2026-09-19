@@ -12,28 +12,41 @@ public sealed class GraphQLParser
     private readonly SourceText _source;
     private readonly List<Token> _tokens = [];
     private int _index;
+    private GraphQLLexicalException? _lexicalError;
 
     /// <summary>Creates a parser over caller-owned source memory.</summary>
     public GraphQLParser(SourceText source)
     {
         _source = source;
         var lexer = new GraphQLLexer(source);
-        Token token;
-        do
+        try
         {
-            token = lexer.NextToken();
-            _tokens.Add(token);
-        } while (token.Kind != TokenKind.EndOfFile);
+            Token token;
+            do
+            {
+                token = lexer.NextToken();
+                _tokens.Add(token);
+            } while (token.Kind != TokenKind.EndOfFile);
+        }
+        catch (GraphQLLexicalException exception)
+        {
+            _lexicalError = exception;
+            _tokens.Add(new Token(TokenKind.EndOfFile, exception.Position, exception.Position, source.Slice(exception.Position, 0)));
+        }
     }
 
     /// <summary>Parses one non-empty GraphQL document.</summary>
     public static DocumentNode Parse(SourceText source) => new GraphQLParser(source).ParseDocument();
+
+    /// <summary>Parses a document while collecting diagnostics and recovering at later definitions.</summary>
+    public static GraphQLParseResult ParseWithDiagnostics(SourceText source) => new GraphQLParser(source).ParseDocumentWithDiagnostics();
 
     /// <summary>Parses one non-empty GraphQL document.</summary>
     public DocumentNode ParseDocument()
     {
         if (Current.Kind == TokenKind.EndOfFile)
         {
+            if (_lexicalError is not null) throw _lexicalError;
             throw Error("A document must contain at least one definition.");
         }
 
@@ -45,7 +58,79 @@ public sealed class GraphQLParser
                 : IsName("fragment") ? ParseFragmentDefinition() : ParseOperationDefinition());
         }
 
+        if (_lexicalError is not null) throw _lexicalError;
+
         return new DocumentNode(_source, definitions, new SourceLocation(0, _source.Length));
+    }
+
+    /// <summary>Parses a document, returning valid definitions and source-ordered diagnostics.</summary>
+    public GraphQLParseResult ParseDocumentWithDiagnostics()
+    {
+        var definitions = new List<DefinitionNode>();
+        var diagnostics = new List<GraphQLDiagnostic>();
+        var lexicalDiagnosticAdded = false;
+        while (true)
+        {
+            try
+            {
+                if (Current.Kind == TokenKind.EndOfFile) break;
+                var startIndex = _index;
+                definitions.Add(ShouldParseTypeSystemDefinition()
+                    ? ParseTypeSystemDefinition()
+                    : IsName("fragment") ? ParseFragmentDefinition() : ParseOperationDefinition());
+            }
+            catch (GraphQLSyntaxException exception)
+            {
+                diagnostics.Add(new GraphQLDiagnostic("syntax", exception.Message, exception.Expected, exception.Actual,
+                    new SourceLocation(exception.Position, exception.Position + exception.Length)));
+                RecoverToNextDefinition();
+            }
+            catch (GraphQLLexicalException exception)
+            {
+                diagnostics.Add(CreateLexicalDiagnostic(exception));
+                lexicalDiagnosticAdded = true;
+                break;
+            }
+        }
+
+        if (_lexicalError is not null && !lexicalDiagnosticAdded)
+        {
+            diagnostics.Add(CreateLexicalDiagnostic(_lexicalError));
+        }
+
+        DocumentNode? document = definitions.Count == 0 ? null : new DocumentNode(_source, definitions, new SourceLocation(0, _source.Length));
+        return new GraphQLParseResult(document, diagnostics);
+    }
+
+    private GraphQLDiagnostic CreateLexicalDiagnostic(GraphQLLexicalException exception)
+    {
+        var position = exception.Position;
+        var length = exception.Length;
+        var actual = position + length <= _source.Length ? _source.Slice(position, length).ToString() : string.Empty;
+        return new GraphQLDiagnostic("lexical", exception.Message, "a valid GraphQL token", actual,
+            new SourceLocation(position, position + length));
+    }
+
+    private void RecoverToNextDefinition()
+    {
+        var consumed = false;
+        while (Current.Kind != TokenKind.EndOfFile)
+        {
+            if (consumed && IsDefinitionStart(Current)) return;
+            Advance();
+            consumed = true;
+        }
+    }
+
+    private static bool IsDefinitionStart(Token token)
+    {
+        if (token.Kind is TokenKind.BraceLeft or TokenKind.String or TokenKind.BlockString) return true;
+        if (token.Kind != TokenKind.Name) return false;
+        var value = token.Value.Span;
+        return value.SequenceEqual("query") || value.SequenceEqual("mutation") || value.SequenceEqual("subscription")
+            || value.SequenceEqual("fragment") || value.SequenceEqual("schema") || value.SequenceEqual("scalar")
+            || value.SequenceEqual("type") || value.SequenceEqual("interface") || value.SequenceEqual("union")
+            || value.SequenceEqual("enum") || value.SequenceEqual("input") || value.SequenceEqual("directive") || value.SequenceEqual("extend");
     }
 
     private OperationDefinitionNode ParseOperationDefinition()
@@ -788,6 +873,13 @@ public sealed class GraphQLParser
     private Token Advance() => _tokens[_index++];
     private Token Current => _tokens[_index];
     private SourceLocation Span(Token token) => new(token.Start, token.End);
-    private GraphQLSyntaxException Error(string message) => new(message, Current.Start, Current.End - Current.Start);
-    private static GraphQLSyntaxException Error(string message, SourceLocation location) => new(message, location.Start, location.Length);
+    private Exception Error(string message)
+    {
+        if (_lexicalError is not null && _index == _tokens.Count - 1) return _lexicalError;
+        return new GraphQLSyntaxException(message, Current.Start, Current.End - Current.Start, message, Describe(Current));
+    }
+    private static GraphQLSyntaxException Error(string message, SourceLocation location) => new(message, location.Start, location.Length, message, $"source span [{location.Start}, {location.End})");
+    private static string Describe(Token token) => token.Kind == TokenKind.EndOfFile
+        ? "EndOfFile"
+        : $"{token.Kind} '{token.RawValue}'";
 }
