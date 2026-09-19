@@ -34,7 +34,9 @@ public sealed class GraphQLParser
         var definitions = new List<DefinitionNode>();
         while (Current.Kind != TokenKind.EndOfFile)
         {
-            definitions.Add(IsName("fragment") ? ParseFragmentDefinition() : ParseOperationDefinition());
+            definitions.Add(ShouldParseTypeSystemDefinition()
+                ? ParseTypeSystemDefinition()
+                : IsName("fragment") ? ParseFragmentDefinition() : ParseOperationDefinition());
         }
 
         return new DocumentNode(_source, definitions, new SourceLocation(0, _source.Length));
@@ -69,6 +71,239 @@ public sealed class GraphQLParser
         var selection = ParseSelectionSet();
         return new FragmentDefinitionNode(name, type, directives, selection, new SourceLocation(start, selection.Location.End));
     }
+
+    private bool ShouldParseTypeSystemDefinition()
+    {
+        if (Current.Kind is TokenKind.String or TokenKind.BlockString) return true;
+        return IsName("schema") || IsName("scalar") || IsName("type") || IsName("interface")
+            || IsName("union") || IsName("enum") || IsName("input") || IsName("directive") || IsName("extend");
+    }
+
+    private DefinitionNode ParseTypeSystemDefinition()
+    {
+        var description = ParseDescription();
+        var start = description?.Location.Start ?? Current.Start;
+        if (IsName("schema")) return ParseSchemaDefinition(start, description);
+        if (IsName("scalar")) return ParseScalarTypeDefinition(start, description);
+        if (IsName("type")) return ParseObjectTypeDefinition(start, description);
+        if (IsName("interface")) return ParseInterfaceTypeDefinition(start, description);
+        if (IsName("union")) return ParseUnionTypeDefinition(start, description);
+        if (IsName("enum")) return ParseEnumTypeDefinition(start, description);
+        if (IsName("input")) return ParseInputObjectTypeDefinition(start, description);
+        throw Error("Expected a schema or type-system definition.");
+    }
+
+    private StringValueNode? ParseDescription()
+    {
+        if (Current.Kind is not (TokenKind.String or TokenKind.BlockString)) return null;
+        var token = Advance();
+        return new StringValueNode(token.Value, token.Kind == TokenKind.BlockString, Span(token));
+    }
+
+    private SchemaDefinitionNode ParseSchemaDefinition(int start, StringValueNode? description)
+    {
+        Advance();
+        var directives = ParseDirectives(constantArguments: true);
+        var open = Expect(TokenKind.BraceLeft, "Expected root operation mappings in schema definition.");
+        var operations = new List<OperationTypeDefinitionNode>();
+        while (Current.Kind != TokenKind.BraceRight)
+        {
+            if (Current.Kind == TokenKind.EndOfFile) throw Error("Unterminated schema definition.");
+            var opStart = Current.Start;
+            var operation = ParseOperationType();
+            Expect(TokenKind.Colon, "Expected ':' after root operation kind.");
+            var typeName = ReadRequiredName("Expected a root operation type.");
+            operations.Add(new OperationTypeDefinitionNode(operation, new NamedTypeNode(typeName, typeName.Location), new SourceLocation(opStart, typeName.Location.End)));
+        }
+
+        if (operations.Count == 0) throw Error("A schema definition requires at least one root operation mapping.");
+        var close = Advance();
+        _ = open;
+        return new SchemaDefinitionNode(operations, directives, new SourceLocation(start, close.End), description);
+    }
+
+    private ScalarTypeDefinitionNode ParseScalarTypeDefinition(int start, StringValueNode? description)
+    {
+        Advance();
+        var name = ReadRequiredName("Expected a scalar type name.");
+        var directives = ParseDirectives(constantArguments: true);
+        return new ScalarTypeDefinitionNode(name, directives, new SourceLocation(start, LastConsumedEnd(name.Location.End)), description);
+    }
+
+    private ObjectTypeDefinitionNode ParseObjectTypeDefinition(int start, StringValueNode? description)
+    {
+        Advance();
+        var name = ReadRequiredName("Expected an object type name.");
+        var interfaces = ParseImplementsInterfaces();
+        var directives = ParseDirectives(constantArguments: true);
+        var fields = ParseFieldDefinitions(required: true);
+        return new ObjectTypeDefinitionNode(name, interfaces, directives, fields, new SourceLocation(start, LastConsumedEnd(name.Location.End)), description);
+    }
+
+    private InterfaceTypeDefinitionNode ParseInterfaceTypeDefinition(int start, StringValueNode? description)
+    {
+        Advance();
+        var name = ReadRequiredName("Expected an interface type name.");
+        var interfaces = ParseImplementsInterfaces();
+        var directives = ParseDirectives(constantArguments: true);
+        var fields = ParseFieldDefinitions(required: true);
+        return new InterfaceTypeDefinitionNode(name, interfaces, directives, fields, new SourceLocation(start, LastConsumedEnd(name.Location.End)), description);
+    }
+
+    private List<NamedTypeNode> ParseImplementsInterfaces()
+    {
+        var interfaces = new List<NamedTypeNode>();
+        if (!IsName("implements")) return interfaces;
+        Advance();
+        if (Current.Kind == TokenKind.Ampersand) Advance();
+        interfaces.Add(ParseNamedType());
+        while (Current.Kind == TokenKind.Ampersand)
+        {
+            Advance();
+            interfaces.Add(ParseNamedType());
+        }
+
+        return interfaces;
+    }
+
+    private List<FieldDefinitionNode> ParseFieldDefinitions(bool required)
+    {
+        var fields = new List<FieldDefinitionNode>();
+        if (Current.Kind != TokenKind.BraceLeft)
+        {
+            if (required) throw Error("Expected a non-empty field definition block.");
+            return fields;
+        }
+
+        Advance();
+        while (Current.Kind != TokenKind.BraceRight)
+        {
+            if (Current.Kind == TokenKind.EndOfFile) throw Error("Unterminated field definition block.");
+            var description = ParseDescription();
+            var start = description?.Location.Start ?? Current.Start;
+            var name = ReadRequiredName("Expected a field definition name.");
+            var arguments = ParseInputValueDefinitions();
+            Expect(TokenKind.Colon, "Expected ':' after field definition name.");
+            var type = ParseTypeReference();
+            var directives = ParseDirectives(constantArguments: true);
+            fields.Add(new FieldDefinitionNode(name, arguments, type, directives, new SourceLocation(start, LastConsumedEnd(type.Location.End)), description));
+        }
+
+        if (required && fields.Count == 0) throw Error("A field definition block cannot be empty.");
+        Advance();
+        return fields;
+    }
+
+    private List<InputValueDefinitionNode> ParseInputValueDefinitions()
+    {
+        var values = new List<InputValueDefinitionNode>();
+        if (Current.Kind != TokenKind.ParenthesisLeft) return values;
+        Advance();
+        while (Current.Kind != TokenKind.ParenthesisRight)
+        {
+            if (Current.Kind == TokenKind.EndOfFile) throw Error("Unterminated input-value definitions.");
+            values.Add(ParseInputValueDefinition());
+        }
+
+        if (values.Count == 0) throw Error("Input-value definitions cannot be empty.");
+        Advance();
+        return values;
+    }
+
+    private InputValueDefinitionNode ParseInputValueDefinition()
+    {
+        var description = ParseDescription();
+        var start = description?.Location.Start ?? Current.Start;
+        var name = ReadRequiredName("Expected an input-value definition name.");
+        Expect(TokenKind.Colon, "Expected ':' after input-value definition name.");
+        var type = ParseTypeReference();
+        ValueNode? defaultValue = null;
+        if (Current.Kind == TokenKind.Equals)
+        {
+            Advance();
+            defaultValue = ParseConstantValue();
+        }
+
+        var directives = ParseDirectives(constantArguments: true);
+        var end = directives.Count > 0 ? directives[^1].Location.End : (defaultValue ?? (AstNode)type).Location.End;
+        return new InputValueDefinitionNode(name, type, defaultValue, directives, new SourceLocation(start, end), description);
+    }
+
+    private UnionTypeDefinitionNode ParseUnionTypeDefinition(int start, StringValueNode? description)
+    {
+        Advance();
+        var name = ReadRequiredName("Expected a union type name.");
+        var directives = ParseDirectives(constantArguments: true);
+        var types = new List<NamedTypeNode>();
+        if (Current.Kind == TokenKind.Equals)
+        {
+            Advance();
+            if (Current.Kind == TokenKind.Pipe) Advance();
+            types.Add(ParseNamedType());
+            while (Current.Kind == TokenKind.Pipe)
+            {
+                Advance();
+                types.Add(ParseNamedType());
+            }
+        }
+
+        return new UnionTypeDefinitionNode(name, directives, types, new SourceLocation(start, LastConsumedEnd(name.Location.End)), description);
+    }
+
+    private EnumTypeDefinitionNode ParseEnumTypeDefinition(int start, StringValueNode? description)
+    {
+        Advance();
+        var name = ReadRequiredName("Expected an enum type name.");
+        var directives = ParseDirectives(constantArguments: true);
+        var values = new List<EnumValueDefinitionNode>();
+        if (Current.Kind == TokenKind.BraceLeft)
+        {
+            Advance();
+            while (Current.Kind != TokenKind.BraceRight)
+            {
+                if (Current.Kind == TokenKind.EndOfFile) throw Error("Unterminated enum value block.");
+                var valueDescription = ParseDescription();
+                var valueStart = valueDescription?.Location.Start ?? Current.Start;
+                if (Current.Kind != TokenKind.Name || IsName("true") || IsName("false") || IsName("null")) throw Error("Expected an enum value name other than true, false, or null.");
+                var valueName = ReadName();
+                var valueDirectives = ParseDirectives(constantArguments: true);
+                values.Add(new EnumValueDefinitionNode(valueName, valueDirectives, new SourceLocation(valueStart, LastConsumedEnd(valueName.Location.End)), valueDescription));
+            }
+
+            Advance();
+        }
+
+        return new EnumTypeDefinitionNode(name, directives, values, new SourceLocation(start, LastConsumedEnd(name.Location.End)), description);
+    }
+
+    private InputObjectTypeDefinitionNode ParseInputObjectTypeDefinition(int start, StringValueNode? description)
+    {
+        Advance();
+        var name = ReadRequiredName("Expected an input-object type name.");
+        var directives = ParseDirectives(constantArguments: true);
+        var fields = new List<InputValueDefinitionNode>();
+        if (Current.Kind == TokenKind.BraceLeft)
+        {
+            Advance();
+            while (Current.Kind != TokenKind.BraceRight)
+            {
+                if (Current.Kind == TokenKind.EndOfFile) throw Error("Unterminated input-object field block.");
+                fields.Add(ParseInputValueDefinition());
+            }
+
+            Advance();
+        }
+
+        return new InputObjectTypeDefinitionNode(name, directives, fields, new SourceLocation(start, LastConsumedEnd(name.Location.End)), description);
+    }
+
+    private NamedTypeNode ParseNamedType()
+    {
+        var name = ReadRequiredName("Expected a named type.");
+        return new NamedTypeNode(name, name.Location);
+    }
+
+    private int LastConsumedEnd(int fallback) => _index == 0 ? fallback : Math.Max(fallback, _tokens[_index - 1].End);
 
     private OperationType ParseOperationType()
     {

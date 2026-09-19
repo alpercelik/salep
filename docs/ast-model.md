@@ -28,4 +28,6 @@ Schema and named type definitions preserve optional descriptions and ordered dir
 
 Executable parsing preserves operation and fragment definition order, aliases, argument and directive order, nested selection sets, fragment spreads, and typed or type-less inline fragments. Empty argument and selection sets are rejected according to the grammar.
 
+SDL parsing preserves descriptions and ordered definitions, schema root mappings, type directives, object/interface implementation lists, field arguments, union members, enum values, and input-object fields. GraphQL directive uses and SDL defaults parse constant values, so variable nodes cannot appear in those positions.
+
 Value nodes cover variable references, integer and float source spellings, evaluated strings with a block-string flag, booleans, null, enum text, ordered list values, and ordered object fields. List and object values may be empty. Type references are named types wrapped by list or non-null nodes; a non-null node cannot directly wrap another non-null node. Optional syntax is represented by nullable node properties, while child lists are always present and empty when the syntax has no children, matching the canonical comparison contract.
