@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Xunit;
 
 namespace GraphQLParser.Tests;
@@ -26,5 +27,78 @@ public sealed class OracleCorpusTests
             Assert.Equal("16.14.0", expected.GetProperty("graphqlJsVersion").GetString());
             Assert.Equal(expectedOutcome, expected.GetProperty("outcome").GetString());
         }
+    }
+
+    [Fact]
+    public void EveryValidFixtureHasTheSameCanonicalAstAsGraphqlJs()
+    {
+        var oracleDirectory = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Oracle");
+        using var manifestDocument = JsonDocument.Parse(File.ReadAllText(Path.Combine(oracleDirectory, "manifest.json")));
+
+        foreach (var fixture in manifestDocument.RootElement.EnumerateArray().Where(item => item.GetProperty("expect").GetString() == "valid"))
+        {
+            var id = fixture.GetProperty("id").GetString()!;
+            var file = fixture.GetProperty("file").GetString()!;
+            var source = File.ReadAllText(Path.Combine(oracleDirectory, file));
+            using var expectedDocument = JsonDocument.Parse(File.ReadAllText(Path.Combine(oracleDirectory, "expected", $"{id}.json")));
+            var expected = JsonNode.Parse(expectedDocument.RootElement.GetProperty("ast").GetRawText())!;
+            DocumentNode parsed;
+            try
+            {
+                parsed = GraphQLParser.Parse(new SourceText(source.AsMemory()));
+            }
+            catch (Exception exception)
+            {
+                throw new Xunit.Sdk.XunitException($"{id}: parser rejected a graphql-js-valid fixture; grammar gap or parser failure: {exception.GetType().Name}: {exception.Message}");
+            }
+
+            JsonObject actual;
+            try
+            {
+                actual = CanonicalAstJson.Project(parsed);
+            }
+            catch (Exception exception)
+            {
+                throw new Xunit.Sdk.XunitException($"{id}: canonical serializer failed for a parsed document: {exception.GetType().Name}: {exception.Message}");
+            }
+
+            var mismatch = FirstMismatch(expected, actual, "$" );
+            Assert.True(mismatch is null, $"{id}: canonical AST structural/value/location mismatch {mismatch}");
+        }
+    }
+
+    private static string? FirstMismatch(JsonNode? expected, JsonNode? actual, string path)
+    {
+        if (JsonNode.DeepEquals(expected, actual)) return null;
+        if (expected is JsonObject expectedObject && actual is JsonObject actualObject)
+        {
+            foreach (var pair in expectedObject)
+            {
+                var childPath = $"{path}.{pair.Key}";
+                if (!actualObject.TryGetPropertyValue(pair.Key, out var actualValue)) return $"{childPath} is missing (expected {pair.Value})";
+                var mismatch = FirstMismatch(pair.Value, actualValue, childPath);
+                if (mismatch is not null) return mismatch;
+            }
+
+            foreach (var pair in actualObject)
+            {
+                if (!expectedObject.ContainsKey(pair.Key)) return $"{path}.{pair.Key} is unexpected (actual {pair.Value})";
+            }
+        }
+        else if (expected is JsonArray expectedArray && actual is JsonArray actualArray)
+        {
+            if (expectedArray.Count != actualArray.Count) return $"{path} has length {actualArray.Count}, expected {expectedArray.Count}";
+            for (var index = 0; index < expectedArray.Count; index++)
+            {
+                var mismatch = FirstMismatch(expectedArray[index], actualArray[index], $"{path}[{index}]");
+                if (mismatch is not null) return mismatch;
+            }
+        }
+        else
+        {
+            return $"{path} expected {expected}, actual {actual}";
+        }
+
+        return $"{path} differs";
     }
 }

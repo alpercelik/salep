@@ -18,6 +18,8 @@ The `graphql-js` adapter must omit information that has no stable C# counterpart
 
 Fixtures store the exact UTF-8 source text, including any final line feed, and canonical expected JSON. Oracle-generated fixtures record the pinned `graphql-js` package version and generation command alongside the corpus. Hand-authored examples below are normative examples of the projection shape; the fenced source blocks each end with a line feed, which is included in the document span.
 
+`OracleCorpusTests.EveryValidFixtureHasTheSameCanonicalAstAsGraphqlJs` parses every fixture marked valid and compares its C# projection with the pinned snapshot. Failure output separates parser rejection of an oracle-valid fixture (a grammar/parser failure), serializer exceptions, and the first structural, decoded-value, or source-location mismatch path. The comprehensive executable and SDL fixtures keep the supported production branches in the differential corpus.
+
 ## Executable example
 
 Source (`query Q { hello }`):

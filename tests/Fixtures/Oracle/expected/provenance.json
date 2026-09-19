@@ -13,7 +13,9 @@
     "invalid-unterminated-string": "f9ac632f58f8e8e2c8811e6947be1216e24b26355192a4b87d6af8bc3a16394a",
     "valid-block-string": "f48b157065099cbfdcf1d54f49f7674c87eb235db08ec563d300ba87dc105029",
     "valid-executable-basic": "ffca221c2d8282786c21c2b1659282fb1e3d5fe8ab7255c905a2c3764ed6a2fb",
+    "valid-executable-comprehensive": "d1fc1a0a23c6791e920fd467f2ac575c88fa2a7480be9440ee626762db6dfbe8",
     "valid-numeric-literals": "3c9ac1c17a82a513f95206e58477305690573492573b202a5a3ceedcdf4529f2",
+    "valid-sdl-comprehensive": "94adcbe6a927511e53d02cb75f57a9845b91a1aadfe6cb109d76f466e5dd87da",
     "valid-sdl-object": "e1831c559f3f083e25c4ca73af1bcf6c51df56f12c16fc6814729a18d2a6d788",
     "valid-string-escapes": "13b13b5a7f28a47300d13ab46b10cf7a7aea01d9ac158f8d39fa331c8bc79b53"
   },

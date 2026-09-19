@@ -10,6 +10,16 @@
     "expect": "valid"
   },
   {
+    "id": "valid-executable-comprehensive",
+    "file": "valid-executable-comprehensive.graphql",
+    "expect": "valid"
+  },
+  {
+    "id": "valid-sdl-comprehensive",
+    "file": "valid-sdl-comprehensive.graphql",
+    "expect": "valid"
+  },
+  {
     "id": "valid-numeric-literals",
     "file": "valid-numeric-literals.graphql",
     "expect": "valid"

@@ -1,0 +1,586 @@
+{
+  "fixtureId": "valid-executable-comprehensive",
+  "graphqlJsVersion": "16.14.0",
+  "outcome": "valid",
+  "ast": {
+    "kind": "Document",
+    "definitions": [
+      {
+        "kind": "OperationDefinition",
+        "operation": "query",
+        "name": {
+          "kind": "Name",
+          "value": "Q",
+          "loc": [
+            6,
+            7
+          ]
+        },
+        "variableDefinitions": [
+          {
+            "kind": "VariableDefinition",
+            "variable": {
+              "kind": "Variable",
+              "name": {
+                "kind": "Name",
+                "value": "id",
+                "loc": [
+                  9,
+                  11
+                ]
+              },
+              "loc": [
+                8,
+                11
+              ]
+            },
+            "type": {
+              "kind": "NonNullType",
+              "type": {
+                "kind": "NamedType",
+                "name": {
+                  "kind": "Name",
+                  "value": "ID",
+                  "loc": [
+                    13,
+                    15
+                  ]
+                },
+                "loc": [
+                  13,
+                  15
+                ]
+              },
+              "loc": [
+                13,
+                16
+              ]
+            },
+            "defaultValue": null,
+            "directives": [],
+            "loc": [
+              8,
+              16
+            ]
+          },
+          {
+            "kind": "VariableDefinition",
+            "variable": {
+              "kind": "Variable",
+              "name": {
+                "kind": "Name",
+                "value": "filter",
+                "loc": [
+                  19,
+                  25
+                ]
+              },
+              "loc": [
+                18,
+                25
+              ]
+            },
+            "type": {
+              "kind": "NamedType",
+              "name": {
+                "kind": "Name",
+                "value": "Filter",
+                "loc": [
+                  27,
+                  33
+                ]
+              },
+              "loc": [
+                27,
+                33
+              ]
+            },
+            "defaultValue": {
+              "kind": "ObjectValue",
+              "fields": [
+                {
+                  "kind": "ObjectField",
+                  "name": {
+                    "kind": "Name",
+                    "value": "x",
+                    "loc": [
+                      38,
+                      39
+                    ]
+                  },
+                  "value": {
+                    "kind": "ListValue",
+                    "values": [],
+                    "loc": [
+                      41,
+                      43
+                    ]
+                  },
+                  "loc": [
+                    38,
+                    43
+                  ]
+                }
+              ],
+              "loc": [
+                36,
+                45
+              ]
+            },
+            "directives": [
+              {
+                "kind": "Directive",
+                "name": {
+                  "kind": "Name",
+                  "value": "bound",
+                  "loc": [
+                    47,
+                    52
+                  ]
+                },
+                "arguments": [
+                  {
+                    "kind": "Argument",
+                    "name": {
+                      "kind": "Name",
+                      "value": "values",
+                      "loc": [
+                        53,
+                        59
+                      ]
+                    },
+                    "value": {
+                      "kind": "ListValue",
+                      "values": [
+                        {
+                          "kind": "BooleanValue",
+                          "value": true,
+                          "loc": [
+                            62,
+                            66
+                          ]
+                        }
+                      ],
+                      "loc": [
+                        61,
+                        67
+                      ]
+                    },
+                    "loc": [
+                      53,
+                      67
+                    ]
+                  }
+                ],
+                "loc": [
+                  46,
+                  68
+                ]
+              }
+            ],
+            "loc": [
+              18,
+              68
+            ]
+          }
+        ],
+        "directives": [
+          {
+            "kind": "Directive",
+            "name": {
+              "kind": "Name",
+              "value": "cache",
+              "loc": [
+                71,
+                76
+              ]
+            },
+            "arguments": [],
+            "loc": [
+              70,
+              76
+            ]
+          }
+        ],
+        "selectionSet": {
+          "kind": "SelectionSet",
+          "selections": [
+            {
+              "kind": "Field",
+              "alias": {
+                "kind": "Name",
+                "value": "alias",
+                "loc": [
+                  81,
+                  86
+                ]
+              },
+              "name": {
+                "kind": "Name",
+                "value": "user",
+                "loc": [
+                  88,
+                  92
+                ]
+              },
+              "arguments": [
+                {
+                  "kind": "Argument",
+                  "name": {
+                    "kind": "Name",
+                    "value": "id",
+                    "loc": [
+                      93,
+                      95
+                    ]
+                  },
+                  "value": {
+                    "kind": "Variable",
+                    "name": {
+                      "kind": "Name",
+                      "value": "id",
+                      "loc": [
+                        98,
+                        100
+                      ]
+                    },
+                    "loc": [
+                      97,
+                      100
+                    ]
+                  },
+                  "loc": [
+                    93,
+                    100
+                  ]
+                },
+                {
+                  "kind": "Argument",
+                  "name": {
+                    "kind": "Name",
+                    "value": "filter",
+                    "loc": [
+                      102,
+                      108
+                    ]
+                  },
+                  "value": {
+                    "kind": "Variable",
+                    "name": {
+                      "kind": "Name",
+                      "value": "filter",
+                      "loc": [
+                        111,
+                        117
+                      ]
+                    },
+                    "loc": [
+                      110,
+                      117
+                    ]
+                  },
+                  "loc": [
+                    102,
+                    117
+                  ]
+                }
+              ],
+              "directives": [
+                {
+                  "kind": "Directive",
+                  "name": {
+                    "kind": "Name",
+                    "value": "include",
+                    "loc": [
+                      120,
+                      127
+                    ]
+                  },
+                  "arguments": [
+                    {
+                      "kind": "Argument",
+                      "name": {
+                        "kind": "Name",
+                        "value": "if",
+                        "loc": [
+                          128,
+                          130
+                        ]
+                      },
+                      "value": {
+                        "kind": "BooleanValue",
+                        "value": true,
+                        "loc": [
+                          132,
+                          136
+                        ]
+                      },
+                      "loc": [
+                        128,
+                        136
+                      ]
+                    }
+                  ],
+                  "loc": [
+                    119,
+                    137
+                  ]
+                }
+              ],
+              "selectionSet": {
+                "kind": "SelectionSet",
+                "selections": [
+                  {
+                    "kind": "FragmentSpread",
+                    "name": {
+                      "kind": "Name",
+                      "value": "UserFields",
+                      "loc": [
+                        147,
+                        157
+                      ]
+                    },
+                    "directives": [],
+                    "loc": [
+                      144,
+                      157
+                    ]
+                  },
+                  {
+                    "kind": "InlineFragment",
+                    "typeCondition": {
+                      "kind": "NamedType",
+                      "name": {
+                        "kind": "Name",
+                        "value": "Admin",
+                        "loc": [
+                          169,
+                          174
+                        ]
+                      },
+                      "loc": [
+                        169,
+                        174
+                      ]
+                    },
+                    "directives": [],
+                    "selectionSet": {
+                      "kind": "SelectionSet",
+                      "selections": [
+                        {
+                          "kind": "Field",
+                          "alias": null,
+                          "name": {
+                            "kind": "Name",
+                            "value": "role",
+                            "loc": [
+                              177,
+                              181
+                            ]
+                          },
+                          "arguments": [],
+                          "directives": [],
+                          "selectionSet": null,
+                          "loc": [
+                            177,
+                            181
+                          ]
+                        }
+                      ],
+                      "loc": [
+                        175,
+                        183
+                      ]
+                    },
+                    "loc": [
+                      162,
+                      183
+                    ]
+                  },
+                  {
+                    "kind": "InlineFragment",
+                    "typeCondition": null,
+                    "directives": [
+                      {
+                        "kind": "Directive",
+                        "name": {
+                          "kind": "Name",
+                          "value": "skip",
+                          "loc": [
+                            193,
+                            197
+                          ]
+                        },
+                        "arguments": [
+                          {
+                            "kind": "Argument",
+                            "name": {
+                              "kind": "Name",
+                              "value": "if",
+                              "loc": [
+                                198,
+                                200
+                              ]
+                            },
+                            "value": {
+                              "kind": "BooleanValue",
+                              "value": false,
+                              "loc": [
+                                202,
+                                207
+                              ]
+                            },
+                            "loc": [
+                              198,
+                              207
+                            ]
+                          }
+                        ],
+                        "loc": [
+                          192,
+                          208
+                        ]
+                      }
+                    ],
+                    "selectionSet": {
+                      "kind": "SelectionSet",
+                      "selections": [
+                        {
+                          "kind": "Field",
+                          "alias": null,
+                          "name": {
+                            "kind": "Name",
+                            "value": "active",
+                            "loc": [
+                              211,
+                              217
+                            ]
+                          },
+                          "arguments": [],
+                          "directives": [],
+                          "selectionSet": null,
+                          "loc": [
+                            211,
+                            217
+                          ]
+                        }
+                      ],
+                      "loc": [
+                        209,
+                        219
+                      ]
+                    },
+                    "loc": [
+                      188,
+                      219
+                    ]
+                  }
+                ],
+                "loc": [
+                  138,
+                  223
+                ]
+              },
+              "loc": [
+                81,
+                223
+              ]
+            }
+          ],
+          "loc": [
+            77,
+            225
+          ]
+        },
+        "loc": [
+          0,
+          225
+        ]
+      },
+      {
+        "kind": "FragmentDefinition",
+        "description": null,
+        "name": {
+          "kind": "Name",
+          "value": "UserFields",
+          "loc": [
+            235,
+            245
+          ]
+        },
+        "typeCondition": {
+          "kind": "NamedType",
+          "name": {
+            "kind": "Name",
+            "value": "User",
+            "loc": [
+              249,
+              253
+            ]
+          },
+          "loc": [
+            249,
+            253
+          ]
+        },
+        "directives": [],
+        "selectionSet": {
+          "kind": "SelectionSet",
+          "selections": [
+            {
+              "kind": "Field",
+              "alias": null,
+              "name": {
+                "kind": "Name",
+                "value": "id",
+                "loc": [
+                  256,
+                  258
+                ]
+              },
+              "arguments": [],
+              "directives": [],
+              "selectionSet": null,
+              "loc": [
+                256,
+                258
+              ]
+            },
+            {
+              "kind": "Field",
+              "alias": null,
+              "name": {
+                "kind": "Name",
+                "value": "name",
+                "loc": [
+                  259,
+                  263
+                ]
+              },
+              "arguments": [],
+              "directives": [],
+              "selectionSet": null,
+              "loc": [
+                259,
+                263
+              ]
+            }
+          ],
+          "loc": [
+            254,
+            265
+          ]
+        },
+        "variableDefinitions": [],
+        "loc": [
+          226,
+          265
+        ]
+      }
+    ],
+    "loc": [
+      0,
+      266
+    ]
+  }
+}

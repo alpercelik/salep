@@ -1,0 +1,1027 @@
+{
+  "fixtureId": "valid-sdl-comprehensive",
+  "graphqlJsVersion": "16.14.0",
+  "outcome": "valid",
+  "ast": {
+    "kind": "Document",
+    "definitions": [
+      {
+        "kind": "SchemaDefinition",
+        "description": {
+          "kind": "StringValue",
+          "value": "schema docs",
+          "block": true,
+          "loc": [
+            0,
+            17
+          ]
+        },
+        "directives": [
+          {
+            "kind": "Directive",
+            "name": {
+              "kind": "Name",
+              "value": "tag",
+              "loc": [
+                26,
+                29
+              ]
+            },
+            "arguments": [],
+            "loc": [
+              25,
+              29
+            ]
+          }
+        ],
+        "operationTypes": [
+          {
+            "kind": "OperationTypeDefinition",
+            "operation": "query",
+            "type": {
+              "kind": "NamedType",
+              "name": {
+                "kind": "Name",
+                "value": "Query",
+                "loc": [
+                  39,
+                  44
+                ]
+              },
+              "loc": [
+                39,
+                44
+              ]
+            },
+            "loc": [
+              32,
+              44
+            ]
+          }
+        ],
+        "loc": [
+          0,
+          46
+        ]
+      },
+      {
+        "kind": "ScalarTypeDefinition",
+        "description": {
+          "kind": "StringValue",
+          "value": "scalar docs",
+          "block": false,
+          "loc": [
+            47,
+            60
+          ]
+        },
+        "name": {
+          "kind": "Name",
+          "value": "Date",
+          "loc": [
+            68,
+            72
+          ]
+        },
+        "directives": [
+          {
+            "kind": "Directive",
+            "name": {
+              "kind": "Name",
+              "value": "specifiedBy",
+              "loc": [
+                74,
+                85
+              ]
+            },
+            "arguments": [
+              {
+                "kind": "Argument",
+                "name": {
+                  "kind": "Name",
+                  "value": "url",
+                  "loc": [
+                    86,
+                    89
+                  ]
+                },
+                "value": {
+                  "kind": "StringValue",
+                  "value": "x",
+                  "block": false,
+                  "loc": [
+                    91,
+                    94
+                  ]
+                },
+                "loc": [
+                  86,
+                  94
+                ]
+              }
+            ],
+            "loc": [
+              73,
+              95
+            ]
+          }
+        ],
+        "loc": [
+          47,
+          95
+        ]
+      },
+      {
+        "kind": "ObjectTypeDefinition",
+        "description": null,
+        "name": {
+          "kind": "Name",
+          "value": "Query",
+          "loc": [
+            101,
+            106
+          ]
+        },
+        "interfaces": [
+          {
+            "kind": "NamedType",
+            "name": {
+              "kind": "Name",
+              "value": "Node",
+              "loc": [
+                120,
+                124
+              ]
+            },
+            "loc": [
+              120,
+              124
+            ]
+          }
+        ],
+        "directives": [
+          {
+            "kind": "Directive",
+            "name": {
+              "kind": "Name",
+              "value": "tag",
+              "loc": [
+                126,
+                129
+              ]
+            },
+            "arguments": [],
+            "loc": [
+              125,
+              129
+            ]
+          }
+        ],
+        "fields": [
+          {
+            "kind": "FieldDefinition",
+            "description": {
+              "kind": "StringValue",
+              "value": "field docs",
+              "block": true,
+              "loc": [
+                132,
+                148
+              ]
+            },
+            "name": {
+              "kind": "Name",
+              "value": "field",
+              "loc": [
+                149,
+                154
+              ]
+            },
+            "arguments": [
+              {
+                "kind": "InputValueDefinition",
+                "description": null,
+                "name": {
+                  "kind": "Name",
+                  "value": "arg",
+                  "loc": [
+                    155,
+                    158
+                  ]
+                },
+                "type": {
+                  "kind": "NamedType",
+                  "name": {
+                    "kind": "Name",
+                    "value": "Int",
+                    "loc": [
+                      160,
+                      163
+                    ]
+                  },
+                  "loc": [
+                    160,
+                    163
+                  ]
+                },
+                "defaultValue": {
+                  "kind": "IntValue",
+                  "value": "1",
+                  "loc": [
+                    166,
+                    167
+                  ]
+                },
+                "directives": [
+                  {
+                    "kind": "Directive",
+                    "name": {
+                      "kind": "Name",
+                      "value": "bound",
+                      "loc": [
+                        169,
+                        174
+                      ]
+                    },
+                    "arguments": [],
+                    "loc": [
+                      168,
+                      174
+                    ]
+                  }
+                ],
+                "loc": [
+                  155,
+                  174
+                ]
+              }
+            ],
+            "type": {
+              "kind": "NonNullType",
+              "type": {
+                "kind": "ListType",
+                "type": {
+                  "kind": "NonNullType",
+                  "type": {
+                    "kind": "NamedType",
+                    "name": {
+                      "kind": "Name",
+                      "value": "String",
+                      "loc": [
+                        178,
+                        184
+                      ]
+                    },
+                    "loc": [
+                      178,
+                      184
+                    ]
+                  },
+                  "loc": [
+                    178,
+                    185
+                  ]
+                },
+                "loc": [
+                  177,
+                  186
+                ]
+              },
+              "loc": [
+                177,
+                187
+              ]
+            },
+            "directives": [
+              {
+                "kind": "Directive",
+                "name": {
+                  "kind": "Name",
+                  "value": "deprecated",
+                  "loc": [
+                    189,
+                    199
+                  ]
+                },
+                "arguments": [
+                  {
+                    "kind": "Argument",
+                    "name": {
+                      "kind": "Name",
+                      "value": "reason",
+                      "loc": [
+                        200,
+                        206
+                      ]
+                    },
+                    "value": {
+                      "kind": "StringValue",
+                      "value": "old",
+                      "block": false,
+                      "loc": [
+                        208,
+                        213
+                      ]
+                    },
+                    "loc": [
+                      200,
+                      213
+                    ]
+                  }
+                ],
+                "loc": [
+                  188,
+                  214
+                ]
+              }
+            ],
+            "loc": [
+              132,
+              214
+            ]
+          }
+        ],
+        "loc": [
+          96,
+          216
+        ]
+      },
+      {
+        "kind": "InterfaceTypeDefinition",
+        "description": {
+          "kind": "StringValue",
+          "value": "interface docs",
+          "block": false,
+          "loc": [
+            217,
+            233
+          ]
+        },
+        "name": {
+          "kind": "Name",
+          "value": "Node",
+          "loc": [
+            244,
+            248
+          ]
+        },
+        "interfaces": [],
+        "directives": [],
+        "fields": [
+          {
+            "kind": "FieldDefinition",
+            "description": null,
+            "name": {
+              "kind": "Name",
+              "value": "id",
+              "loc": [
+                251,
+                253
+              ]
+            },
+            "arguments": [],
+            "type": {
+              "kind": "NonNullType",
+              "type": {
+                "kind": "NamedType",
+                "name": {
+                  "kind": "Name",
+                  "value": "ID",
+                  "loc": [
+                    255,
+                    257
+                  ]
+                },
+                "loc": [
+                  255,
+                  257
+                ]
+              },
+              "loc": [
+                255,
+                258
+              ]
+            },
+            "directives": [],
+            "loc": [
+              251,
+              258
+            ]
+          }
+        ],
+        "loc": [
+          217,
+          260
+        ]
+      },
+      {
+        "kind": "UnionTypeDefinition",
+        "description": null,
+        "name": {
+          "kind": "Name",
+          "value": "Search",
+          "loc": [
+            267,
+            273
+          ]
+        },
+        "directives": [],
+        "types": [
+          {
+            "kind": "NamedType",
+            "name": {
+              "kind": "Name",
+              "value": "Query",
+              "loc": [
+                278,
+                283
+              ]
+            },
+            "loc": [
+              278,
+              283
+            ]
+          },
+          {
+            "kind": "NamedType",
+            "name": {
+              "kind": "Name",
+              "value": "Product",
+              "loc": [
+                286,
+                293
+              ]
+            },
+            "loc": [
+              286,
+              293
+            ]
+          }
+        ],
+        "loc": [
+          261,
+          293
+        ]
+      },
+      {
+        "kind": "EnumTypeDefinition",
+        "description": null,
+        "name": {
+          "kind": "Name",
+          "value": "Color",
+          "loc": [
+            299,
+            304
+          ]
+        },
+        "directives": [],
+        "values": [
+          {
+            "kind": "EnumValueDefinition",
+            "description": {
+              "kind": "StringValue",
+              "value": "red docs",
+              "block": false,
+              "loc": [
+                307,
+                317
+              ]
+            },
+            "name": {
+              "kind": "Name",
+              "value": "RED",
+              "loc": [
+                318,
+                321
+              ]
+            },
+            "directives": [],
+            "loc": [
+              307,
+              321
+            ]
+          },
+          {
+            "kind": "EnumValueDefinition",
+            "description": null,
+            "name": {
+              "kind": "Name",
+              "value": "BLUE",
+              "loc": [
+                322,
+                326
+              ]
+            },
+            "directives": [],
+            "loc": [
+              322,
+              326
+            ]
+          }
+        ],
+        "loc": [
+          294,
+          328
+        ]
+      },
+      {
+        "kind": "InputObjectTypeDefinition",
+        "description": null,
+        "name": {
+          "kind": "Name",
+          "value": "Filter",
+          "loc": [
+            335,
+            341
+          ]
+        },
+        "directives": [
+          {
+            "kind": "Directive",
+            "name": {
+              "kind": "Name",
+              "value": "oneOf",
+              "loc": [
+                343,
+                348
+              ]
+            },
+            "arguments": [],
+            "loc": [
+              342,
+              348
+            ]
+          }
+        ],
+        "fields": [
+          {
+            "kind": "InputValueDefinition",
+            "description": {
+              "kind": "StringValue",
+              "value": "text docs",
+              "block": false,
+              "loc": [
+                351,
+                362
+              ]
+            },
+            "name": {
+              "kind": "Name",
+              "value": "text",
+              "loc": [
+                363,
+                367
+              ]
+            },
+            "type": {
+              "kind": "NamedType",
+              "name": {
+                "kind": "Name",
+                "value": "String",
+                "loc": [
+                  369,
+                  375
+                ]
+              },
+              "loc": [
+                369,
+                375
+              ]
+            },
+            "defaultValue": null,
+            "directives": [],
+            "loc": [
+              351,
+              375
+            ]
+          }
+        ],
+        "loc": [
+          329,
+          377
+        ]
+      },
+      {
+        "kind": "DirectiveDefinition",
+        "description": null,
+        "name": {
+          "kind": "Name",
+          "value": "audit",
+          "loc": [
+            389,
+            394
+          ]
+        },
+        "arguments": [
+          {
+            "kind": "InputValueDefinition",
+            "description": null,
+            "name": {
+              "kind": "Name",
+              "value": "reason",
+              "loc": [
+                395,
+                401
+              ]
+            },
+            "type": {
+              "kind": "NamedType",
+              "name": {
+                "kind": "Name",
+                "value": "String",
+                "loc": [
+                  403,
+                  409
+                ]
+              },
+              "loc": [
+                403,
+                409
+              ]
+            },
+            "defaultValue": {
+              "kind": "StringValue",
+              "value": "recorded",
+              "block": false,
+              "loc": [
+                412,
+                422
+              ]
+            },
+            "directives": [],
+            "loc": [
+              395,
+              422
+            ]
+          }
+        ],
+        "directives": [],
+        "repeatable": true,
+        "locations": [
+          {
+            "kind": "Name",
+            "value": "FIELD",
+            "loc": [
+              440,
+              445
+            ]
+          },
+          {
+            "kind": "Name",
+            "value": "OBJECT",
+            "loc": [
+              448,
+              454
+            ]
+          }
+        ],
+        "loc": [
+          378,
+          454
+        ]
+      },
+      {
+        "kind": "SchemaExtension",
+        "directives": [
+          {
+            "kind": "Directive",
+            "name": {
+              "kind": "Name",
+              "value": "tag",
+              "loc": [
+                470,
+                473
+              ]
+            },
+            "arguments": [],
+            "loc": [
+              469,
+              473
+            ]
+          }
+        ],
+        "operationTypes": [
+          {
+            "kind": "OperationTypeDefinition",
+            "operation": "mutation",
+            "type": {
+              "kind": "NamedType",
+              "name": {
+                "kind": "Name",
+                "value": "Mutation",
+                "loc": [
+                  486,
+                  494
+                ]
+              },
+              "loc": [
+                486,
+                494
+              ]
+            },
+            "loc": [
+              476,
+              494
+            ]
+          }
+        ],
+        "loc": [
+          455,
+          496
+        ]
+      },
+      {
+        "kind": "ScalarTypeExtension",
+        "name": {
+          "kind": "Name",
+          "value": "Date",
+          "loc": [
+            511,
+            515
+          ]
+        },
+        "directives": [
+          {
+            "kind": "Directive",
+            "name": {
+              "kind": "Name",
+              "value": "tag",
+              "loc": [
+                517,
+                520
+              ]
+            },
+            "arguments": [],
+            "loc": [
+              516,
+              520
+            ]
+          }
+        ],
+        "loc": [
+          497,
+          520
+        ]
+      },
+      {
+        "kind": "ObjectTypeExtension",
+        "name": {
+          "kind": "Name",
+          "value": "Query",
+          "loc": [
+            533,
+            538
+          ]
+        },
+        "interfaces": [
+          {
+            "kind": "NamedType",
+            "name": {
+              "kind": "Name",
+              "value": "Node",
+              "loc": [
+                550,
+                554
+              ]
+            },
+            "loc": [
+              550,
+              554
+            ]
+          }
+        ],
+        "directives": [],
+        "fields": [
+          {
+            "kind": "FieldDefinition",
+            "description": null,
+            "name": {
+              "kind": "Name",
+              "value": "extra",
+              "loc": [
+                557,
+                562
+              ]
+            },
+            "arguments": [],
+            "type": {
+              "kind": "NamedType",
+              "name": {
+                "kind": "Name",
+                "value": "String",
+                "loc": [
+                  564,
+                  570
+                ]
+              },
+              "loc": [
+                564,
+                570
+              ]
+            },
+            "directives": [],
+            "loc": [
+              557,
+              570
+            ]
+          }
+        ],
+        "loc": [
+          521,
+          572
+        ]
+      },
+      {
+        "kind": "InterfaceTypeExtension",
+        "name": {
+          "kind": "Name",
+          "value": "Node",
+          "loc": [
+            590,
+            594
+          ]
+        },
+        "interfaces": [
+          {
+            "kind": "NamedType",
+            "name": {
+              "kind": "Name",
+              "value": "Resource",
+              "loc": [
+                606,
+                614
+              ]
+            },
+            "loc": [
+              606,
+              614
+            ]
+          }
+        ],
+        "directives": [],
+        "fields": [
+          {
+            "kind": "FieldDefinition",
+            "description": null,
+            "name": {
+              "kind": "Name",
+              "value": "version",
+              "loc": [
+                617,
+                624
+              ]
+            },
+            "arguments": [],
+            "type": {
+              "kind": "NamedType",
+              "name": {
+                "kind": "Name",
+                "value": "Int",
+                "loc": [
+                  626,
+                  629
+                ]
+              },
+              "loc": [
+                626,
+                629
+              ]
+            },
+            "directives": [],
+            "loc": [
+              617,
+              629
+            ]
+          }
+        ],
+        "loc": [
+          573,
+          631
+        ]
+      },
+      {
+        "kind": "UnionTypeExtension",
+        "name": {
+          "kind": "Name",
+          "value": "Search",
+          "loc": [
+            645,
+            651
+          ]
+        },
+        "directives": [],
+        "types": [
+          {
+            "kind": "NamedType",
+            "name": {
+              "kind": "Name",
+              "value": "Product",
+              "loc": [
+                654,
+                661
+              ]
+            },
+            "loc": [
+              654,
+              661
+            ]
+          }
+        ],
+        "loc": [
+          632,
+          661
+        ]
+      },
+      {
+        "kind": "EnumTypeExtension",
+        "name": {
+          "kind": "Name",
+          "value": "Color",
+          "loc": [
+            674,
+            679
+          ]
+        },
+        "directives": [],
+        "values": [
+          {
+            "kind": "EnumValueDefinition",
+            "description": null,
+            "name": {
+              "kind": "Name",
+              "value": "GREEN",
+              "loc": [
+                682,
+                687
+              ]
+            },
+            "directives": [],
+            "loc": [
+              682,
+              687
+            ]
+          }
+        ],
+        "loc": [
+          662,
+          689
+        ]
+      },
+      {
+        "kind": "InputObjectTypeExtension",
+        "name": {
+          "kind": "Name",
+          "value": "Filter",
+          "loc": [
+            703,
+            709
+          ]
+        },
+        "directives": [],
+        "fields": [
+          {
+            "kind": "InputValueDefinition",
+            "description": null,
+            "name": {
+              "kind": "Name",
+              "value": "extra",
+              "loc": [
+                712,
+                717
+              ]
+            },
+            "type": {
+              "kind": "NamedType",
+              "name": {
+                "kind": "Name",
+                "value": "ID",
+                "loc": [
+                  719,
+                  721
+                ]
+              },
+              "loc": [
+                719,
+                721
+              ]
+            },
+            "defaultValue": null,
+            "directives": [],
+            "loc": [
+              712,
+              721
+            ]
+          }
+        ],
+        "loc": [
+          690,
+          723
+        ]
+      }
+    ],
+    "loc": [
+      0,
+      724
+    ]
+  }
+}

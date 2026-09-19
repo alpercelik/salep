@@ -1,0 +1,8 @@
+query Q($id: ID!, $filter: Filter = { x: [] } @bound(values: [true])) @cache {
+  alias: user(id: $id, filter: $filter) @include(if: true) {
+    ...UserFields
+    ... on Admin { role }
+    ... @skip(if: false) { active }
+  }
+}
+fragment UserFields on User { id name }

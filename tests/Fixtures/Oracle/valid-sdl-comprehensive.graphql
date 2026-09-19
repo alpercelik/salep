@@ -1,0 +1,15 @@
+"""schema docs""" schema @tag { query: Query }
+"scalar docs" scalar Date @specifiedBy(url: "x")
+type Query implements & Node @tag { """field docs""" field(arg: Int = 1 @bound): [String!]! @deprecated(reason: "old") }
+"interface docs" interface Node { id: ID! }
+union Search = | Query | Product
+enum Color { "red docs" RED BLUE }
+input Filter @oneOf { "text docs" text: String }
+directive @audit(reason: String = "recorded") repeatable on | FIELD | OBJECT
+extend schema @tag { mutation: Mutation }
+extend scalar Date @tag
+extend type Query implements Node { extra: String }
+extend interface Node implements Resource { version: Int }
+extend union Search = Product
+extend enum Color { GREEN }
+extend input Filter { extra: ID }
