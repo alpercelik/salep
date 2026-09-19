@@ -1,0 +1,22 @@
+[
+  {
+    "id": "valid-executable-basic",
+    "file": "valid-executable-basic.graphql",
+    "expect": "valid"
+  },
+  {
+    "id": "valid-sdl-object",
+    "file": "valid-sdl-object.graphql",
+    "expect": "valid"
+  },
+  {
+    "id": "invalid-unclosed-selection",
+    "file": "invalid-unclosed-selection.graphql",
+    "expect": "invalid"
+  },
+  {
+    "id": "invalid-leading-zero",
+    "file": "invalid-leading-zero.graphql",
+    "expect": "invalid"
+  }
+]

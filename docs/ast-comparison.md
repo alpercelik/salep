@@ -16,7 +16,7 @@ The projection rules are:
 
 The `graphql-js` adapter must omit information that has no stable C# counterpart: `loc.source` and its `body`, `name`, and `locationOffset`; JavaScript object identity/prototypes; parser-internal token objects; and any serializer-generated metadata. It must retain each node's `kind`, meaningful syntax fields, children, and `loc.start`/`loc.end`. In particular, two equivalent `Source` instances are not distinguished by identity.
 
-Fixtures store the exact UTF-8 source text and canonical expected JSON. Oracle-generated fixtures record the pinned `graphql-js` package version and generation command alongside the corpus. Hand-authored examples below are normative examples of the projection shape.
+Fixtures store the exact UTF-8 source text, including any final line feed, and canonical expected JSON. Oracle-generated fixtures record the pinned `graphql-js` package version and generation command alongside the corpus. Hand-authored examples below are normative examples of the projection shape; the fenced source blocks each end with a line feed, which is included in the document span.
 
 ## Executable example
 
@@ -31,7 +31,7 @@ Canonical output:
 ```json
 {
   "kind": "Document",
-  "loc": [0, 17],
+  "loc": [0, 18],
   "definitions": [
     {
       "kind": "OperationDefinition",
@@ -73,7 +73,7 @@ Canonical output:
 ```json
 {
   "kind": "Document",
-  "loc": [0, 21],
+  "loc": [0, 22],
   "definitions": [
     {
       "kind": "ObjectTypeDefinition",

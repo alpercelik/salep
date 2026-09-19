@@ -1,0 +1,19 @@
+{
+  "fixtureId": "invalid-unclosed-selection",
+  "graphqlJsVersion": "16.14.0",
+  "outcome": "invalid",
+  "errors": [
+    {
+      "message": "Syntax Error: Expected Name, found <EOF>.",
+      "locations": [
+        {
+          "line": 2,
+          "column": 1
+        }
+      ],
+      "positions": [
+        14
+      ]
+    }
+  ]
+}

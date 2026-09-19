@@ -1,0 +1,19 @@
+{
+  "fixtureId": "invalid-leading-zero",
+  "graphqlJsVersion": "16.14.0",
+  "outcome": "invalid",
+  "errors": [
+    {
+      "message": "Syntax Error: Invalid number, unexpected digit after 0: \"1\".",
+      "locations": [
+        {
+          "line": 1,
+          "column": 17
+        }
+      ],
+      "positions": [
+        16
+      ]
+    }
+  ]
+}

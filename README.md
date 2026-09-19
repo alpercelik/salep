@@ -18,6 +18,25 @@ The script forwards arguments to `dotnet test`, so focused tests can use normal 
 
 Tests live in `tests/GraphQLParser.Tests`. GraphQL inputs are stored under its `Fixtures` directory and copied to the test output directory. Keep minimized defect reproductions there as regression fixtures. The test project can add differential oracle tests as parser coverage grows.
 
+## graphql-js oracle
+
+The reference corpus is pinned to `graphql` 16.14.0 in `package.json` and `package-lock.json`, matching the September 2025 grammar target while using the mature 16.x parser line. Fixtures are owned by this repository; `tests/Fixtures/Oracle/expected/provenance.json` records the oracle package integrity and each source fixture's SHA-256. The generator uses graphql-js as a black box and contains no copied parser implementation.
+
+Install Node dependencies and regenerate the canonical AST or parse-error snapshots with:
+
+```sh
+npm ci
+npm run oracle:write
+```
+
+Check that committed snapshots match the pinned parser and source fixtures with:
+
+```sh
+npm run oracle:check
+```
+
+The oracle check names each fixture when a snapshot differs. Review regenerated output before committing it. The .NET test suite also checks that each manifest entry has a source and a version-matched expected result.
+
 ## Source input ownership
 
 The source abstraction accepts `ReadOnlyMemory<char>` and returns slices over the caller's storage without copying. The caller must keep the backing storage alive and unchanged while parsing and while source-backed AST nodes are in use. Source offsets are measured in UTF-16 code units.

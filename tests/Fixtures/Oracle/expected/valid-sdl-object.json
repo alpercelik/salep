@@ -1,0 +1,67 @@
+{
+  "fixtureId": "valid-sdl-object",
+  "graphqlJsVersion": "16.14.0",
+  "outcome": "valid",
+  "ast": {
+    "kind": "Document",
+    "definitions": [
+      {
+        "kind": "ObjectTypeDefinition",
+        "description": null,
+        "name": {
+          "kind": "Name",
+          "value": "Query",
+          "loc": [
+            5,
+            10
+          ]
+        },
+        "interfaces": [],
+        "directives": [],
+        "fields": [
+          {
+            "kind": "FieldDefinition",
+            "description": null,
+            "name": {
+              "kind": "Name",
+              "value": "x",
+              "loc": [
+                13,
+                14
+              ]
+            },
+            "arguments": [],
+            "type": {
+              "kind": "NamedType",
+              "name": {
+                "kind": "Name",
+                "value": "Int",
+                "loc": [
+                  16,
+                  19
+                ]
+              },
+              "loc": [
+                16,
+                19
+              ]
+            },
+            "directives": [],
+            "loc": [
+              13,
+              19
+            ]
+          }
+        ],
+        "loc": [
+          0,
+          21
+        ]
+      }
+    ],
+    "loc": [
+      0,
+      22
+    ]
+  }
+}

@@ -17,5 +17,6 @@
   <ItemGroup>
     <ProjectReference Include="../../src/GraphQLParser/GraphQLParser.csproj" />
     <None Update="Fixtures/**/*.graphql" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../Fixtures/Oracle/**/*" Link="Fixtures/Oracle/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

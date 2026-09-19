@@ -1,0 +1,60 @@
+{
+  "fixtureId": "valid-executable-basic",
+  "graphqlJsVersion": "16.14.0",
+  "outcome": "valid",
+  "ast": {
+    "kind": "Document",
+    "definitions": [
+      {
+        "kind": "OperationDefinition",
+        "operation": "query",
+        "name": {
+          "kind": "Name",
+          "value": "Q",
+          "loc": [
+            6,
+            7
+          ]
+        },
+        "variableDefinitions": [],
+        "directives": [],
+        "selectionSet": {
+          "kind": "SelectionSet",
+          "selections": [
+            {
+              "kind": "Field",
+              "alias": null,
+              "name": {
+                "kind": "Name",
+                "value": "hello",
+                "loc": [
+                  10,
+                  15
+                ]
+              },
+              "arguments": [],
+              "directives": [],
+              "selectionSet": null,
+              "loc": [
+                10,
+                15
+              ]
+            }
+          ],
+          "loc": [
+            8,
+            17
+          ]
+        },
+        "loc": [
+          0,
+          17
+        ]
+      }
+    ],
+    "loc": [
+      0,
+      18
+    ]
+  }
+}

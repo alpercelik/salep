@@ -1,0 +1,12 @@
+{
+  "name": "graphql-parser-oracle",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "oracle:write": "node scripts/oracle.mjs --write",
+    "oracle:check": "node scripts/oracle.mjs --check"
+  },
+  "devDependencies": {
+    "graphql": "16.14.0"
+  }
+}
