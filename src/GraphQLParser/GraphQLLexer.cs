@@ -163,6 +163,11 @@ public ref struct GraphQLLexer
             throw ExpectedDigit(_position);
         }
 
+        if (_position < source.Length && source[_position] == '.')
+        {
+            throw ExpectedDigit(_position);
+        }
+
         return new Token(kind, start, _position, _source.Slice(start, _position - start));
     }
 
@@ -452,12 +457,9 @@ public ref struct GraphQLLexer
             var digits = 0;
             while (_position < source.Length && TryHexValue(source[_position], out var digit))
             {
-                if (digits == 6)
-                {
-                    throw InvalidEscape(escapeStart, _position - escapeStart + 1);
-                }
-
-                scalar = (scalar * 16) + digit;
+                if (digits == 8) throw InvalidEscape(escapeStart, _position - escapeStart + 1);
+                scalar = scalar > 0x10FFFF / 16 ? 0x110000 : (scalar * 16) + digit;
+                if (scalar > 0x10FFFF) scalar = 0x110000;
                 digits++;
                 _position++;
             }
@@ -597,6 +599,20 @@ public ref struct GraphQLLexer
                     _position++;
                     while (_position < source.Length && source[_position] is not '\u000A' and not '\u000D')
                     {
+                        if (char.IsHighSurrogate(source[_position]))
+                        {
+                            if (_position + 1 >= source.Length || !char.IsLowSurrogate(source[_position + 1]))
+                            {
+                                throw new GraphQLLexicalException("Ignored input must contain valid Unicode scalar values.", _position, 1);
+                            }
+
+                            _position++;
+                        }
+                        else if (char.IsLowSurrogate(source[_position]))
+                        {
+                            throw new GraphQLLexicalException("Ignored input must contain valid Unicode scalar values.", _position, 1);
+                        }
+
                         _position++;
                     }
                     continue;

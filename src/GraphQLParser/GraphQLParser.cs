@@ -112,7 +112,7 @@ public sealed class GraphQLParser
         {
             definitions.Add(ShouldParseTypeSystemDefinition()
                 ? ParseTypeSystemDefinition()
-                : IsName("fragment") ? ParseFragmentDefinition() : ParseOperationDefinition());
+                : IsName("fragment") || IsDescriptionFollowedBy("fragment") ? ParseFragmentDefinition() : ParseOperationDefinition());
         }
 
         if (_lexicalError is not null) throw _lexicalError;
@@ -134,7 +134,7 @@ public sealed class GraphQLParser
                 if (Current.Kind == TokenKind.EndOfFile) break;
                 definitions.Add(ShouldParseTypeSystemDefinition()
                     ? ParseTypeSystemDefinition()
-                    : IsName("fragment") ? ParseFragmentDefinition() : ParseOperationDefinition());
+                    : IsName("fragment") || IsDescriptionFollowedBy("fragment") ? ParseFragmentDefinition() : ParseOperationDefinition());
                 if (_diagnosticsTruncated) break;
             }
             catch (DiagnosticLimitReachedException)
@@ -223,9 +223,11 @@ public sealed class GraphQLParser
 
     private OperationDefinitionNode ParseOperationDefinition()
     {
-        var start = Current.Start;
+        var description = ParseDescription();
+        var start = description?.Location.Start ?? Current.Start;
         if (Current.Kind == TokenKind.BraceLeft)
         {
+            if (description is not null) throw Error("Descriptions cannot be applied to shorthand operations.", description.Location);
             var selectionSet = ParseSelectionSet();
             return new OperationDefinitionNode(OperationType.Query, null, [], [], selectionSet, new SourceLocation(start, selectionSet.Location.End));
         }
@@ -235,25 +237,36 @@ public sealed class GraphQLParser
         var variables = Current.Kind == TokenKind.ParenthesisLeft ? ParseVariableDefinitions() : [];
         var directives = ParseDirectives();
         var selection = ParseSelectionSet();
-        return new OperationDefinitionNode(operation, name, variables, directives, selection, new SourceLocation(start, selection.Location.End));
+        return new OperationDefinitionNode(operation, name, variables, directives, selection, new SourceLocation(start, selection.Location.End), description);
     }
 
     private FragmentDefinitionNode ParseFragmentDefinition()
     {
-        var start = ExpectName("fragment", "Expected 'fragment'.").Start;
+        var description = ParseDescription();
+        var fragmentStart = ExpectName("fragment", "Expected 'fragment'.").Start;
+        var start = description?.Location.Start ?? fragmentStart;
         var name = ReadRequiredName("Expected a fragment name.");
-        if (name.Value.Span.SequenceEqual("on")) throw Error("A fragment name cannot be 'on'.");
+        if (name.Value.Span.SequenceEqual("on")) throw Error("A fragment name cannot be 'on'.", name.Location);
         ExpectName("on", "Expected 'on' after the fragment name.");
         var typeName = ReadRequiredName("Expected a fragment type condition.");
         var type = new NamedTypeNode(typeName, typeName.Location);
         var directives = ParseDirectives();
         var selection = ParseSelectionSet();
-        return new FragmentDefinitionNode(name, type, directives, selection, new SourceLocation(start, selection.Location.End));
+        return new FragmentDefinitionNode(name, type, directives, selection, new SourceLocation(start, selection.Location.End), description);
     }
 
     private bool ShouldParseTypeSystemDefinition()
     {
-        if (Current.Kind is TokenKind.String or TokenKind.BlockString) return true;
+        if (Current.Kind is TokenKind.String or TokenKind.BlockString)
+        {
+            if (_index + 1 >= _tokens.Count) return false;
+            var next = _tokens[_index + 1];
+            if (next.Kind != TokenKind.Name) return false;
+            var nextName = next.Value.Span;
+            return nextName.SequenceEqual("schema") || nextName.SequenceEqual("scalar") || nextName.SequenceEqual("type")
+                || nextName.SequenceEqual("interface") || nextName.SequenceEqual("union") || nextName.SequenceEqual("enum")
+                || nextName.SequenceEqual("input") || nextName.SequenceEqual("directive") || nextName.SequenceEqual("extend");
+        }
         return IsName("schema") || IsName("scalar") || IsName("type") || IsName("interface")
             || IsName("union") || IsName("enum") || IsName("input") || IsName("directive") || IsName("extend");
     }
@@ -321,7 +334,7 @@ public sealed class GraphQLParser
         var name = ReadRequiredName("Expected an object type name.");
         var interfaces = ParseImplementsInterfaces();
         var directives = ParseDirectives(constantArguments: true);
-        var fields = ParseFieldDefinitions(required: true);
+        var fields = ParseFieldDefinitions(required: false);
         return new ObjectTypeDefinitionNode(name, interfaces, directives, fields, new SourceLocation(start, LastConsumedEnd(name.Location.End)), description);
     }
 
@@ -331,7 +344,7 @@ public sealed class GraphQLParser
         var name = ReadRequiredName("Expected an interface type name.");
         var interfaces = ParseImplementsInterfaces();
         var directives = ParseDirectives(constantArguments: true);
-        var fields = ParseFieldDefinitions(required: true);
+        var fields = ParseFieldDefinitions(required: false);
         return new InterfaceTypeDefinitionNode(name, interfaces, directives, fields, new SourceLocation(start, LastConsumedEnd(name.Location.End)), description);
     }
 
@@ -374,7 +387,6 @@ public sealed class GraphQLParser
             fields.Add(new FieldDefinitionNode(name, arguments, type, directives, new SourceLocation(start, LastConsumedEnd(type.Location.End)), description));
         }
 
-        if (fields.Count == 0) throw Error("A field definition block cannot be empty.");
         Advance();
         return fields;
     }
@@ -687,10 +699,12 @@ public sealed class GraphQLParser
         while (Current.Kind != TokenKind.ParenthesisRight)
         {
             if (Current.Kind == TokenKind.EndOfFile) throw Error("Unterminated variable definitions.");
-            var start = Current.Start;
+            var description = ParseDescription();
+            var start = description?.Location.Start ?? Current.Start;
             Expect(TokenKind.Dollar, "Expected '$' before a variable name.");
+            var variableStart = _tokens[_index - 1].Start;
             var variableName = ReadRequiredName("Expected a variable name.");
-            var variable = new VariableNode(variableName, new SourceLocation(start, variableName.Location.End));
+            var variable = new VariableNode(variableName, new SourceLocation(variableStart, variableName.Location.End));
             Expect(TokenKind.Colon, "Expected ':' after the variable name.");
             var type = ParseTypeReference();
             ValueNode? defaultValue = null;
@@ -702,7 +716,7 @@ public sealed class GraphQLParser
 
             var directives = ParseDirectives(constantArguments: true);
             var end = directives.Count > 0 ? directives[^1].Location.End : (defaultValue ?? (AstNode)type).Location.End;
-            variables.Add(new VariableDefinitionNode(variable, type, defaultValue, directives, new SourceLocation(start, end)));
+            variables.Add(new VariableDefinitionNode(variable, type, defaultValue, directives, new SourceLocation(start, end), description));
         }
 
         if (variables.Count == 0) throw Error("Variable definitions cannot be empty.");
@@ -869,7 +883,7 @@ public sealed class GraphQLParser
             return new InlineFragmentNode(type, directives, selection, new SourceLocation(start, selection.Location.End));
         }
 
-        if (Current.Kind == TokenKind.At)
+        if (Current.Kind is TokenKind.At or TokenKind.BraceLeft)
         {
             var directives = ParseDirectives();
             var selection = ParseSelectionSet();
@@ -961,6 +975,12 @@ public sealed class GraphQLParser
     }
 
     private bool IsName(string value) => Current.Kind == TokenKind.Name && Current.Value.Span.SequenceEqual(value);
+
+    private bool IsDescriptionFollowedBy(string value) =>
+        Current.Kind is TokenKind.String or TokenKind.BlockString
+        && _index + 1 < _tokens.Count
+        && _tokens[_index + 1].Kind == TokenKind.Name
+        && _tokens[_index + 1].Value.Span.SequenceEqual(value);
 
     private Token ExpectName(string value, string message)
     {

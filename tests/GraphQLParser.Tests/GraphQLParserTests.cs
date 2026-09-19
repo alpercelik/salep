@@ -172,6 +172,35 @@ public sealed class GraphQLParserTests
     }
 
     [Fact]
+    public void OperationVariableAndFragmentDescriptionsRetainTheirAstValuesAndLocations()
+    {
+        const string source = "\"operation\" query (\"identifier\" $id: ID) { node(id: $id) { id } } \"fragment\" fragment NodeFields on Node { id }";
+        var document = GraphQLParser.Parse(new SourceText(source.AsMemory()));
+
+        var operation = Assert.IsType<OperationDefinitionNode>(document.Definitions[0]);
+        Assert.Equal("operation", operation.Description!.Value.ToString());
+        Assert.Equal(source.IndexOf("\"operation\"", StringComparison.Ordinal), operation.Location.Start);
+        Assert.Equal("identifier", Assert.Single(operation.VariableDefinitions).Description!.Value.ToString());
+
+        var fragment = Assert.IsType<FragmentDefinitionNode>(document.Definitions[1]);
+        Assert.Equal("fragment", fragment.Description!.Value.ToString());
+        Assert.Equal(source.IndexOf("\"fragment\"", StringComparison.Ordinal), fragment.Location.Start);
+    }
+
+    [Fact]
+    public void InlineFragmentsMayOmitATypeConditionWithDirectivesOrSelectionOnly()
+    {
+        const string source = "query { ... @include(if: $show) { id } ... { name } }";
+        var operation = Assert.IsType<OperationDefinitionNode>(Assert.Single(GraphQLParser.Parse(new SourceText(source.AsMemory())).Definitions));
+        var inlineFragments = operation.SelectionSet.Selections.Cast<InlineFragmentNode>().ToArray();
+
+        Assert.Equal(2, inlineFragments.Length);
+        Assert.All(inlineFragments, fragment => Assert.Null(fragment.TypeCondition));
+        Assert.Single(inlineFragments[0].Directives);
+        Assert.Empty(inlineFragments[1].Directives);
+    }
+
+    [Fact]
     public void StrictParserStopsAtTheFirstMalformedDefinitionWithoutRecovery()
     {
         const string source = "query Good { field } query Broken { } query Unreachable { field }";

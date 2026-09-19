@@ -47,7 +47,8 @@ public sealed class VariableDefinitionNode : AstNode
         TypeNode type,
         ValueNode? defaultValue,
         IEnumerable<DirectiveNode> directives,
-        SourceLocation location)
+        SourceLocation location,
+        StringValueNode? description = null)
         : base(AstNodeKind.VariableDefinition, location)
     {
         ArgumentNullException.ThrowIfNull(variable);
@@ -57,6 +58,7 @@ public sealed class VariableDefinitionNode : AstNode
         Type = type;
         DefaultValue = defaultValue;
         Directives = new AstNodeList<DirectiveNode>(directives);
+        Description = description;
     }
 
     /// <summary>Gets the declared variable.</summary>
@@ -67,4 +69,6 @@ public sealed class VariableDefinitionNode : AstNode
     public ValueNode? DefaultValue { get; }
     /// <summary>Gets directives in source order.</summary>
     public AstNodeList<DirectiveNode> Directives { get; }
+    /// <summary>Gets the optional variable definition description.</summary>
+    public StringValueNode? Description { get; }
 }

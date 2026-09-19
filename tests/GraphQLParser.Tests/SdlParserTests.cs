@@ -39,17 +39,25 @@ public sealed class SdlParserTests
     [Theory]
     [InlineData("schema { }")]
     [InlineData("scalar { }")]
-    [InlineData("type Query { }")]
     [InlineData("type Query { field(arg:): String }")]
     [InlineData("interface { field: String }")]
     [InlineData("union Search = | Query |")]
     [InlineData("enum Color { true }")]
     [InlineData("input Filter { field: }")]
-    [InlineData("\"description\" query { field }")]
     public void RejectsMalformedTypeSystemDefinitionsAtTheOffendingToken(string source)
     {
         var error = Assert.Throws<GraphQLSyntaxException>(() => GraphQLParser.Parse(new SourceText(source.AsMemory())));
         Assert.InRange(error.Position, 0, source.Length);
+    }
+
+    [Fact]
+    public void AcceptsEmptyObjectAndInterfaceDefinitionBlocks()
+    {
+        const string source = "type EmptyObject { } interface EmptyInterface { }";
+        var document = GraphQLParser.Parse(new SourceText(source.AsMemory()));
+
+        Assert.Empty(Assert.IsType<ObjectTypeDefinitionNode>(document.Definitions[0]).Fields);
+        Assert.Empty(Assert.IsType<InterfaceTypeDefinitionNode>(document.Definitions[1]).Fields);
     }
 
     [Fact]
@@ -120,7 +128,7 @@ public sealed class SdlParserTests
 
     [Theory]
     [InlineData("\"orphan description\"", 20, 0)]
-    [InlineData("\"description\" query { field }", 14, 5)]
+    [InlineData("\"description\" mystery { field }", 14, 7)]
     [InlineData("\"\"\"description\"\"\" extend scalar Date @tag", 0, 17)]
     public void MalformedDescriptionsFailAtTheFirstTokenWithoutAValidTarget(string source, int expectedPosition, int expectedLength)
     {

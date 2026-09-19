@@ -174,6 +174,8 @@ public sealed class GraphQLLexerTests
     [InlineData("1E-", 3, 0)]
     [InlineData("1abc", 1, 1)]
     [InlineData("1_2", 1, 1)]
+    [InlineData("1.23.4", 4, 1)]
+    [InlineData("1.2e3.4", 5, 1)]
     public void InvalidNumericFormsFailAtTheFirstInvalidOffset(string input, int position, int length)
     {
         var lexer = new GraphQLLexer(new SourceText(input.AsMemory()));
@@ -240,6 +242,7 @@ public sealed class GraphQLLexerTests
         { "\"\\u0000\"", "\0" },
         { "\"\\uD83D\\uDE00\"", "😀" },
         { "\"\\u{1F600}\"", "😀" },
+        { "\"\\u{00000000}\"", "\0" },
         { "\"\\u{10FFFF}\"", "\U0010FFFF" },
     };
 
@@ -331,6 +334,7 @@ public sealed class GraphQLLexerTests
     [InlineData("\"\\u{D800}\"", 1)]
     [InlineData("\"\\u{110000}\"", 1)]
     [InlineData("\"\\u{1234567}\"", 1)]
+    [InlineData("\"\\u{000000000}\"", 1)]
     [InlineData("\"\\uD800\"", 1)]
     [InlineData("\"\\uDC00\"", 1)]
     [InlineData("\"\\uD83D\\u0041\"", 1)]
@@ -365,6 +369,18 @@ public sealed class GraphQLLexerTests
         var surrogateLexer = new GraphQLLexer(new SourceText("\"\uD800\"".AsMemory()));
         var surrogateError = ReadUntilLexicalException(ref surrogateLexer);
         Assert.Equal(1, surrogateError.Position);
+    }
+
+    [Fact]
+    public void CommentsRejectUnpairedUtf16SurrogatesAtTheirOriginalOffset()
+    {
+        var source = "# Invalid surrogate \uDEAD";
+        var lexer = new GraphQLLexer(new SourceText(source.AsMemory()));
+
+        var error = ReadUntilLexicalException(ref lexer);
+
+        Assert.Equal(20, error.Position);
+        Assert.Equal(1, error.Length);
     }
 
     private static GraphQLLexicalException ReadUntilLexicalException(ref GraphQLLexer lexer)

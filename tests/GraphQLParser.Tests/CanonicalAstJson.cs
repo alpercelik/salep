@@ -22,6 +22,7 @@ internal static class CanonicalAstJson
                 result["variableDefinitions"] = Nodes(operation.VariableDefinitions);
                 result["directives"] = Nodes(operation.Directives);
                 result["selectionSet"] = Project(operation.SelectionSet);
+                if (operation.Description is not null) result["description"] = Project(operation.Description);
                 break;
             case FragmentDefinitionNode fragment:
                 result["name"] = Project(fragment.Name);
@@ -63,6 +64,7 @@ internal static class CanonicalAstJson
                 result["type"] = Project(variableDefinition.Type);
                 result["defaultValue"] = Node(variableDefinition.DefaultValue);
                 result["directives"] = Nodes(variableDefinition.Directives);
+                if (variableDefinition.Description is not null) result["description"] = Project(variableDefinition.Description);
                 break;
             case VariableNode variable:
                 result["name"] = Project(variable.Name);

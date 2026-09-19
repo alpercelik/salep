@@ -76,7 +76,7 @@ public sealed class GraphQLJsReferenceSuiteTests
 
         if (expected.GetProperty("outcome").GetString() == "valid")
         {
-            Assert.True(actualError is null, $"{caseId}: expected valid parse, got {actualError?.GetType().Name}: {actualError?.Message}");
+            Assert.True(actualError is null, $"{caseId}: expected valid parse, got {actualError?.GetType().Name} at {(actualError as GraphQLSyntaxException)?.Position}: {actualError?.Message}");
             var expectedAst = JsonNode.Parse(expected.GetProperty("ast").GetRawText());
             var actualAst = CanonicalAstJson.Project(actualDocument!);
             Assert.True(JsonNode.DeepEquals(expectedAst, actualAst), $"{caseId}: canonical AST mismatch. Expected {expectedAst}; actual {actualAst}");
