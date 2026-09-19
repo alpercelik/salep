@@ -22,4 +22,8 @@ Selection sets are non-empty. Fields require a name and have optional alias and 
 
 Schema and named type definitions preserve optional descriptions and ordered directives and children. The model covers schema root mappings; scalar, object, interface, union, enum, and input-object definitions and extensions; field and input-value definitions; enum-value definitions; and directive definitions. Object and interface nodes preserve implemented interfaces. Union nodes preserve member types. Directive definitions retain their argument definitions, repeatable flag, and ordered source locations. Syntax-required extension content and schema root mappings are enforced by constructors; schema validity and cross-definition rules remain parser-independent semantic validation.
 
+## Parser diagnostics
+
+`GraphQLParser.Parse(SourceText)` is the strict document entry point. A parsed document spans the complete source, including ignored leading and trailing input; definition and child spans cover their syntax tokens. `GraphQLSyntaxException` reports the zero-based UTF-16 start and length of the unexpected token, with a zero-length position at end of input. Lexical failures remain `GraphQLLexicalException` instances from the lexer.
+
 Value nodes cover variable references, integer and float source spellings, evaluated strings with a block-string flag, booleans, null, enum text, ordered list values, and ordered object fields. List and object values may be empty. Type references are named types wrapped by list or non-null nodes; a non-null node cannot directly wrap another non-null node. Optional syntax is represented by nullable node properties, while child lists are always present and empty when the syntax has no children, matching the canonical comparison contract.
