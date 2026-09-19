@@ -11,3 +11,11 @@ Quoted strings and block strings retain their full raw lexeme on the token for l
 ## Child collections
 
 AST child sequences use `AstNodeList<TNode>`. Its constructor copies the input sequence once, preserves order, and exposes only indexed reads and enumeration. It does not expose the backing array or a mutable collection interface. Nodes held by the list are themselves immutable.
+
+## Executable node shapes
+
+`DocumentNode` retains its `SourceText` and an ordered, non-empty `Definitions` list. `OperationDefinitionNode` requires a selection set and always has variable-definition and directive lists; its name and description are optional. `FragmentDefinitionNode` requires a name, named type condition, and selection set; its description is optional. The pinned `graphql-js` 16.x AST shape includes an empty fragment `variableDefinitions` array, so this property is always empty for the September 2025 grammar.
+
+Selection sets are non-empty. Fields require a name and have optional alias and nested selection set, with ordered argument and directive lists. Fragment spreads require a name; inline fragments require a selection set and may omit the type condition. Arguments, directive applications, object fields, variables, and variable definitions hold their required children as immutable node properties.
+
+Value nodes cover variable references, integer and float source spellings, evaluated strings with a block-string flag, booleans, null, enum text, ordered list values, and ordered object fields. List and object values may be empty. Type references are named types wrapped by list or non-null nodes; a non-null node cannot directly wrap another non-null node. Optional syntax is represented by nullable node properties, while child lists are always present and empty when the syntax has no children, matching the canonical comparison contract.
