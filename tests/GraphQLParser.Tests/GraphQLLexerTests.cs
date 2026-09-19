@@ -6,6 +6,19 @@ namespace GraphQLParser.Tests;
 
 public sealed class GraphQLLexerTests
 {
+    public static TheoryData<string, TokenKind> ValidNumericTokens => new()
+    {
+        { "0", TokenKind.Integer },
+        { "-0", TokenKind.Integer },
+        { "42", TokenKind.Integer },
+        { "-731", TokenKind.Integer },
+        { "0.0", TokenKind.Float },
+        { "-12.375", TokenKind.Float },
+        { "1e10", TokenKind.Float },
+        { "2E-3", TokenKind.Float },
+        { "-4.5E+6", TokenKind.Float },
+    };
+
     [Fact]
     public void PunctuatorsAreAdjacentAndKeepExactSourceSlices()
     {
@@ -112,6 +125,87 @@ public sealed class GraphQLLexerTests
         Assert.Equal(1, error.Position);
         Assert.Equal(1, error.Length);
         Assert.Contains("U+003F", error.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("_")]
+    [InlineData("A")]
+    [InlineData("a9")]
+    [InlineData("__typename")]
+    [InlineData("query")]
+    public void NamesUseAsciiGrammarAndPreserveTheirSourceSlice(string input)
+    {
+        var buffer = input.ToCharArray();
+        var lexer = new GraphQLLexer(new SourceText(buffer.AsMemory()));
+
+        var token = lexer.NextToken();
+
+        Assert.Equal(TokenKind.Name, token.Kind);
+        Assert.Equal(0, token.Start);
+        Assert.Equal(buffer.Length, token.End);
+        Assert.Equal(input, token.Value.ToString());
+        Assert.True(MemoryMarshal.TryGetArray(token.Value, out ArraySegment<char> segment));
+        Assert.Same(buffer, segment.Array);
+    }
+
+    [Theory]
+    [MemberData(nameof(ValidNumericTokens))]
+    public void ValidNumericFormsPreserveKindRawTextAndExactSpan(string input, TokenKind expectedKind)
+    {
+        var lexer = new GraphQLLexer(new SourceText(input.AsMemory()));
+
+        var token = lexer.NextToken();
+
+        Assert.Equal(expectedKind, token.Kind);
+        Assert.Equal(0, token.Start);
+        Assert.Equal(input.Length, token.End);
+        Assert.Equal(input, token.Value.ToString());
+        Assert.Equal(TokenKind.EndOfFile, lexer.NextToken().Kind);
+    }
+
+    [Theory]
+    [InlineData("01", 1, 1)]
+    [InlineData("-01", 2, 1)]
+    [InlineData("-", 1, 0)]
+    [InlineData("1.", 2, 0)]
+    [InlineData("1.e2", 2, 1)]
+    [InlineData("1e", 2, 0)]
+    [InlineData("1e+", 3, 0)]
+    [InlineData("1E-", 3, 0)]
+    [InlineData("1abc", 1, 1)]
+    [InlineData("1_2", 1, 1)]
+    public void InvalidNumericFormsFailAtTheFirstInvalidOffset(string input, int position, int length)
+    {
+        var lexer = new GraphQLLexer(new SourceText(input.AsMemory()));
+
+        var error = ReadUntilLexicalException(ref lexer);
+
+        Assert.Equal(position, error.Position);
+        Assert.Equal(length, error.Length);
+    }
+
+    [Fact]
+    public void NonAsciiNameStartIsRejectedAtItsUtf16Offset()
+    {
+        var lexer = new GraphQLLexer(new SourceText("é".AsMemory()));
+
+        var error = ReadUntilLexicalException(ref lexer);
+
+        Assert.Equal(0, error.Position);
+        Assert.Equal(1, error.Length);
+    }
+
+    [Fact]
+    public void NonAsciiNameContinuationIsRejectedAfterTheValidAsciiName()
+    {
+        var lexer = new GraphQLLexer(new SourceText("aé".AsMemory()));
+
+        var name = lexer.NextToken();
+        var error = ReadUntilLexicalException(ref lexer);
+
+        Assert.Equal(TokenKind.Name, name.Kind);
+        Assert.Equal("a", name.Value.ToString());
+        Assert.Equal(1, error.Position);
     }
 
     private static GraphQLLexicalException ReadUntilLexicalException(ref GraphQLLexer lexer)

@@ -1,0 +1,177 @@
+{
+  "fixtureId": "valid-numeric-literals",
+  "graphqlJsVersion": "16.14.0",
+  "outcome": "valid",
+  "ast": {
+    "kind": "Document",
+    "definitions": [
+      {
+        "kind": "OperationDefinition",
+        "operation": "query",
+        "name": {
+          "kind": "Name",
+          "value": "Numbers",
+          "loc": [
+            6,
+            13
+          ]
+        },
+        "variableDefinitions": [
+          {
+            "kind": "VariableDefinition",
+            "variable": {
+              "kind": "Variable",
+              "name": {
+                "kind": "Name",
+                "value": "count",
+                "loc": [
+                  15,
+                  20
+                ]
+              },
+              "loc": [
+                14,
+                20
+              ]
+            },
+            "type": {
+              "kind": "NamedType",
+              "name": {
+                "kind": "Name",
+                "value": "Int",
+                "loc": [
+                  22,
+                  25
+                ]
+              },
+              "loc": [
+                22,
+                25
+              ]
+            },
+            "defaultValue": {
+              "kind": "IntValue",
+              "value": "0",
+              "loc": [
+                28,
+                29
+              ]
+            },
+            "directives": [],
+            "loc": [
+              14,
+              29
+            ]
+          }
+        ],
+        "directives": [],
+        "selectionSet": {
+          "kind": "SelectionSet",
+          "selections": [
+            {
+              "kind": "Field",
+              "alias": null,
+              "name": {
+                "kind": "Name",
+                "value": "f",
+                "loc": [
+                  33,
+                  34
+                ]
+              },
+              "arguments": [
+                {
+                  "kind": "Argument",
+                  "name": {
+                    "kind": "Name",
+                    "value": "i",
+                    "loc": [
+                      35,
+                      36
+                    ]
+                  },
+                  "value": {
+                    "kind": "IntValue",
+                    "value": "-42",
+                    "loc": [
+                      38,
+                      41
+                    ]
+                  },
+                  "loc": [
+                    35,
+                    41
+                  ]
+                },
+                {
+                  "kind": "Argument",
+                  "name": {
+                    "kind": "Name",
+                    "value": "decimal",
+                    "loc": [
+                      43,
+                      50
+                    ]
+                  },
+                  "value": {
+                    "kind": "FloatValue",
+                    "value": "-12.375",
+                    "loc": [
+                      52,
+                      59
+                    ]
+                  },
+                  "loc": [
+                    43,
+                    59
+                  ]
+                },
+                {
+                  "kind": "Argument",
+                  "name": {
+                    "kind": "Name",
+                    "value": "exponent",
+                    "loc": [
+                      61,
+                      69
+                    ]
+                  },
+                  "value": {
+                    "kind": "FloatValue",
+                    "value": "2E-3",
+                    "loc": [
+                      71,
+                      75
+                    ]
+                  },
+                  "loc": [
+                    61,
+                    75
+                  ]
+                }
+              ],
+              "directives": [],
+              "selectionSet": null,
+              "loc": [
+                33,
+                76
+              ]
+            }
+          ],
+          "loc": [
+            31,
+            78
+          ]
+        },
+        "loc": [
+          0,
+          78
+        ]
+      }
+    ],
+    "loc": [
+      0,
+      79
+    ]
+  }
+}

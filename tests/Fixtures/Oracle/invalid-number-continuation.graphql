@@ -1,0 +1,1 @@
+query { f(value: 1abc) }

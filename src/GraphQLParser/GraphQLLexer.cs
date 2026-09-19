@@ -30,6 +30,16 @@ public ref struct GraphQLLexer
 
         var start = _position;
         var current = _source.Content.Span[_position];
+        if (IsNameStart(current))
+        {
+            return ReadName();
+        }
+
+        if (current == '-' || IsDigit(current))
+        {
+            return ReadNumber();
+        }
+
         var kind = current switch
         {
             '!' => TokenKind.Bang,
@@ -52,6 +62,92 @@ public ref struct GraphQLLexer
         if (kind != TokenKind.Spread)
         {
             _position++;
+        }
+
+        return new Token(kind, start, _position, _source.Slice(start, _position - start));
+    }
+
+    private Token ReadName()
+    {
+        var start = _position++;
+        var source = _source.Content.Span;
+        while (_position < source.Length && IsNameContinue(source[_position]))
+        {
+            _position++;
+        }
+
+        return new Token(TokenKind.Name, start, _position, _source.Slice(start, _position - start));
+    }
+
+    private Token ReadNumber()
+    {
+        var start = _position;
+        var source = _source.Content.Span;
+        if (source[_position] == '-')
+        {
+            _position++;
+        }
+
+        if (_position == source.Length || !IsDigit(source[_position]))
+        {
+            throw ExpectedDigit(_position);
+        }
+
+        if (source[_position] == '0')
+        {
+            _position++;
+            if (_position < source.Length && IsDigit(source[_position]))
+            {
+                throw new GraphQLLexicalException("An integer literal cannot contain a leading zero.", _position, 1);
+            }
+        }
+        else
+        {
+            while (_position < source.Length && IsDigit(source[_position]))
+            {
+                _position++;
+            }
+        }
+
+        var kind = TokenKind.Integer;
+        if (_position < source.Length && source[_position] == '.')
+        {
+            kind = TokenKind.Float;
+            _position++;
+            if (_position == source.Length || !IsDigit(source[_position]))
+            {
+                throw ExpectedDigit(_position);
+            }
+
+            while (_position < source.Length && IsDigit(source[_position]))
+            {
+                _position++;
+            }
+        }
+
+        if (_position < source.Length && source[_position] is 'e' or 'E')
+        {
+            kind = TokenKind.Float;
+            _position++;
+            if (_position < source.Length && source[_position] is '+' or '-')
+            {
+                _position++;
+            }
+
+            if (_position == source.Length || !IsDigit(source[_position]))
+            {
+                throw ExpectedDigit(_position);
+            }
+
+            while (_position < source.Length && IsDigit(source[_position]))
+            {
+                _position++;
+            }
+        }
+
+        if (_position < source.Length && IsNameStart(source[_position]))
+        {
+            throw ExpectedDigit(_position);
         }
 
         return new Token(kind, start, _position, _source.Slice(start, _position - start));
@@ -104,4 +200,25 @@ public ref struct GraphQLLexer
 
     private static GraphQLLexicalException UnexpectedCharacter(char character, int position) =>
         new($"Unexpected character U+{(int)character:X4}.", position, 1);
+
+    private GraphQLLexicalException ExpectedDigit(int position)
+    {
+        if (position == _source.Length)
+        {
+            return new GraphQLLexicalException("Invalid number: expected a digit at end of input.", position, 0);
+        }
+
+        var character = _source.Content.Span[position];
+        return new GraphQLLexicalException(
+            $"Invalid number: expected a digit but found U+{(int)character:X4}.",
+            position,
+            1);
+    }
+
+    private static bool IsNameStart(char character) =>
+        character is '_' or >= 'A' and <= 'Z' or >= 'a' and <= 'z';
+
+    private static bool IsNameContinue(char character) => IsNameStart(character) || IsDigit(character);
+
+    private static bool IsDigit(char character) => character is >= '0' and <= '9';
 }

@@ -1,0 +1,19 @@
+{
+  "fixtureId": "invalid-incomplete-exponent",
+  "graphqlJsVersion": "16.14.0",
+  "outcome": "invalid",
+  "errors": [
+    {
+      "message": "Syntax Error: Invalid number, expected digit but got: \")\".",
+      "locations": [
+        {
+          "line": 1,
+          "column": 21
+        }
+      ],
+      "positions": [
+        20
+      ]
+    }
+  ]
+}

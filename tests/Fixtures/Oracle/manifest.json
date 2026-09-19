@@ -10,6 +10,11 @@
     "expect": "valid"
   },
   {
+    "id": "valid-numeric-literals",
+    "file": "valid-numeric-literals.graphql",
+    "expect": "valid"
+  },
+  {
     "id": "invalid-unclosed-selection",
     "file": "invalid-unclosed-selection.graphql",
     "expect": "invalid"
@@ -22,6 +27,16 @@
   {
     "id": "invalid-malformed-spread",
     "file": "invalid-malformed-spread.graphql",
+    "expect": "invalid"
+  },
+  {
+    "id": "invalid-incomplete-exponent",
+    "file": "invalid-incomplete-exponent.graphql",
+    "expect": "invalid"
+  },
+  {
+    "id": "invalid-number-continuation",
+    "file": "invalid-number-continuation.graphql",
     "expect": "invalid"
   }
 ]

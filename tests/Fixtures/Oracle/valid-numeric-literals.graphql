@@ -1,0 +1,1 @@
+query Numbers($count: Int = 0) { f(i: -42, decimal: -12.375, exponent: 2E-3) }

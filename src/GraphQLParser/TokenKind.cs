@@ -33,4 +33,10 @@ public enum TokenKind : byte
     Pipe,
     /// <summary>The <c>}</c> punctuator.</summary>
     BraceRight,
+    /// <summary>A GraphQL name.</summary>
+    Name,
+    /// <summary>An integer literal.</summary>
+    Integer,
+    /// <summary>A floating-point literal.</summary>
+    Float,
 }
