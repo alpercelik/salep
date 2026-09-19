@@ -1,0 +1,19 @@
+{
+  "fixtureId": "invalid-malformed-spread",
+  "graphqlJsVersion": "16.14.0",
+  "outcome": "invalid",
+  "errors": [
+    {
+      "message": "Syntax Error: Unexpected character: \".\".",
+      "locations": [
+        {
+          "line": 1,
+          "column": 9
+        }
+      ],
+      "positions": [
+        8
+      ]
+    }
+  ]
+}

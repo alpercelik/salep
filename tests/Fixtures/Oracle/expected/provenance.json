@@ -3,6 +3,7 @@
   "graphqlPackageIntegrity": "sha512-BBvQ/406p+4CZbTpCbVPSxfzrZrbnuWSP1ELYgyS6B+hNeKzgrdB4JczCa5VZUBQrDa9hUngm0KnexY6pJRN5Q==",
   "sourceSha256": {
     "invalid-leading-zero": "0a0937f03a20b06aa580ac73324e788bdf50b9ce61678dff042a1168c8376667",
+    "invalid-malformed-spread": "72a6930eb6d3bcbbe69ee97076853ce17a70ce314188d93c32d03f41f1c06dc6",
     "invalid-unclosed-selection": "f0349933b5978633e3c059e32573cb58a39a6fd46fef92a618ba9268148ad724",
     "valid-executable-basic": "ffca221c2d8282786c21c2b1659282fb1e3d5fe8ab7255c905a2c3764ed6a2fb",
     "valid-sdl-object": "e1831c559f3f083e25c4ca73af1bcf6c51df56f12c16fc6814729a18d2a6d788"

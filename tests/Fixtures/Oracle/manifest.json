@@ -18,5 +18,10 @@
     "id": "invalid-leading-zero",
     "file": "invalid-leading-zero.graphql",
     "expect": "invalid"
+  },
+  {
+    "id": "invalid-malformed-spread",
+    "file": "invalid-malformed-spread.graphql",
+    "expect": "invalid"
   }
 ]
