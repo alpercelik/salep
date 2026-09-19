@@ -27,16 +27,19 @@ public sealed class GraphQLDiagnostic
 /// <summary>The document and diagnostics produced by an opt-in diagnostic parse.</summary>
 public sealed class GraphQLParseResult
 {
-    internal GraphQLParseResult(DocumentNode? document, IEnumerable<GraphQLDiagnostic> diagnostics)
+    internal GraphQLParseResult(DocumentNode? document, IEnumerable<GraphQLDiagnostic> diagnostics, bool diagnosticsTruncated)
     {
         Document = document;
         Diagnostics = Array.AsReadOnly(diagnostics.ToArray());
+        DiagnosticsTruncated = diagnosticsTruncated;
     }
 
     /// <summary>Gets the parsed document, or null when no valid definitions were recovered.</summary>
     public DocumentNode? Document { get; }
     /// <summary>Gets immutable diagnostics in source order.</summary>
     public IReadOnlyList<GraphQLDiagnostic> Diagnostics { get; }
+    /// <summary>Gets whether parsing stopped because the diagnostic limit was reached.</summary>
+    public bool DiagnosticsTruncated { get; }
     /// <summary>Gets whether parsing completed without diagnostics.</summary>
     public bool Success => Diagnostics.Count == 0 && Document is not null;
 }

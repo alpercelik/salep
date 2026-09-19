@@ -28,6 +28,8 @@ Schema and named type definitions preserve optional descriptions and ordered dir
 
 Call `GraphQLParser.ParseWithDiagnostics(SourceText)` for opt-in recovery. It returns `GraphQLParseResult`, with valid recovered definitions (or a null document), plus immutable source-ordered diagnostics that include category, expected context, actual token, and location. The strict entry point continues to throw on the first failure.
 
+Diagnostic mode synchronizes at selection boundaries and top-level definition starts while tracking nested braces, parentheses, and brackets. It reports at most `GraphQLParser.MaximumDiagnosticCount` diagnostics (100); `GraphQLParseResult.DiagnosticsTruncated` indicates that more errors were found. Recovery always advances or stops at a closing grammar boundary or end of input.
+
 Executable parsing preserves operation and fragment definition order, aliases, argument and directive order, nested selection sets, fragment spreads, and typed or type-less inline fragments. Empty argument and selection sets are rejected according to the grammar.
 
 SDL parsing preserves descriptions and ordered definitions, schema root mappings, type directives, object/interface implementation lists, field arguments, union members, enum values, and input-object fields. GraphQL directive uses and SDL defaults parse constant values, so variable nodes cannot appear in those positions.

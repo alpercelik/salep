@@ -3,6 +3,9 @@ namespace GraphQLParser;
 /// <summary>Parses GraphQL source text into an immutable syntax tree.</summary>
 public sealed class GraphQLParser
 {
+    /// <summary>Maximum diagnostics returned by one recovery parse.</summary>
+    public const int MaximumDiagnosticCount = 100;
+
     private static readonly HashSet<string> ValidDirectiveLocations = new(StringComparer.Ordinal)
     {
         "QUERY", "MUTATION", "SUBSCRIPTION", "FIELD", "FRAGMENT_DEFINITION", "FRAGMENT_SPREAD", "INLINE_FRAGMENT", "VARIABLE_DEFINITION",
@@ -12,7 +15,12 @@ public sealed class GraphQLParser
     private readonly SourceText _source;
     private readonly List<Token> _tokens = [];
     private int _index;
+    private int _braceDepth;
+    private int _parenthesisDepth;
+    private int _bracketDepth;
     private GraphQLLexicalException? _lexicalError;
+    private List<GraphQLDiagnostic>? _activeDiagnostics;
+    private bool _diagnosticsTruncated;
 
     /// <summary>Creates a parser over caller-owned source memory.</summary>
     public GraphQLParser(SourceText source)
@@ -68,38 +76,58 @@ public sealed class GraphQLParser
     {
         var definitions = new List<DefinitionNode>();
         var diagnostics = new List<GraphQLDiagnostic>();
+        _activeDiagnostics = diagnostics;
         var lexicalDiagnosticAdded = false;
         while (true)
         {
             try
             {
                 if (Current.Kind == TokenKind.EndOfFile) break;
-                var startIndex = _index;
                 definitions.Add(ShouldParseTypeSystemDefinition()
                     ? ParseTypeSystemDefinition()
                     : IsName("fragment") ? ParseFragmentDefinition() : ParseOperationDefinition());
+                if (_diagnosticsTruncated) break;
+            }
+            catch (DiagnosticLimitReachedException)
+            {
+                break;
             }
             catch (GraphQLSyntaxException exception)
             {
-                diagnostics.Add(new GraphQLDiagnostic("syntax", exception.Message, exception.Expected, exception.Actual,
-                    new SourceLocation(exception.Position, exception.Position + exception.Length)));
+                if (!AddDiagnostic(new GraphQLDiagnostic("syntax", exception.Message, exception.Expected, exception.Actual,
+                    new SourceLocation(exception.Position, exception.Position + exception.Length)))) break;
+                if (_diagnosticsTruncated) break;
                 RecoverToNextDefinition();
             }
             catch (GraphQLLexicalException exception)
             {
-                diagnostics.Add(CreateLexicalDiagnostic(exception));
+                _ = AddDiagnostic(CreateLexicalDiagnostic(exception));
                 lexicalDiagnosticAdded = true;
                 break;
             }
         }
 
-        if (_lexicalError is not null && !lexicalDiagnosticAdded)
+        if (_lexicalError is not null && !lexicalDiagnosticAdded && diagnostics.Count < MaximumDiagnosticCount)
         {
-            diagnostics.Add(CreateLexicalDiagnostic(_lexicalError));
+            AddDiagnostic(CreateLexicalDiagnostic(_lexicalError));
         }
 
         DocumentNode? document = definitions.Count == 0 ? null : new DocumentNode(_source, definitions, new SourceLocation(0, _source.Length));
-        return new GraphQLParseResult(document, diagnostics);
+        _activeDiagnostics = null;
+        return new GraphQLParseResult(document, diagnostics, _diagnosticsTruncated);
+    }
+
+    private bool AddDiagnostic(GraphQLDiagnostic diagnostic)
+    {
+        var diagnostics = _activeDiagnostics ?? throw new InvalidOperationException("Diagnostic collection is not active.");
+        if (diagnostics.Count >= MaximumDiagnosticCount)
+        {
+            _diagnosticsTruncated = true;
+            return false;
+        }
+
+        diagnostics.Add(diagnostic);
+        return true;
     }
 
     private GraphQLDiagnostic CreateLexicalDiagnostic(GraphQLLexicalException exception)
@@ -116,11 +144,13 @@ public sealed class GraphQLParser
         var consumed = false;
         while (Current.Kind != TokenKind.EndOfFile)
         {
-            if (consumed && IsDefinitionStart(Current)) return;
+            if (consumed && AtTopLevel && IsDefinitionStart(Current)) return;
             Advance();
             consumed = true;
         }
     }
+
+    private bool AtTopLevel => _braceDepth == 0 && _parenthesisDepth == 0 && _bracketDepth == 0;
 
     private static bool IsDefinitionStart(Token token)
     {
@@ -709,16 +739,44 @@ public sealed class GraphQLParser
     private SelectionSetNode ParseSelectionSet()
     {
         var open = Expect(TokenKind.BraceLeft, "Expected a selection set.");
+        var setBraceDepth = _braceDepth;
+        var setParenthesisDepth = _parenthesisDepth;
+        var setBracketDepth = _bracketDepth;
         var selections = new List<SelectionNode>();
         while (Current.Kind != TokenKind.BraceRight)
         {
             if (Current.Kind == TokenKind.EndOfFile) throw Error("Unterminated selection set.");
-            selections.Add(Current.Kind == TokenKind.Spread ? ParseFragmentSelection() : ParseField());
+            try
+            {
+                selections.Add(Current.Kind == TokenKind.Spread ? ParseFragmentSelection() : ParseField());
+            }
+            catch (GraphQLSyntaxException exception) when (_activeDiagnostics is not null)
+            {
+                if (!AddDiagnostic(new GraphQLDiagnostic("syntax", exception.Message, exception.Expected, exception.Actual,
+                    new SourceLocation(exception.Position, exception.Position + exception.Length)))) throw new DiagnosticLimitReachedException();
+                RecoverToNextSelection(setBraceDepth, setParenthesisDepth, setBracketDepth);
+            }
         }
 
         if (selections.Count == 0) throw Error("A selection set cannot be empty.");
         var close = Advance();
         return new SelectionSetNode(selections, new SourceLocation(open.Start, close.End));
+    }
+
+    private void RecoverToNextSelection(int braceDepth, int parenthesisDepth, int bracketDepth)
+    {
+        var consumed = false;
+        while (Current.Kind != TokenKind.EndOfFile)
+        {
+            if (_braceDepth == braceDepth && _parenthesisDepth == parenthesisDepth && _bracketDepth == bracketDepth)
+            {
+                if (Current.Kind == TokenKind.BraceRight) return;
+                if (consumed && Current.Kind is TokenKind.Name or TokenKind.Spread) return;
+            }
+
+            Advance();
+            consumed = true;
+        }
     }
 
     private FieldNode ParseField()
@@ -870,7 +928,21 @@ public sealed class GraphQLParser
         return Advance();
     }
 
-    private Token Advance() => _tokens[_index++];
+    private Token Advance()
+    {
+        var token = _tokens[_index++];
+        switch (token.Kind)
+        {
+            case TokenKind.BraceLeft: _braceDepth++; break;
+            case TokenKind.BraceRight: _braceDepth = Math.Max(0, _braceDepth - 1); break;
+            case TokenKind.ParenthesisLeft: _parenthesisDepth++; break;
+            case TokenKind.ParenthesisRight: _parenthesisDepth = Math.Max(0, _parenthesisDepth - 1); break;
+            case TokenKind.BracketLeft: _bracketDepth++; break;
+            case TokenKind.BracketRight: _bracketDepth = Math.Max(0, _bracketDepth - 1); break;
+        }
+
+        return token;
+    }
     private Token Current => _tokens[_index];
     private SourceLocation Span(Token token) => new(token.Start, token.End);
     private Exception Error(string message)
@@ -881,5 +953,7 @@ public sealed class GraphQLParser
     private static GraphQLSyntaxException Error(string message, SourceLocation location) => new(message, location.Start, location.Length, message, $"source span [{location.Start}, {location.End})");
     private static string Describe(Token token) => token.Kind == TokenKind.EndOfFile
         ? "EndOfFile"
-        : $"{token.Kind} '{token.RawValue}'";
+        : $"{token.Kind} '{token.RawValue.ToString()}'";
+
+    private sealed class DiagnosticLimitReachedException : Exception { }
 }

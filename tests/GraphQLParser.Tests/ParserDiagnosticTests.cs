@@ -65,4 +65,60 @@ public sealed class ParserDiagnosticTests
         Assert.Single(result.Diagnostics);
         Assert.False(result.Success);
     }
+
+    [Fact]
+    public void RecoversWithinNestedSelectionsAndPreservesLaterSiblings()
+    {
+        const string source = "query Q { parent { broken(arg:) innerGood } sibling } query Later { ok }";
+        var result = GraphQLParser.ParseWithDiagnostics(new SourceText(source.AsMemory()));
+
+        Assert.Single(result.Diagnostics);
+        Assert.Equal(2, result.Document!.Definitions.Count);
+        var operation = Assert.IsType<OperationDefinitionNode>(result.Document.Definitions[0]);
+        var parent = Assert.IsType<FieldNode>(operation.SelectionSet.Selections[0]);
+        Assert.Equal("innerGood", Assert.IsType<FieldNode>(Assert.Single(parent.SelectionSet!.Selections)).Name.Value.ToString());
+        Assert.Equal("sibling", Assert.IsType<FieldNode>(operation.SelectionSet.Selections[1]).Name.Value.ToString());
+        Assert.Equal("Later", Assert.IsType<OperationDefinitionNode>(result.Document.Definitions[1]).Name!.Value.ToString());
+    }
+
+    [Fact]
+    public void RecoversAtSDLDefinitionBoundaries()
+    {
+        const string source = "type Broken { field: } scalar Good";
+        var result = GraphQLParser.ParseWithDiagnostics(new SourceText(source.AsMemory()));
+
+        Assert.Single(result.Diagnostics);
+        Assert.Equal(AstNodeKind.ScalarTypeDefinition, Assert.Single(result.Document!.Definitions).Kind);
+    }
+
+    [Fact]
+    public void RepeatedBadTokensAlwaysAdvanceAndDiagnosticsHaveAFixedBound()
+    {
+        var repeatedErrors = string.Join(' ', Enumerable.Range(0, GraphQLParser.MaximumDiagnosticCount + 25).Select(index => $"query Bad{index} {{ }}"));
+        var result = GraphQLParser.ParseWithDiagnostics(new SourceText(repeatedErrors.AsMemory()));
+
+        Assert.Equal(GraphQLParser.MaximumDiagnosticCount, result.Diagnostics.Count);
+        Assert.True(result.DiagnosticsTruncated);
+    }
+
+    [Fact]
+    public void ExactlyMaximumDiagnosticsDoNotDiscardALaterValidDefinition()
+    {
+        var source = string.Join(' ', Enumerable.Range(0, GraphQLParser.MaximumDiagnosticCount).Select(index => $"query Bad{index} {{ }}")) + " query Good { field }";
+        var result = GraphQLParser.ParseWithDiagnostics(new SourceText(source.AsMemory()));
+
+        Assert.Equal(GraphQLParser.MaximumDiagnosticCount, result.Diagnostics.Count);
+        Assert.False(result.DiagnosticsTruncated);
+        Assert.Equal("Good", Assert.IsType<OperationDefinitionNode>(Assert.Single(result.Document!.Definitions)).Name!.Value.ToString());
+    }
+
+    [Fact]
+    public void SynchronizationSkipsRepeatedUnexpectedTokensToTheNextDefinition()
+    {
+        const string source = "@ @ @ query Good { field }";
+        var result = GraphQLParser.ParseWithDiagnostics(new SourceText(source.AsMemory()));
+
+        Assert.Single(result.Diagnostics);
+        Assert.Equal("Good", Assert.IsType<OperationDefinitionNode>(Assert.Single(result.Document!.Definitions)).Name!.Value.ToString());
+    }
 }
