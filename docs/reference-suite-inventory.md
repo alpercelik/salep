@@ -12,7 +12,7 @@ The current classification is:
 | Contract review | 53 | Error and AST utility APIs to resolve against the selected public API contract before claiming parity. |
 | Out of scope | 1,710 | Schema semantics, validation, execution, runtime internals, test infrastructure, and downstream package integration. |
 
-These counts account for tests; they do not mean the cases have passed in this C# implementation. The checked-in differential corpus currently contains 413 passing cases from the language tests; see [release readiness](release-readiness.md) for its exact coverage and remaining implementation work. The 53 contract-review cases are not silently skipped: milestone 11 resolves whether they belong to the selected public API surface.
+These counts account for tests; they do not mean every case is in scope. The checked-in differential corpus contains 1,226 applicable cases from the language tests, all passing in the C# harness. Nine explicit exclusions across eight test identities are recorded with reasons; see [release readiness](release-readiness.md) for category counts and the remaining implementation work. The 53 contract-review cases are not silently skipped: the public API inventory and compatibility milestone determine whether they belong to the selected surface.
 
 Regenerate or check the inventory from a read-only checkout at the pinned commit. Node 20 is required by the upstream test runner:
 

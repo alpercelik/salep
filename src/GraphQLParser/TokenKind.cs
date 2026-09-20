@@ -43,4 +43,6 @@ public enum TokenKind : byte
     String,
     /// <summary>A triple-quoted block string literal.</summary>
     BlockString,
+    /// <summary>The dot separator used in schema coordinates.</summary>
+    Dot,
 }

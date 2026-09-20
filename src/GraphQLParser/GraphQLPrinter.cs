@@ -33,7 +33,7 @@ public static class GraphQLPrinter
             case IntValueNode value: return value.Value.ToString();
             case FloatValueNode value: return value.Value.ToString();
             case StringValueNode value: return value.IsBlock
-                ? GraphQLBlockString.PrintBlockString(value.Value.ToString())
+                ? RenderBlockString(value.Value.ToString(), indent)
                 : GraphQLString.PrintString(value.Value.ToString());
             case BooleanValueNode value: return value.Value ? "true" : "false";
             case NullValueNode: return "null";
@@ -137,7 +137,11 @@ public static class GraphQLPrinter
     private static string RenderInputArguments(IReadOnlyList<InputValueDefinitionNode> arguments, int indent)
     {
         if (arguments.Count == 0) return string.Empty;
-        return "(" + string.Join(", ", arguments.Select(argument => Render(argument, indent))) + ")";
+        var values = arguments.Select(argument => Render(argument, indent + 1)).ToArray();
+        var inline = "(" + string.Join(", ", values) + ")";
+        if (!arguments.Any(argument => argument.Description is not null) && inline.Length + (indent * 2) <= 80) return inline;
+        var pad = new string(' ', (indent + 1) * 2);
+        return "(\n" + string.Join("\n", values.Select(value => pad + value)) + "\n" + new string(' ', indent * 2) + ")";
     }
 
     private static string RenderVariableDefinitions(IReadOnlyList<VariableDefinitionNode> definitions, int indent)
@@ -145,9 +149,8 @@ public static class GraphQLPrinter
         if (definitions.Count == 0) return string.Empty;
         var values = definitions.Select(definition => Render(definition, indent)).ToArray();
         var inline = "(" + string.Join(", ", values) + ")";
-        if (inline.Length + (indent * 2) <= 80) return inline;
-        var pad = new string(' ', (indent + 1) * 2);
-        return "(\n" + string.Join("\n", values.Select(value => pad + value)) + "\n" + new string(' ', indent * 2) + ")";
+        if (!definitions.Any(definition => definition.Description is not null) && inline.Length + (indent * 2) <= 80) return inline;
+        return "(\n" + string.Join("\n", values) + "\n" + new string(' ', indent * 2) + ")";
     }
 
     private static string RenderDirectives(IEnumerable<DirectiveNode> directives, int indent)
@@ -168,9 +171,22 @@ public static class GraphQLPrinter
     private static string RenderDescription(StringValueNode? description, int indent)
     {
         if (description is null) return string.Empty;
-        var value = Render(description, indent);
+        var value = description.IsBlock
+            ? RenderBlockString(description.Value.ToString(), indent, isDescription: true)
+            : Render(description, indent);
         var pad = new string(' ', indent * 2);
-        return pad + value + "\n" + pad;
+        return value + "\n" + pad;
+    }
+
+    private static string RenderBlockString(string value, int indent, bool isDescription = false)
+    {
+        var printed = GraphQLBlockString.PrintBlockString(value);
+        var newline = printed.IndexOf('\n');
+        if (newline < 0) return printed;
+
+        var pad = new string(' ', (indent + (isDescription ? 0 : 1)) * 2);
+        var lines = printed[(newline + 1)..].Split('\n');
+        return printed[..(newline + 1)] + string.Join("\n", lines.Select(line => pad + line));
     }
 
     private static string OperationName(OperationType operation) => operation switch

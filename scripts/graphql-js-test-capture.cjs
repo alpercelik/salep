@@ -8,6 +8,7 @@ const originalLoad = Module._load;
 const capture = { parseCases: [], helperCases: [], lexerCases: [], blockStringCases: [], utilityCases: [], schemaCoordinateCases: [], printCases: [], locationPrintCases: [], sourceCases: [], predicateCases: [], coordinateLexerCases: [], visitorCases: [], excludedCases: [] };
 const currentTest = Symbol.for('graphql-csharp-parser.reference-test');
 const parsedSources = new WeakMap();
+const fixtureSources = new Map();
 
 function testTitle() {
   return globalThis[currentTest] ?? 'unknown upstream test';
@@ -16,6 +17,11 @@ function testTitle() {
 Module._load = function (request, parent, isMain) {
   const exports = originalLoad.apply(this, arguments);
   const parentFile = parent?.filename ?? '';
+
+  if (parentFile.includes('/src/language/__tests__/') && /kitchenSink(Query|SDL)/.test(request)) {
+    const body = Object.values(exports).find((value) => typeof value === 'string');
+    if (body !== undefined) fixtureSources.set(parentFile, body);
+  }
 
   if (request === 'mocha' && parentFile.includes('/src/language/__tests__/')) {
     const wrapped = { ...exports };
@@ -191,10 +197,12 @@ Module._load = function (request, parent, isMain) {
     wrapped.print = function (node) {
       try {
         const result = original.apply(this, arguments);
-        const source = node?.loc?.source?.body ?? parsedSources.get(node)?.source;
+        const parsed = parsedSources.get(node);
+        const useFixtureSource = testTitle().includes('prints kitchen sink without altering ast');
+        const source = node?.loc?.source?.body ?? parsed?.source ?? (useFixtureSource ? fixtureSources.get(parentFile) : undefined);
         if (typeof source === 'string') capture.printCases.push({
           test: testTitle(), sourceFile: parentFile.split('/src/language/__tests__/')[1], source,
-          options: parsedSources.get(node)?.options ?? null,
+          options: parsed?.options ?? (useFixtureSource ? { noLocation: true } : null),
           nodeKind: node.kind,
           nodeLocation: node.loc ? { start: node.loc.start, end: node.loc.end } : null,
           expected: result,
@@ -263,7 +271,11 @@ Module._load = function (request, parent, isMain) {
       const source = root?.loc?.source?.body;
       try {
         const result = original.apply(this, arguments);
-        if (typeof source === 'string') capture.visitorCases.push({ test: testTitle(), sourceFile: 'visitor-test.ts', source, expected: canonicalNode(result) });
+        if (typeof source === 'string') capture.visitorCases.push({
+          test: testTitle(), sourceFile: 'visitor-test.ts', source,
+          options: parsedSources.get(root)?.options ?? null,
+          expected: canonicalNode(result),
+        });
         return result;
       } catch (error) {
         capture.excludedCases.push({ test: testTitle(), sourceFile: 'visitor-test.ts', reason: 'Visitor case asserts JavaScript-specific callback context or replacement behavior.' });

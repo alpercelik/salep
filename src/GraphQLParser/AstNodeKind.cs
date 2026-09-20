@@ -99,4 +99,6 @@ public enum AstNodeKind : byte
     DirectiveCoordinate,
     /// <summary>A directive argument schema coordinate.</summary>
     DirectiveArgumentCoordinate,
+    /// <summary>An extension to a directive definition.</summary>
+    DirectiveExtension,
 }

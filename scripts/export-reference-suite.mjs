@@ -161,7 +161,7 @@ for (const entry of captured.printCases) {
     exclusions.push({ test: entry.test, sourceFile: entry.sourceFile, reason: 'Experimental directive-on-directive syntax is outside the pinned GraphQL language specification contract.' });
     continue;
   }
-  if (!entry.nodeLocation) {
+  if (!entry.nodeLocation && !entry.source) {
     exclusions.push({ test: entry.test, sourceFile: entry.sourceFile, reason: 'Printer target is a detached node without a source location.' });
     continue;
   }
@@ -186,7 +186,11 @@ for (const entry of captured.coordinateLexerCases) {
 }
 
 for (const entry of captured.visitorCases) {
-  addCase('visitor', entry, entry.source, { ast: entry.expected });
+  addCase('visitor', entry, entry.source, { ast: entry.expected }, entry.options ? { parserOptions: {
+    ...(entry.options.maxTokens === undefined ? {} : { maximumTokenCount: entry.options.maxTokens }),
+    ...(entry.options.noLocation === undefined ? {} : { noLocation: entry.options.noLocation }),
+    ...(entry.options.allowLegacyFragmentVariables === undefined ? {} : { allowLegacyFragmentVariables: entry.options.allowLegacyFragmentVariables }),
+  } } : {});
 }
 
 function addParseCase(source, entry, options, upstreamOutcome, extra = {}) {
