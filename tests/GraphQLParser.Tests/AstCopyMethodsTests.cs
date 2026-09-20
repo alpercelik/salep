@@ -95,6 +95,10 @@ public sealed class AstCopyMethodsTests
         var fieldWithChildren = new FieldNode(location, name, null, [directiveByInterface], [argument], null);
         Assert.Same(argument, fieldWithChildren.Arguments[0]);
         Assert.Same(directiveByInterface, fieldWithChildren.Directives[0]);
+        var fieldWithoutLocation = new FieldNode(null, name, null, [], [], null);
+        Assert.False(fieldWithoutLocation.HasLocation);
+        Assert.Equal(0, fieldWithoutLocation.Location.Start);
+        Assert.Equal(0, fieldWithoutLocation.Location.End);
         Assert.Equal("field", new FieldNode("field").Name.Value);
         Assert.Equal("field", new FieldNode("field", null).Name.Value);
         Assert.Same(argument, new FieldNode(name, null, [], [argument], null).Arguments[0]);

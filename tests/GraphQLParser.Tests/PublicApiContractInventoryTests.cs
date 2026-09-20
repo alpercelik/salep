@@ -16,7 +16,7 @@ public sealed class PublicApiContractInventoryTests
         Assert.Equal(1, root.GetProperty("contractVersion").GetInt32());
         Assert.Equal("GraphQLParser", root.GetProperty("projectIdentity").GetProperty("namespaceRoot").GetString());
         Assert.Equal("GraphQLParser", root.GetProperty("projectIdentity").GetProperty("assembly").GetString());
-        Assert.Equal(new[] { "net10.0" }, root.GetProperty("projectIdentity").GetProperty("frameworks").EnumerateArray().Select(item => item.GetString()));
+        Assert.Equal(new[] { "net10.0", "net11.0" }, root.GetProperty("projectIdentity").GetProperty("frameworks").EnumerateArray().Select(item => item.GetString()));
         Assert.Equal(new[] { "net10.0", "net11.0", "net8.0", "net9.0", "netstandard2.0" },
             root.GetProperty("sourceMetadata").GetProperty("frameworks").EnumerateArray().Select(item => item.GetString()).Order(StringComparer.Ordinal));
     }

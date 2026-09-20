@@ -16,7 +16,8 @@
     "namespaceRoot": "GraphQLParser",
     "assembly": "GraphQLParser",
     "frameworks": [
-      "net10.0"
+      "net10.0",
+      "net11.0"
     ]
   },
   "scope": [

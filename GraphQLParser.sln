@@ -6,7 +6,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphQLParser", "src\GraphQ
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphQLParser.Tests", "tests\GraphQLParser.Tests\GraphQLParser.Tests.csproj", "{FCB32309-7C05-4CE0-B7F4-E3BFF7D91E5E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphQLParser.PublicApiConsumer", "tests\GraphQLParser.PublicApiConsumer\GraphQLParser.PublicApiConsumer.csproj", "{781C3921-ECA8-451D-B718-FC95D42B3079}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".SolutionItems", ".SolutionItems", "{34A27AC3-0901-4BBB-B06E-697809145BB9}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		Directory.Packages.props = Directory.Packages.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -22,9 +26,5 @@ Global
 		{FCB32309-7C05-4CE0-B7F4-E3BFF7D91E5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FCB32309-7C05-4CE0-B7F4-E3BFF7D91E5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FCB32309-7C05-4CE0-B7F4-E3BFF7D91E5E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{781C3921-ECA8-451D-B718-FC95D42B3079}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{781C3921-ECA8-451D-B718-FC95D42B3079}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{781C3921-ECA8-451D-B718-FC95D42B3079}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{781C3921-ECA8-451D-B718-FC95D42B3079}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

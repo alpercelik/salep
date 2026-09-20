@@ -1,6 +1,6 @@
 # GraphQL C# Parser
 
-A GraphQL lexer and parser targeting .NET 10 LTS and the September 2025 GraphQL specification. The conformance scope and parser-versus-validation boundary are recorded in [docs/spec-coverage.md](docs/spec-coverage.md).
+A GraphQL lexer and parser targeting .NET 10 and .NET 11 and the September 2025 GraphQL specification. The repository currently pins the .NET 11 RC SDK to build both targets; update `global.json` to the supported .NET 11 SDK when it is released. The conformance scope and parser-versus-validation boundary are recorded in [docs/spec-coverage.md](docs/spec-coverage.md).
 The AST location, immutability, and source-memory rules are recorded in [docs/ast-model.md](docs/ast-model.md).
 
 ## Build and test
@@ -16,6 +16,14 @@ The script forwards arguments to `dotnet test`, so focused tests can use normal 
 ```sh
 ./scripts/test.sh --filter FullyQualifiedName~SourceTextTests
 ```
+
+Build and verify the NuGet package and package-only consumer on both target frameworks with:
+
+```sh
+./scripts/verify-package-compatibility.sh
+```
+
+The package is retained at `artifacts/packages/GraphQLParser.0.0.0-verify.1.nupkg`.
 
 Tests live in `tests/GraphQLParser.Tests`. GraphQL inputs are stored under its `Fixtures` directory and copied to the test output directory. Keep minimized defect reproductions there as regression fixtures. The test project can add differential oracle tests as parser coverage grows.
 

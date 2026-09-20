@@ -39,6 +39,10 @@ if (Utf8GraphQLParser.Syntax.ParseTypeReference("[String!]!").Kind != SyntaxKind
 if (new NameNode("api").WithValue("consumer").Value != "consumer")
     throw new InvalidOperationException("The public immutable AST update API failed.");
 
+var fieldWithoutLocation = new FieldNode(null, new NameNode("__typename"), null, [], [], null);
+if (fieldWithoutLocation.HasLocation)
+    throw new InvalidOperationException("A field constructed without source metadata unexpectedly has a location.");
+
 static NamedSyntaxNode RequireNamedSyntax(NamedSyntaxNode node) => node;
 
 const string namedSyntaxSource = "query Q { user { name ...Details } } fragment Details on User { id } type QueryType { field(arg: Int): String } enum Status { READY } input Filter { term: String }";

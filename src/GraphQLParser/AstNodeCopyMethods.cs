@@ -210,8 +210,8 @@ public sealed partial class FragmentDefinitionNode
 public sealed partial class FieldNode
 {
     /// <summary>Creates a field selection at a public source location.</summary>
-    public FieldNode(Location location, NameNode name, NameNode? alias, IReadOnlyList<DirectiveNode> directives, IReadOnlyList<ArgumentNode> arguments, SelectionSetNode? selectionSet)
-        : this(name, alias, arguments, directives, selectionSet, (SourceLocation)(location ?? throw new ArgumentNullException(nameof(location)))) { }
+    public FieldNode(Location? location, NameNode name, NameNode? alias, IReadOnlyList<DirectiveNode> directives, IReadOnlyList<ArgumentNode> arguments, SelectionSetNode? selectionSet)
+        : this(name, alias, arguments, directives, selectionSet, location is null ? default : (SourceLocation)location) { }
     /// <summary>Creates a field selection without explicit source metadata.</summary>
     public FieldNode(NameNode name, NameNode? alias, IReadOnlyList<DirectiveNode> directives, IReadOnlyList<ArgumentNode> arguments, SelectionSetNode? selectionSet)
         : this(name, alias, arguments, directives, selectionSet, default) { }

@@ -18,8 +18,8 @@ internal static class PackageApiContractVerifier
         if (assembly.GetName().Name != expectedAssembly)
             throw new InvalidOperationException($"Expected assembly '{expectedAssembly}', found '{assembly.GetName().Name}'.");
         var frameworks = project.GetProperty("frameworks").EnumerateArray().Select(value => value.GetString()).ToArray();
-        if (!frameworks.SequenceEqual(new[] { "net10.0" }))
-            throw new InvalidOperationException("The selected package contract must target net10.0.");
+        if (!frameworks.SequenceEqual(new[] { "net10.0", "net11.0" }))
+            throw new InvalidOperationException("The selected package contract must target net10.0 and net11.0.");
 
         using var allowlist = JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "package-api-allowlist.json")));
         var differences = allowlist.RootElement.GetProperty("allowedDifferences").EnumerateArray().Select(value => value.GetString()).ToArray();

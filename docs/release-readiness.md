@@ -2,7 +2,7 @@
 
 ## Supported surface
 
-The parser targets the GraphQL specification's September 2025 edition. It parses lexical input, executable documents, and schema definition language (SDL) syntax into an immutable, source-located AST. The supported compatibility package is `GraphQLParser` targeting `net10.0`, with this project's `GraphQLParser` namespace and assembly identity. The selected normalized API inventory has 119 public types and 992 declared public members; runtime signature comparison and package-only consumer verification passed with an empty difference allowlist. The supported API families and target limitation are detailed in [public API contract](public-api-contract.md).
+The parser targets the GraphQL specification's September 2025 edition. It parses lexical input, executable documents, and schema definition language (SDL) syntax into an immutable, source-located AST. The supported compatibility package is `GraphQLParser` targeting `net10.0` and `net11.0`, with this project's `GraphQLParser` namespace and assembly identity. The selected normalized API inventory has 119 public types and 992 declared public members; runtime signature comparison and package-only consumer verification passed with an empty difference allowlist. The supported API families and target frameworks are detailed in [public API contract](public-api-contract.md).
 
 The parser does not build or validate schemas, validate executable operations against a schema, or execute requests. The syntax coverage matrix and detailed exclusions are in [spec coverage](spec-coverage.md).
 
@@ -20,7 +20,7 @@ Verified on 2026-09-20 from the current checkout:
 
 | Gate | Result |
 | --- | --- |
-| Clean Release rebuild and test harness | Single-node `Rebuild` succeeded with 0 warnings and 0 errors; 1,559 passed, 0 failed, 0 skipped |
+| Clean Release rebuild and test harness | Single-node `Rebuild` succeeded with 0 warnings and 0 errors; net10.0 and net11.0 each passed 1,559 tests, 0 failed, 0 skipped |
 | Pinned oracle fixtures | 23 passed (7 valid, 16 invalid) |
 | GraphQL.js reference language corpus | 1,227 focused checks passed (1,226 cases plus provenance); 220 upstream tests passed |
 | Reference corpus freshness | Passed at pinned source commit; 1,226 cases from 220 upstream tests; 9 explicitly excluded assertions |
@@ -28,8 +28,8 @@ Verified on 2026-09-20 from the current checkout:
 | Original oracle fixture freshness | All 23 valid/invalid fixture expectations match the pinned package |
 | Deterministic mutation fuzz | 512 cases, seed `20260925`, passed |
 | Resource-bound tests | 14 focused tests passed, covering configurable and default input/token/depth/diagnostic limits and failure behavior |
-| Standalone API consumer | Passed; parsed and traversed representative documents and visited 19 AST nodes |
-| Package-only consumer and contents | Temporary local-feed restore/build/run passed with 0 warnings/errors; package contains only the `net10.0` assembly plus XML docs and package readme; 119 types and 992 declared members match with an empty difference allowlist |
+| Package-only public API consumer | Passed for net10.0 and net11.0; parsed and traversed representative documents and visited 19 AST nodes on each target |
+| Package-only consumer and contents | Temporary local-feed restore/build/run passed with 0 warnings/errors; package contains `net10.0` and `net11.0` assemblies plus XML docs and package readme; 119 types and 992 declared members match with an empty difference allowlist |
 | Reproducible benchmark | Corpus v1 integrity passed: 8 categories/cases, 1,000 measured iterations × 3 repetitions, 48 raw samples across 16 operations; all 16 deterministic allocation budgets passed |
 
 The supported language API includes document and schema-coordinate parser entry points and parser options; lexer, tokens, syntax exceptions and diagnostics; immutable AST nodes and source/location helpers; quoted/block-string formatters and predicates; a deterministic printer; and visitor, navigator, and immutable rewrite APIs. UTF-8 reader/parsing APIs are included. HTTP request envelopes, request caches, operation-document hashing and its wrapper, schema-dependent validation, and execution are excluded. The complete selected inventory is [machine-readable](public-api-contract.json) and [described here](public-api-contract.md).
