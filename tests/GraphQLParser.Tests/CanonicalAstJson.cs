@@ -209,6 +209,25 @@ internal static class CanonicalAstJson
                 result["repeatable"] = directiveDefinition.Repeatable;
                 result["locations"] = Nodes(directiveDefinition.Locations);
                 break;
+            case TypeCoordinateNode coordinate:
+                result["name"] = Project(coordinate.Name);
+                break;
+            case MemberCoordinateNode coordinate:
+                result["name"] = Project(coordinate.Name);
+                result["memberName"] = Project(coordinate.MemberName);
+                break;
+            case ArgumentCoordinateNode coordinate:
+                result["name"] = Project(coordinate.Name);
+                result["fieldName"] = Project(coordinate.FieldName);
+                result["argumentName"] = Project(coordinate.ArgumentName);
+                break;
+            case DirectiveCoordinateNode coordinate:
+                result["name"] = Project(coordinate.Name);
+                break;
+            case DirectiveArgumentCoordinateNode coordinate:
+                result["name"] = Project(coordinate.Name);
+                result["argumentName"] = Project(coordinate.ArgumentName);
+                break;
             default:
                 throw new NotSupportedException($"No canonical AST projection for {node.GetType().Name}.");
         }

@@ -39,7 +39,7 @@ public static class GraphQLPrinter
             case NullValueNode: return "null";
             case EnumValueNode value: return value.Value.ToString();
             case ListValueNode list: return "[" + string.Join(", ", list.Values.Select(value => Render(value, indent))) + "]";
-            case ObjectValueNode obj: return "{" + (obj.Fields.Count == 0 ? string.Empty : " " + string.Join(", ", obj.Fields.Select(value => Render(value, indent))) + " ") + "}";
+            case ObjectValueNode obj: return "{" + string.Join(", ", obj.Fields.Select(value => Render(value, indent))) + "}";
             case ObjectFieldNode field: return Render(field.Name, indent) + ": " + Render(field.Value, indent);
             case NamedTypeNode type: return Render(type.Name, indent);
             case ListTypeNode type: return "[" + Render(type.Type, indent) + "]";

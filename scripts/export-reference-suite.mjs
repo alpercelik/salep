@@ -18,6 +18,14 @@ const testFiles = [
   'src/language/__tests__/parser-test.ts',
   'src/language/__tests__/schema-parser-test.ts',
   'src/language/__tests__/blockString-test.ts',
+  'src/language/__tests__/predicates-test.ts',
+  'src/language/__tests__/printLocation-test.ts',
+  'src/language/__tests__/printString-test.ts',
+  'src/language/__tests__/printer-test.ts',
+  'src/language/__tests__/schema-printer-test.ts',
+  'src/language/__tests__/schemaCoordinateLexer-test.ts',
+  'src/language/__tests__/source-test.ts',
+  'src/language/__tests__/visitor-test.ts',
 ];
 
 if (mode !== '--write' && mode !== '--check') {
@@ -76,8 +84,7 @@ function addCase(kind, origin, source, expected, extra = {}) {
 
 async function finalizeCorpus() {
 for (const entry of captured.parseCases) {
-  const options = entry.options?.maxTokens === undefined ? undefined : { maxTokens: entry.options.maxTokens };
-  addParseCase(entry.source, entry, options, entry.outcome);
+  addParseCase(entry.source, entry, entry.options ?? undefined, entry.outcome);
 }
 
 for (const entry of captured.helperCases) {
@@ -122,12 +129,76 @@ for (const entry of captured.blockStringCases) {
   addCase('blockString', entry, source, { value: expectedValue });
 }
 
+for (const entry of captured.schemaCoordinateCases) {
+  addCase('schemaCoordinate', entry, entry.source, entry.expected);
+}
+
+for (const entry of captured.utilityCases) {
+  addCase('utility', entry, JSON.stringify(entry.input), entry.expected, {
+    utility: { method: entry.method, input: entry.input, options: entry.options ?? null },
+  });
+}
+
+for (const entry of captured.locationPrintCases) {
+  addCase('utility', entry, entry.body, entry.expected, {
+    utility: { method: 'printSourceLocation', input: { body: entry.body, name: entry.name, locationOffset: entry.locationOffset, location: entry.location } },
+  });
+}
+
+for (const entry of captured.sourceCases) {
+  if (entry.outcome !== 'valid' && typeof entry.body !== 'string') {
+    exclusions.push({ test: entry.test, sourceFile: entry.sourceFile, reason: 'Invalid JavaScript constructor argument-shape diagnostics are not part of the strongly typed source API contract.' });
+    continue;
+  }
+  addCase('utility', entry, JSON.stringify({ body: entry.body, name: entry.name ?? null, locationOffset: entry.locationOffset ?? null }),
+    entry.outcome === 'valid' ? { outcome: entry.outcome } : { outcome: entry.outcome, errorName: entry.errorName }, {
+    utility: { method: 'Source', input: { body: entry.body, name: entry.name, locationOffset: entry.locationOffset } },
+  });
+}
+
+for (const entry of captured.printCases) {
+  if (entry.test.includes('Experimental:')) {
+    exclusions.push({ test: entry.test, sourceFile: entry.sourceFile, reason: 'Experimental directive-on-directive syntax is outside the pinned GraphQL language specification contract.' });
+    continue;
+  }
+  if (!entry.nodeLocation) {
+    exclusions.push({ test: entry.test, sourceFile: entry.sourceFile, reason: 'Printer target is a detached node without a source location.' });
+    continue;
+  }
+  addCase('printer', entry, entry.source, { output: entry.expected }, {
+    printer: { nodeKind: entry.nodeKind, nodeLocation: entry.nodeLocation },
+    ...(entry.options ? { parserOptions: {
+      ...(entry.options.maxTokens === undefined ? {} : { maximumTokenCount: entry.options.maxTokens }),
+      ...(entry.options.noLocation === undefined ? {} : { noLocation: entry.options.noLocation }),
+      ...(entry.options.allowLegacyFragmentVariables === undefined ? {} : { allowLegacyFragmentVariables: entry.options.allowLegacyFragmentVariables }),
+    } } : {}),
+  });
+}
+
+for (const entry of captured.predicateCases) {
+  addCase('predicate', entry, JSON.stringify(entry.node), { value: entry.expected }, {
+    predicate: { method: entry.method, node: entry.node },
+  });
+}
+
+for (const entry of captured.coordinateLexerCases) {
+  addCase('coordinateLexer', entry, entry.source, entry.token ? { token: entry.token } : { error: entry.error });
+}
+
+for (const entry of captured.visitorCases) {
+  addCase('visitor', entry, entry.source, { ast: entry.expected });
+}
+
 function addParseCase(source, entry, options, upstreamOutcome, extra = {}) {
   try {
     const ast = graphqlParse(source, options);
     if (upstreamOutcome !== 'valid') throw new Error(`${entry.test}: captured rejected parse now parses successfully in the pinned oracle.`);
     addCase('parse', entry, source, { outcome: 'valid', ast: canonicalNode(ast) }, {
-      ...(options?.maxTokens === undefined ? {} : { parserOptions: { maximumTokenCount: options.maxTokens } }),
+      ...(options ? { parserOptions: {
+        ...(options.maxTokens === undefined ? {} : { maximumTokenCount: options.maxTokens }),
+        ...(options.noLocation === undefined ? {} : { noLocation: options.noLocation }),
+        ...(options.allowLegacyFragmentVariables === undefined ? {} : { allowLegacyFragmentVariables: options.allowLegacyFragmentVariables }),
+      } } : {}),
       ...extra,
     });
   } catch (error) {
@@ -139,7 +210,11 @@ function addParseCase(source, entry, options, upstreamOutcome, extra = {}) {
       failureCategory: resourceLimit ? 'resource' : classifyFailure(error.message),
       position: error.positions?.[0] ?? null,
     }, {
-      ...(options?.maxTokens === undefined ? {} : { parserOptions: { maximumTokenCount: options.maxTokens } }),
+      ...(options ? { parserOptions: {
+        ...(options.maxTokens === undefined ? {} : { maximumTokenCount: options.maxTokens }),
+        ...(options.noLocation === undefined ? {} : { noLocation: options.noLocation }),
+        ...(options.allowLegacyFragmentVariables === undefined ? {} : { allowLegacyFragmentVariables: options.allowLegacyFragmentVariables }),
+      } } : {}),
       ...extra,
     });
   }
@@ -153,9 +228,9 @@ const knownNonParserTests = [
     .map(({ test, sourceFile }) => ({
       test,
       sourceFile,
-      reason: sourceFile === 'blockString-test.ts'
-        ? 'Block-string printing and printable-as-block-string helpers are serializer utilities; block-string lexing and normalization cases are included.'
-        : 'The test exercises a graphql-js helper predicate rather than GraphQL lexer/parser behavior.',
+      reason: sourceFile === 'visitor-test.ts'
+        ? 'Editable visitor replacement behavior is handled by the public API compatibility work; read-only traversal is covered separately.'
+        : 'No observable parser or language utility call was captured for this reference test.',
     })),
 ];
 exclusions.push(...knownNonParserTests);
@@ -176,6 +251,12 @@ const provenance = {
     parse: cases.filter((item) => item.kind === 'parse').length,
     lexer: cases.filter((item) => item.kind === 'lexer').length,
     blockString: cases.filter((item) => item.kind === 'blockString').length,
+    utility: cases.filter((item) => item.kind === 'utility').length,
+    schemaCoordinate: cases.filter((item) => item.kind === 'schemaCoordinate').length,
+    printer: cases.filter((item) => item.kind === 'printer').length,
+    predicate: cases.filter((item) => item.kind === 'predicate').length,
+    coordinateLexer: cases.filter((item) => item.kind === 'coordinateLexer').length,
+    visitor: cases.filter((item) => item.kind === 'visitor').length,
     excludedTestCases: uniqueExclusions.length,
     excludedTestNames: new Set(uniqueExclusions.map((item) => item.test)).size,
   },
