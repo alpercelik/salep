@@ -6,7 +6,10 @@
     "oracle:write": "node scripts/oracle.mjs --write",
     "oracle:check": "node scripts/oracle.mjs --check",
     "reference:write": "node scripts/export-reference-suite.mjs --write",
-    "reference:check": "node scripts/export-reference-suite.mjs --check"
+    "reference:check": "node scripts/export-reference-suite.mjs --check",
+    "reference:inventory:write": "node scripts/export-reference-inventory.mjs --write",
+    "reference:inventory:check": "node scripts/export-reference-inventory.mjs --check",
+    "reference:inventory:test": "node --test scripts/reference-inventory-core.test.mjs"
   },
   "devDependencies": {
     "graphql": "16.14.0"
