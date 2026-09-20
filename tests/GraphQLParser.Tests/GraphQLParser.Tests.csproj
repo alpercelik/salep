@@ -19,5 +19,6 @@
     <None Update="Fixtures/**/*.graphql" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../Fixtures/Oracle/**/*" Link="Fixtures/Oracle/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../Fixtures/ReferenceSuite/**/*" Link="Fixtures/ReferenceSuite/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/public-api-contract.json" Link="Fixtures/Contracts/public-api-contract.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
