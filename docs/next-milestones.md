@@ -4,7 +4,7 @@
 
 Deliver a production-ready C# GraphQL language library aligned with the pinned September 2025 specification. The library covers lexing, parsing, syntax trees, source locations, printing, and language-level helpers. Schema-dependent validation, operation validation, value coercion, and execution remain outside its scope. Compatibility work must be based on independently observed public API contracts and black-box behavior; no third-party implementation source is imported.
 
-Repository documents, fixtures, and implementation must remain generic GraphQL language work. Do not import or name an external consuming application or an external implementation in repository artifacts. The public-identifier policy for an exact package replacement is a separate release decision.
+Repository documents, fixtures, and implementation must remain generic GraphQL language work. Do not import or name an external consuming application or an external implementation in repository artifacts. Use this library's own namespace and assembly identities; compare public type and member contracts after that namespace adjustment. Consumers will update their imports when switching packages.
 
 The continuously runnable test harness is a gate for every task. Each completed implementation task adds relevant positive, negative, boundary, and regression cases, records focused and full-suite results, and is committed separately.
 
@@ -18,9 +18,9 @@ The continuously runnable test harness is a gate for every task. Each completed 
 ## Milestone 11: Public language API compatibility
 
 1. Produce a public API contract inventory from package metadata and independently written consumer examples. Record entry points, options, AST node types, interfaces, constructors, members, immutable rewrite methods, formatting, exceptions, and target frameworks. Keep the inventory generic in repository documentation.
-2. Implement the required API surface with original code. Preserve the library's existing API where practical and define explicit adapters or a compatibility layer when signatures differ. Confirm the namespace and assembly identity policy before selecting the final package layout.
+2. Implement the required API surface with original code under project-owned namespaces and assemblies. Preserve the library's existing API where practical and define explicit adapters or a compatibility layer when signatures differ.
 3. Add a standalone compile-and-run consumer fixture that uses only the replacement packages. It must exercise parsing, AST traversal and construction, immutable rewrites, printing, diagnostics, and representative executable and SDL documents. Compare observable results through golden fixtures and structural assertions.
-4. Verify package contents, framework targets, public API signatures, and a clean restore/build without access to the original packages at test time. Record any intentional API differences in a machine-checkable allowlist; the release gate requires that list to be empty for the selected compatibility surface.
+4. Verify package contents, framework targets, namespace-adjusted public API signatures, and a clean restore/build without access to the original packages at test time. Record any intentional API differences in a machine-checkable allowlist; the release gate requires that list to be empty for the selected compatibility surface.
 
 ## Milestone 12: Ownership, stress, performance, release
 
