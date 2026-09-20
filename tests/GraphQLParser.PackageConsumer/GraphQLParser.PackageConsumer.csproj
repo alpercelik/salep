@@ -7,7 +7,7 @@
     <DefineConstants>$(DefineConstants);PACKAGE_VERIFICATION</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="GraphQLParser" Version="0.0.0-verify" />
+    <PackageReference Include="GraphQLParser" />
     <Compile Include="../GraphQLParser.PublicApiConsumer/Program.cs" Link="Program.cs" />
     <None Include="../../docs/public-api-contract.json" Link="public-api-contract.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../docs/package-api-allowlist.json" Link="package-api-allowlist.json" CopyToOutputDirectory="PreserveNewest" />
