@@ -29,6 +29,7 @@
   ],
   "excludedSurface": [
     "HTTP request envelopes and operation documents",
+    "UTF-8 operation-document parser wrappers",
     "schema-dependent validation",
     "execution"
   ],
@@ -2516,12 +2517,6 @@
           "name": "FixedPoint",
           "type": "GraphQLParser.FloatFormat",
           "value": "0"
-        },
-        {
-          "kind": "field",
-          "name": "value__",
-          "type": "System.Int32",
-          "value": null
         }
       ]
     },
@@ -6872,12 +6867,6 @@
           "name": "Subscription",
           "type": "GraphQLParser.OperationType",
           "value": "2"
-        },
-        {
-          "kind": "field",
-          "name": "value__",
-          "type": "System.Int32",
-          "value": null
         }
       ]
     },
@@ -8072,12 +8061,6 @@
           "name": "SyntaxIgnoreDescriptions",
           "type": "GraphQLParser.SyntaxComparison",
           "value": "2"
-        },
-        {
-          "kind": "field",
-          "name": "value__",
-          "type": "System.Int32",
-          "value": null
         }
       ]
     },
@@ -8344,12 +8327,6 @@
           "name": "UnionTypeExtension",
           "type": "GraphQLParser.SyntaxKind",
           "value": "38"
-        },
-        {
-          "kind": "field",
-          "name": "value__",
-          "type": "System.Int32",
-          "value": null
         },
         {
           "kind": "constant",
@@ -10467,12 +10444,6 @@
           "name": "String",
           "type": "GraphQLParser.TokenKind",
           "value": "20"
-        },
-        {
-          "kind": "field",
-          "name": "value__",
-          "type": "System.Byte",
-          "value": null
         }
       ]
     },
@@ -10510,58 +10481,6 @@
               "name": "message",
               "type": "System.String",
               "optional": false,
-              "defaultValue": null
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "GraphQLParser.Utf8GraphQLOperationParser",
-      "kind": "class",
-      "baseType": "System.ValueType",
-      "interfaces": [],
-      "members": [
-        {
-          "kind": "staticMethod",
-          "name": "Parse",
-          "returnType": "GraphQLParser.Utf8OperationDocument",
-          "parameters": [
-            {
-              "name": "sourceText",
-              "type": "GraphQLParser.Buffers.ReadOnlyMemorySegment",
-              "optional": false,
-              "defaultValue": null
-            },
-            {
-              "name": "options",
-              "type": "GraphQLParser.ParserOptions",
-              "optional": true,
-              "defaultValue": null
-            },
-            {
-              "name": "pooledMetaDb",
-              "type": "System.Boolean",
-              "optional": true,
-              "defaultValue": "False"
-            }
-          ]
-        },
-        {
-          "kind": "staticMethod",
-          "name": "Parse",
-          "returnType": "GraphQLParser.Utf8OperationDocument",
-          "parameters": [
-            {
-              "name": "sourceText",
-              "type": "System.ReadOnlyMemory<System.Byte>",
-              "optional": false,
-              "defaultValue": null
-            },
-            {
-              "name": "options",
-              "type": "GraphQLParser.ParserOptions",
-              "optional": true,
               "defaultValue": null
             }
           ]
@@ -12384,12 +12303,6 @@
           "name": "SkipAndLeave",
           "type": "GraphQLParser.Visitors.SyntaxVisitorActionKind",
           "value": "3"
-        },
-        {
-          "kind": "field",
-          "name": "value__",
-          "type": "System.Int32",
-          "value": null
         }
       ]
     },

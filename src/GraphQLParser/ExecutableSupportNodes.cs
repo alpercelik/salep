@@ -1,7 +1,7 @@
 namespace GraphQLParser;
 
 /// <summary>An argument supplied to a field or directive.</summary>
-public sealed class ArgumentNode : AstNode
+public sealed partial class ArgumentNode : AstNode
 {
     /// <summary>Creates an immutable argument.</summary>
     public ArgumentNode(NameNode name, ValueNode value, SourceLocation location)
@@ -16,11 +16,11 @@ public sealed class ArgumentNode : AstNode
     /// <summary>Gets the argument name.</summary>
     public NameNode Name { get; }
     /// <summary>Gets the argument value.</summary>
-    public ValueNode Value { get; }
+    public IValueNode Value { get; }
 }
 
 /// <summary>A directive application.</summary>
-public sealed class DirectiveNode : AstNode
+public sealed partial class DirectiveNode : AstNode
 {
     /// <summary>Creates an immutable directive application.</summary>
     public DirectiveNode(NameNode name, IEnumerable<ArgumentNode> arguments, SourceLocation location)
@@ -35,11 +35,11 @@ public sealed class DirectiveNode : AstNode
     /// <summary>Gets the directive name.</summary>
     public NameNode Name { get; }
     /// <summary>Gets directive arguments in source order.</summary>
-    public AstNodeList<ArgumentNode> Arguments { get; }
+    public IReadOnlyList<ArgumentNode> Arguments { get; }
 }
 
 /// <summary>A variable declaration within an operation.</summary>
-public sealed class VariableDefinitionNode : AstNode
+public sealed partial class VariableDefinitionNode : AstNode, IHasDirectives
 {
     /// <summary>Creates an immutable variable definition.</summary>
     public VariableDefinitionNode(
@@ -64,11 +64,12 @@ public sealed class VariableDefinitionNode : AstNode
     /// <summary>Gets the declared variable.</summary>
     public VariableNode Variable { get; }
     /// <summary>Gets the required variable type.</summary>
-    public TypeNode Type { get; }
+    public ITypeNode Type { get; }
     /// <summary>Gets the optional constant default value.</summary>
-    public ValueNode? DefaultValue { get; }
+    public IValueNode? DefaultValue { get; }
     /// <summary>Gets directives in source order.</summary>
-    public AstNodeList<DirectiveNode> Directives { get; }
+    public IReadOnlyList<DirectiveNode> Directives { get; }
+    IReadOnlyList<DirectiveNode> IHasDirectives.Directives => Directives;
     /// <summary>Gets the optional variable definition description.</summary>
     public StringValueNode? Description { get; }
 }

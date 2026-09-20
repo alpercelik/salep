@@ -28,7 +28,7 @@ public sealed class PublicApiContractInventoryTests
         var types = document.RootElement.GetProperty("types").EnumerateArray().ToArray();
         var names = types.Select(item => item.GetProperty("name").GetString()!).ToArray();
 
-        Assert.Equal(120, types.Length);
+        Assert.Equal(119, types.Length);
         Assert.Equal(names.Length, names.Distinct(StringComparer.Ordinal).Count());
         Assert.All(names, name => Assert.StartsWith("GraphQLParser.", name, StringComparison.Ordinal));
 
@@ -62,6 +62,7 @@ public sealed class PublicApiContractInventoryTests
             .ToArray();
 
         Assert.Contains("GraphQLParser.Utf8GraphQLParser", names);
+        Assert.DoesNotContain("GraphQLParser.Utf8GraphQLOperationParser", names);
         Assert.Contains("GraphQLParser.DocumentNode", names);
         Assert.Contains("GraphQLParser.SyntaxKind", names);
         Assert.Contains("GraphQLParser.Utilities.SyntaxPrinter", names);

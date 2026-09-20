@@ -2,7 +2,7 @@
 
 This inventory defines the compatibility surface for GraphQL syntax parsing and its language-level utilities. The package metadata is pinned at version 16.6.6. Member signatures were reflected from the net10.0 reference assemblies; the metadata declares `netstandard2.0`, `net8.0`, `net9.0`, `net10.0`, and `net11.0` assets. The current project targets net10.0, so framework parity remains implementation and release work.
 
-The normalized, machine-readable signature baseline is [public-api-contract.json](public-api-contract.json). It records 120 public types and 1,000 declared public members, including constructors, overloads, return and parameter types, optional parameters, properties, and constants. All library-owned names use this project's namespace and assembly identity. The baseline contains API metadata only; it contains no implementation source.
+The normalized, machine-readable signature baseline is [public-api-contract.json](public-api-contract.json). It records 119 public types and 992 declared public members, including constructors, overloads, return and parameter types, optional parameters, properties, and constants. All library-owned names use this project's namespace and assembly identity. The baseline contains API metadata only; it contains no implementation source.
 
 ## Included surface
 
@@ -14,7 +14,7 @@ The normalized, machine-readable signature baseline is [public-api-contract.json
 
 ## Excluded surface
 
-HTTP request envelopes, request caches, operation-document hashing, schema-dependent validation, and execution are outside this parser library's contract. The machine-readable inventory enumerates the language-focused public types and keeps excluded areas explicit.
+HTTP request envelopes, request caches, operation-document hashing and UTF-8 operation-document wrappers, schema-dependent validation, and execution are outside this parser library's contract. The machine-readable inventory enumerates the language-focused public types and keeps excluded areas explicit.
 
 ## Contract tests
 

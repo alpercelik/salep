@@ -88,7 +88,7 @@ public sealed class ParserDiagnosticTests
         var result = GraphQLParser.ParseWithDiagnostics(new SourceText(source.AsMemory()));
 
         Assert.Single(result.Diagnostics);
-        Assert.Equal(AstNodeKind.ScalarTypeDefinition, Assert.Single(result.Document!.Definitions).Kind);
+        Assert.Equal(AstNodeKind.ScalarTypeDefinition, ((AstNode)Assert.Single(result.Document!.Definitions)).AstKind);
     }
 
     [Fact]

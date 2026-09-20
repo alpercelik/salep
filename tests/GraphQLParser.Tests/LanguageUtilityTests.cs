@@ -62,13 +62,13 @@ public sealed class LanguageUtilityTests
         var left = new List<AstNodeKind>();
         Assert.True(GraphQLAstVisitor.Visit(document, node =>
         {
-            entered.Add(node.Kind);
-            return node is FieldNode field && field.Name.Value.Span.SequenceEqual("second")
+            entered.Add(node.AstKind);
+            return node is FieldNode field && field.Name.SourceValue.Span.SequenceEqual("second")
                 ? GraphQLVisitControl.SkipChildren
                 : GraphQLVisitControl.Continue;
         }, node =>
         {
-            left.Add(node.Kind);
+            left.Add(node.AstKind);
             return GraphQLVisitControl.Continue;
         }));
 
@@ -81,7 +81,7 @@ public sealed class LanguageUtilityTests
         var stopped = new List<AstNodeKind>();
         Assert.False(GraphQLAstVisitor.Visit(document, node =>
         {
-            stopped.Add(node.Kind);
+            stopped.Add(node.AstKind);
             return stopped.Count == 3 ? GraphQLVisitControl.Stop : GraphQLVisitControl.Continue;
         }));
         Assert.Equal(3, stopped.Count);

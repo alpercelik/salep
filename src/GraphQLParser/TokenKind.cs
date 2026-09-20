@@ -3,46 +3,66 @@ namespace GraphQLParser;
 /// <summary>Identifies a GraphQL lexical token.</summary>
 public enum TokenKind : byte
 {
+    /// <summary>The start-of-file sentinel.</summary>
+    StartOfFile = 0,
     /// <summary>The stable end-of-file sentinel.</summary>
-    EndOfFile,
+    EndOfFile = 1,
     /// <summary>The <c>!</c> punctuator.</summary>
-    Bang,
+    Bang = 2,
+    /// <summary>The <c>?</c> punctuator.</summary>
+    QuestionMark = 3,
     /// <summary>The <c>$</c> punctuator.</summary>
-    Dollar,
+    Dollar = 4,
     /// <summary>The <c>&amp;</c> punctuator.</summary>
-    Ampersand,
+    Ampersand = 5,
     /// <summary>The <c>(</c> punctuator.</summary>
-    ParenthesisLeft,
+    ParenthesisLeft = 6,
+    /// <summary>Compatibility alias for <see cref="ParenthesisLeft"/>.</summary>
+    LeftParenthesis = ParenthesisLeft,
     /// <summary>The <c>)</c> punctuator.</summary>
-    ParenthesisRight,
+    ParenthesisRight = 7,
+    /// <summary>Compatibility alias for <see cref="ParenthesisRight"/>.</summary>
+    RightParenthesis = ParenthesisRight,
     /// <summary>The <c>...</c> spread token.</summary>
-    Spread,
+    Spread = 8,
     /// <summary>The <c>:</c> punctuator.</summary>
-    Colon,
+    Colon = 9,
     /// <summary>The <c>=</c> punctuator.</summary>
-    Equals,
+    Equals = 10,
+    /// <summary>Compatibility alias for <see cref="Equals"/>.</summary>
+    Equal = Equals,
     /// <summary>The <c>@</c> punctuator.</summary>
-    At,
+    At = 11,
     /// <summary>The <c>[</c> punctuator.</summary>
-    BracketLeft,
+    BracketLeft = 12,
+    /// <summary>Compatibility alias for <see cref="BracketLeft"/>.</summary>
+    LeftBracket = BracketLeft,
     /// <summary>The <c>]</c> punctuator.</summary>
-    BracketRight,
+    BracketRight = 13,
+    /// <summary>Compatibility alias for <see cref="BracketRight"/>.</summary>
+    RightBracket = BracketRight,
     /// <summary>The <c>{</c> punctuator.</summary>
-    BraceLeft,
+    BraceLeft = 14,
+    /// <summary>Compatibility alias for <see cref="BraceLeft"/>.</summary>
+    LeftBrace = BraceLeft,
     /// <summary>The <c>|</c> punctuator.</summary>
-    Pipe,
+    Pipe = 16,
     /// <summary>The <c>}</c> punctuator.</summary>
-    BraceRight,
+    BraceRight = 15,
+    /// <summary>Compatibility alias for <see cref="BraceRight"/>.</summary>
+    RightBrace = BraceRight,
     /// <summary>A GraphQL name.</summary>
-    Name,
+    Name = 17,
     /// <summary>An integer literal.</summary>
-    Integer,
+    Integer = 18,
     /// <summary>A floating-point literal.</summary>
-    Float,
+    Float = 19,
     /// <summary>A quoted string literal.</summary>
-    String,
+    String = 20,
     /// <summary>A triple-quoted block string literal.</summary>
-    BlockString,
+    BlockString = 21,
+    /// <summary>A GraphQL comment.</summary>
+    Comment = 22,
     /// <summary>The dot separator used in schema coordinates.</summary>
-    Dot,
+    Dot = 23,
 }

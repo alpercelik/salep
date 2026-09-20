@@ -1,17 +1,10 @@
 namespace GraphQLParser;
 
 /// <summary>Base class for executable selections.</summary>
-public abstract class SelectionNode : AstNode
-{
-    /// <summary>Creates a selection with a stable node kind and source location.</summary>
-    protected SelectionNode(AstNodeKind kind, SourceLocation location)
-        : base(kind, location)
-    {
-    }
-}
+public interface SelectionNode : ISelectionNode { }
 
 /// <summary>A non-empty ordered set of field and fragment selections.</summary>
-public sealed class SelectionSetNode : AstNode
+public sealed partial class SelectionSetNode : AstNode
 {
     /// <summary>Creates a non-empty immutable selection set.</summary>
     public SelectionSetNode(IEnumerable<SelectionNode> selections, SourceLocation location)
@@ -39,11 +32,11 @@ public sealed class SelectionSetNode : AstNode
     }
 
     /// <summary>Gets selections in source order.</summary>
-    public AstNodeList<SelectionNode> Selections { get; }
+    public IReadOnlyList<ISelectionNode> Selections { get; }
 }
 
 /// <summary>A field selection, optionally aliased and nested.</summary>
-public sealed class FieldNode : SelectionNode
+public sealed partial class FieldNode : NamedSyntaxNode, SelectionNode
 {
     /// <summary>Creates an immutable field selection.</summary>
     public FieldNode(
@@ -53,12 +46,11 @@ public sealed class FieldNode : SelectionNode
         IEnumerable<DirectiveNode> directives,
         SelectionSetNode? selectionSet,
         SourceLocation location)
-        : base(AstNodeKind.Field, location)
+        : base(AstNodeKind.Field, name, location)
     {
         ArgumentNullException.ThrowIfNull(name);
         ArgumentNullException.ThrowIfNull(arguments);
         ArgumentNullException.ThrowIfNull(directives);
-        Name = name;
         Alias = alias;
         Arguments = new AstNodeList<ArgumentNode>(arguments);
         Directives = new AstNodeList<DirectiveNode>(directives);
@@ -66,38 +58,54 @@ public sealed class FieldNode : SelectionNode
     }
 
     /// <summary>Gets the field name.</summary>
-    public NameNode Name { get; }
     /// <summary>Gets the optional alias.</summary>
     public NameNode? Alias { get; }
     /// <summary>Gets arguments in source order.</summary>
-    public AstNodeList<ArgumentNode> Arguments { get; }
+    public IReadOnlyList<ArgumentNode> Arguments { get; }
     /// <summary>Gets directives in source order.</summary>
-    public AstNodeList<DirectiveNode> Directives { get; }
+    public override AstNodeList<DirectiveNode> Directives { get; }
+    internal override IReadOnlyList<DirectiveNode> ContractDirectives => Directives;
+    IReadOnlyList<DirectiveNode> IHasDirectives.Directives => Directives;
     /// <summary>Gets the optional nested selection set.</summary>
     public SelectionSetNode? SelectionSet { get; }
 }
 
 /// <summary>A spread of a named fragment.</summary>
-public sealed class FragmentSpreadNode : SelectionNode
+public sealed partial class FragmentSpreadNode : NamedSyntaxNode, SelectionNode
 {
     /// <summary>Creates an immutable named fragment spread.</summary>
     public FragmentSpreadNode(NameNode name, IEnumerable<DirectiveNode> directives, SourceLocation location)
-        : base(AstNodeKind.FragmentSpread, location)
+        : this(name, [], directives, location)
+    {
+    }
+
+    /// <summary>Creates an immutable named fragment spread with arguments.</summary>
+    public FragmentSpreadNode(Location location, NameNode name, IReadOnlyList<ArgumentNode> arguments, IReadOnlyList<DirectiveNode> directives)
+        : this(name, arguments, directives, (SourceLocation)(location ?? throw new ArgumentNullException(nameof(location))))
+    {
+    }
+
+    private FragmentSpreadNode(NameNode name, IEnumerable<ArgumentNode> arguments, IEnumerable<DirectiveNode> directives, SourceLocation location)
+        : base(AstNodeKind.FragmentSpread, name, location)
     {
         ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(arguments);
         ArgumentNullException.ThrowIfNull(directives);
-        Name = name;
+        Arguments = new AstNodeList<ArgumentNode>(arguments);
         Directives = new AstNodeList<DirectiveNode>(directives);
     }
 
     /// <summary>Gets the referenced fragment name.</summary>
-    public NameNode Name { get; }
+    /// <summary>Gets arguments supplied to the referenced fragment.</summary>
+    public IReadOnlyList<ArgumentNode> Arguments { get; }
     /// <summary>Gets directives in source order.</summary>
-    public AstNodeList<DirectiveNode> Directives { get; }
+    public override AstNodeList<DirectiveNode> Directives { get; }
+    internal override IReadOnlyList<DirectiveNode> ContractDirectives => Directives;
+    IReadOnlyList<DirectiveNode> IHasDirectives.Directives => Directives;
 }
 
 /// <summary>An inline fragment, with an optional type condition.</summary>
-public sealed class InlineFragmentNode : SelectionNode
+public sealed partial class InlineFragmentNode : AstNode, SelectionNode
 {
     /// <summary>Creates an immutable inline fragment.</summary>
     public InlineFragmentNode(
@@ -117,7 +125,7 @@ public sealed class InlineFragmentNode : SelectionNode
     /// <summary>Gets the optional type condition.</summary>
     public NamedTypeNode? TypeCondition { get; }
     /// <summary>Gets directives in source order.</summary>
-    public AstNodeList<DirectiveNode> Directives { get; }
+    public IReadOnlyList<DirectiveNode> Directives { get; }
     /// <summary>Gets the required nested selection set.</summary>
     public SelectionSetNode SelectionSet { get; }
 }

@@ -4,7 +4,6 @@ namespace GraphQLParser;
 
 /// <summary>An immutable snapshot of an ordered AST child sequence.</summary>
 public sealed class AstNodeList<TNode> : IReadOnlyList<TNode>
-    where TNode : AstNode
 {
     private readonly TNode[] _items;
 

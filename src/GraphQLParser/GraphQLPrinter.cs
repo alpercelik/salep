@@ -4,30 +4,117 @@ namespace GraphQLParser;
 public static class GraphQLPrinter
 {
     /// <summary>Prints a supported GraphQL syntax node.</summary>
-    public static string Print(AstNode node)
+    public static string Print(AstNode node) => Print(node, indented: true);
+
+    /// <summary>Prints a supported syntax node through its public interface.</summary>
+    public static string Print(ISyntaxNode node) => Print(RequireAstNode(node), indented: true);
+
+    /// <summary>Prints a supported syntax node through its public interface, optionally using compact whitespace.</summary>
+    public static string Print(ISyntaxNode node, bool indented) => Print(RequireAstNode(node), indented);
+
+    private static AstNode RequireAstNode(ISyntaxNode node) => node as AstNode
+        ?? throw new ArgumentException("Syntax nodes must be created by this parser.", nameof(node));
+
+    /// <summary>Prints a supported GraphQL syntax node, optionally using compact whitespace.</summary>
+    public static string Print(AstNode node, bool indented)
     {
         ArgumentNullException.ThrowIfNull(node);
-        return Render(node, 0);
+        var text = Render(node, 0);
+        return indented ? text : Compact(text);
     }
+
+    private static string Compact(string text)
+    {
+        var output = new System.Text.StringBuilder(text.Length);
+        var pendingSpace = false;
+        var inQuotedString = false;
+        var inBlockString = false;
+        var escaped = false;
+        for (var i = 0; i < text.Length; i++)
+        {
+            var c = text[i];
+            if (inBlockString)
+            {
+                if (c == '\\' && i + 3 < text.Length && text[i + 1] == '"' && text[i + 2] == '"' && text[i + 3] == '"')
+                {
+                    output.Append("\\\"\"\"");
+                    i += 3;
+                    continue;
+                }
+                output.Append(c);
+                if (c == '"' && i + 2 < text.Length && text[i + 1] == '"' && text[i + 2] == '"')
+                {
+                    output.Append("\"\"");
+                    i += 2;
+                    inBlockString = false;
+                }
+                continue;
+            }
+            if (inQuotedString)
+            {
+                output.Append(c);
+                if (escaped) escaped = false;
+                else if (c == '\\') escaped = true;
+                else if (c == '"') inQuotedString = false;
+                continue;
+            }
+            if (char.IsWhiteSpace(c))
+            {
+                pendingSpace = true;
+                continue;
+            }
+            if (pendingSpace && output.Length > 0 && NeedsSeparator(output[^1], c))
+                output.Append(' ');
+            pendingSpace = false;
+
+            if (c == '"')
+            {
+                if (i + 2 < text.Length && text[i + 1] == '"' && text[i + 2] == '"')
+                {
+                    output.Append("\"\"\"");
+                    i += 2;
+                    inBlockString = true;
+                }
+                else
+                {
+                    output.Append(c);
+                    inQuotedString = true;
+                }
+            }
+            else
+            {
+                output.Append(c);
+            }
+        }
+        return output.ToString();
+    }
+
+    private static bool NeedsSeparator(char previous, char next) => IsNameOrNumber(previous) && IsNameOrNumber(next)
+        || previous == '"' && IsNameStart(next);
+
+    private static bool IsNameOrNumber(char c) => c is >= 'A' and <= 'Z' or >= 'a' and <= 'z' or >= '0' and <= '9' or '_';
+    private static bool IsNameStart(char c) => c is >= 'A' and <= 'Z' or >= 'a' and <= 'z' or '_';
 
     private static string Render(AstNode node, int indent)
     {
         switch (node)
         {
             case NameNode name: return name.Value.ToString();
-            case DocumentNode document: return string.Join("\n\n", document.Definitions.Select(definition => Render(definition, indent)));
+            case DocumentNode document: return string.Join("\n\n", document.Definitions.Select(definition => Render((AstNode)definition, indent)));
             case OperationDefinitionNode operation: return RenderOperation(operation, indent);
             case FragmentDefinitionNode fragment: return RenderFragment(fragment, indent);
             case SelectionSetNode selectionSet: return RenderSelectionSet(selectionSet, indent);
             case FieldNode field: return RenderField(field, indent);
-            case FragmentSpreadNode spread: return "..." + Render(spread.Name, indent) + RenderDirectives(spread.Directives, indent);
+            case FragmentSpreadNode spread: return "..." + Render(spread.Name, indent)
+                + RenderArguments(spread.Arguments, indent, 3 + spread.Name.Value.Length) + RenderDirectives(spread.Directives, indent);
             case InlineFragmentNode inline:
                 return "..." + (inline.TypeCondition is null ? string.Empty : " on " + Render(inline.TypeCondition, indent))
                     + RenderDirectives(inline.Directives, indent) + " " + Render(inline.SelectionSet, indent);
-            case ArgumentNode argument: return Render(argument.Name, indent) + ": " + Render(argument.Value, indent);
+            case ArgumentNode argument: return Render(argument.Name, indent) + ": " + Render(argument.Value as AstNode
+                ?? throw new InvalidOperationException("Arguments must contain parser value nodes."), indent);
             case DirectiveNode directive: return "@" + Render(directive.Name, indent) + RenderArguments(directive.Arguments, indent, 1 + directive.Name.Value.Length);
             case VariableDefinitionNode variable: return RenderDescription(variable.Description, indent) + "$" + Render(variable.Variable.Name, indent)
-                + ": " + Render(variable.Type, indent) + (variable.DefaultValue is null ? string.Empty : " = " + Render(variable.DefaultValue, indent))
+                + ": " + RenderSyntax(variable.Type, indent) + (variable.DefaultValue is null ? string.Empty : " = " + RenderSyntax(variable.DefaultValue, indent))
                 + RenderDirectives(variable.Directives, indent);
             case VariableNode variable: return "$" + Render(variable.Name, indent);
             case IntValueNode value: return value.Value.ToString();
@@ -40,10 +127,11 @@ public static class GraphQLPrinter
             case EnumValueNode value: return value.Value.ToString();
             case ListValueNode list: return "[" + string.Join(", ", list.Values.Select(value => Render(value, indent))) + "]";
             case ObjectValueNode obj: return "{" + string.Join(", ", obj.Fields.Select(value => Render(value, indent))) + "}";
-            case ObjectFieldNode field: return Render(field.Name, indent) + ": " + Render(field.Value, indent);
+            case ObjectFieldNode field: return Render(field.Name, indent) + ": " + Render(field.Value as AstNode
+                ?? throw new InvalidOperationException("Object fields must contain parser value nodes."), indent);
             case NamedTypeNode type: return Render(type.Name, indent);
-            case ListTypeNode type: return "[" + Render(type.Type, indent) + "]";
-            case NonNullTypeNode type: return Render(type.Type, indent) + "!";
+            case ListTypeNode type: return "[" + RenderSyntax(type.Type, indent) + "]";
+            case NonNullTypeNode type: return RenderSyntax(type.Type, indent) + "!";
             case SchemaDefinitionNode schema: return RenderSchema(schema.Description, schema.Directives, schema.OperationTypes, indent);
             case SchemaExtensionNode schema: return "extend " + RenderSchema(null, schema.Directives, schema.OperationTypes, indent);
             case OperationTypeDefinitionNode operationType: return OperationName(operationType.Operation) + ": " + Render(operationType.Type, indent);
@@ -59,21 +147,34 @@ public static class GraphQLPrinter
             case EnumTypeExtensionNode en: return "extend enum " + Render(en.Name, indent) + RenderDirectives(en.Directives, indent) + RenderDefinitions(en.Values, indent);
             case InputObjectTypeDefinitionNode input: return RenderDescription(input.Description, indent) + "input " + Render(input.Name, indent) + RenderDirectives(input.Directives, indent) + RenderDefinitions(input.Fields, indent);
             case InputObjectTypeExtensionNode input: return "extend input " + Render(input.Name, indent) + RenderDirectives(input.Directives, indent) + RenderDefinitions(input.Fields, indent);
-            case FieldDefinitionNode field: return RenderDescription(field.Description, indent) + Render(field.Name, indent) + RenderInputArguments(field.Arguments, indent) + ": " + Render(field.Type, indent) + RenderDirectives(field.Directives, indent);
-            case InputValueDefinitionNode input: return RenderDescription(input.Description, indent) + Render(input.Name, indent) + ": " + Render(input.Type, indent)
-                + (input.DefaultValue is null ? string.Empty : " = " + Render(input.DefaultValue, indent)) + RenderDirectives(input.Directives, indent);
+            case FieldDefinitionNode field: return RenderDescription(field.Description, indent) + Render(field.Name, indent) + RenderInputArguments(field.Arguments, indent) + ": " + RenderSyntax(field.Type, indent) + RenderDirectives(field.Directives, indent);
+            case InputValueDefinitionNode input: return RenderDescription(input.Description, indent) + Render(input.Name, indent) + ": " + RenderSyntax(input.Type, indent)
+                + (input.DefaultValue is null ? string.Empty : " = " + RenderSyntax(input.DefaultValue, indent)) + RenderDirectives(input.Directives, indent);
             case EnumValueDefinitionNode value: return RenderDescription(value.Description, indent) + Render(value.Name, indent) + RenderDirectives(value.Directives, indent);
             case DirectiveDefinitionNode directive: return RenderDescription(directive.Description, indent) + "directive @" + Render(directive.Name, indent)
                 + RenderInputArguments(directive.Arguments, indent) + (directive.Repeatable ? " repeatable" : string.Empty)
-                + " on " + string.Join(" | ", directive.Locations.Select(location => Render(location, indent)));
+                + " on " + string.Join(" | ", directive.Locations.Select(location => Render(location, indent)))
+                + RenderDirectives(directive.Directives, indent);
+            case DirectiveExtensionNode directive: return "extend directive @" + Render(directive.Name, indent) + RenderDirectives(directive.Directives, indent);
             case TypeCoordinateNode coordinate: return Render(coordinate.Name, indent);
             case MemberCoordinateNode coordinate: return Render(coordinate.Name, indent) + "." + Render(coordinate.MemberName, indent);
             case ArgumentCoordinateNode coordinate: return Render(coordinate.Name, indent) + "." + Render(coordinate.FieldName, indent) + "(" + Render(coordinate.ArgumentName, indent) + ":)";
             case DirectiveCoordinateNode coordinate: return "@" + Render(coordinate.Name, indent);
             case DirectiveArgumentCoordinateNode coordinate: return "@" + Render(coordinate.Name, indent) + "(" + Render(coordinate.ArgumentName, indent) + ":)";
+            case SchemaCoordinateNode coordinate:
+                var coordinateName = (coordinate.OfDirective ? "@" : string.Empty) + Render(coordinate.Name, indent);
+                if (coordinate.MemberName is not null)
+                    coordinateName += "." + Render(coordinate.MemberName, indent);
+                if (coordinate.ArgumentName is not null)
+                    coordinateName += "(" + Render(coordinate.ArgumentName, indent) + ":)";
+                return coordinateName;
             default: throw new ArgumentException($"Unsupported GraphQL syntax node type '{node.GetType().Name}'.", nameof(node));
         }
     }
+
+    private static string RenderSyntax(ISyntaxNode node, int indent) => node is AstNode ast
+        ? Render(ast, indent)
+        : throw new ArgumentException("The syntax node is not supported by this printer.", nameof(node));
 
     private static string RenderOperation(OperationDefinitionNode operation, int indent)
     {
@@ -97,7 +198,7 @@ public static class GraphQLPrinter
     private static string RenderSelectionSet(SelectionSetNode selectionSet, int indent)
     {
         var pad = new string(' ', (indent + 1) * 2);
-        return "{\n" + string.Join("\n", selectionSet.Selections.Select(selection => pad + Render(selection, indent + 1)))
+        return "{\n" + string.Join("\n", selectionSet.Selections.Select(selection => pad + Render((AstNode)selection, indent + 1)))
             + "\n" + new string(' ', indent * 2) + "}";
     }
 

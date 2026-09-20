@@ -14,6 +14,7 @@ public sealed class GraphQLParser
 
     private readonly SourceText _source;
     private readonly GraphQLParserOptions _options;
+    private readonly int[] _lineStarts;
     private Source? _sourceInfo;
     private readonly List<Token> _tokens = [];
     private int _index;
@@ -49,6 +50,7 @@ public sealed class GraphQLParser
 
         _source = source;
         _options = options;
+        _lineStarts = BuildLineStarts(source.Content.Span);
         var lexer = new GraphQLLexer(source);
         var tokenCount = 0;
         var nestingDepth = 0;
@@ -112,6 +114,24 @@ public sealed class GraphQLParser
 
     /// <summary>Parses one non-empty GraphQL document with explicit resource limits.</summary>
     public static DocumentNode Parse(SourceText source, GraphQLParserOptions options) => new GraphQLParser(source, options).ParseDocument();
+
+    /// <summary>Parses one non-empty GraphQL document using language API parser options.</summary>
+    public static DocumentNode Parse(SourceText source, ParserOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        var document = new GraphQLParser(source, options.ToGraphQLParserOptions()).ParseDocument();
+        options.ValidateTree(document);
+        return document;
+    }
+
+    /// <summary>Parses a named source using language API parser options.</summary>
+    public static DocumentNode Parse(Source source, ParserOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        var document = new GraphQLParser(source, options.ToGraphQLParserOptions()).ParseDocument();
+        options.ValidateTree(document);
+        return document;
+    }
 
     /// <summary>Parses a document while collecting diagnostics and recovering at later definitions.</summary>
     public static GraphQLParseResult ParseWithDiagnostics(SourceText source) => ParseWithDiagnostics(source, GraphQLParserOptions.Default);
@@ -290,7 +310,7 @@ public sealed class GraphQLParser
         var fragmentStart = ExpectName("fragment", "Expected 'fragment'.").Start;
         var start = description?.Location.Start ?? fragmentStart;
         var name = ReadRequiredName("Expected a fragment name.");
-        if (name.Value.Span.SequenceEqual("on")) throw Error("A fragment name cannot be 'on'.", name.Location);
+        if (name.SourceValue.Span.SequenceEqual("on")) throw Error("A fragment name cannot be 'on'.", name.Location);
         var variables = _options.AllowLegacyFragmentVariables && Current.Kind == TokenKind.ParenthesisLeft ? ParseVariableDefinitions() : [];
         ExpectName("on", "Expected 'on' after the fragment name.");
         var typeName = ReadRequiredName("Expected a fragment type condition.");
@@ -1068,7 +1088,27 @@ public sealed class GraphQLParser
     }
     private Token Current => _tokens[_index];
     private SourceLocation Span(Token token) => AstLocation(token.Start, token.End);
-    private SourceLocation AstLocation(int start, int end) => new(start, end, !_options.NoLocation);
+    private SourceLocation AstLocation(int start, int end)
+    {
+        var lineIndex = Array.BinarySearch(_lineStarts, start);
+        if (lineIndex < 0) lineIndex = ~lineIndex - 1;
+        return new SourceLocation(start, end, lineIndex + 1, start - _lineStarts[lineIndex] + 1, !_options.NoLocation);
+    }
+
+    private static int[] BuildLineStarts(ReadOnlySpan<char> source)
+    {
+        var starts = new List<int> { 0 };
+        for (var index = 0; index < source.Length; index++)
+        {
+            if (source[index] == '\r')
+            {
+                if (index + 1 < source.Length && source[index + 1] == '\n') index++;
+                starts.Add(index + 1);
+            }
+            else if (source[index] == '\n') starts.Add(index + 1);
+        }
+        return starts.ToArray();
+    }
     private Exception Error(string message)
     {
         if (_lexicalError is not null && _index == _tokens.Count - 1) return _lexicalError;

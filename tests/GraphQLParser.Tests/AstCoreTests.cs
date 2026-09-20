@@ -27,10 +27,10 @@ public sealed class AstCoreTests
         var buffer = "query".ToCharArray();
         var name = new NameNode(buffer.AsMemory(1, 3), new SourceLocation(1, 4));
 
-        Assert.Equal(AstNodeKind.Name, name.Kind);
-        Assert.Equal(new SourceLocation(1, 4), name.Location);
+        Assert.Equal(AstNodeKind.Name, name.AstKind);
+        Assert.Equal(new SourceLocation(1, 4), (SourceLocation)name.Location);
         Assert.Equal("uer", name.Value.ToString());
-        Assert.True(MemoryMarshal.TryGetArray(name.Value, out ArraySegment<char> segment));
+        Assert.True(MemoryMarshal.TryGetArray(name.SourceValue, out ArraySegment<char> segment));
         Assert.Same(buffer, segment.Array);
         Assert.Equal(1, segment.Offset);
         Assert.Equal(3, segment.Count);

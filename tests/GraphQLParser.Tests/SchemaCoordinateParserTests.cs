@@ -18,8 +18,8 @@ public sealed class SchemaCoordinateParserTests
     public void ParsesValidCoordinates(string source, AstNodeKind kind)
     {
         var node = GraphQLParser.ParseSchemaCoordinate(new SourceText(source.AsMemory()));
-        Assert.Equal(kind, node.Kind);
-        Assert.Equal(new SourceLocation(0, source.Length), node.Location);
+        Assert.Equal(kind, node.AstKind);
+        Assert.Equal(new SourceLocation(0, source.Length), (SourceLocation)node.Location);
     }
 
     [Theory]
@@ -45,7 +45,7 @@ public sealed class SchemaCoordinateParserTests
         var input = new SourceText(source[8..]);
         var node = Assert.IsType<ArgumentCoordinateNode>(GraphQLParser.ParseSchemaCoordinate(input));
         Assert.Equal("Thing", node.Name.Value.ToString());
-        Assert.Equal(new SourceLocation(0, 5), node.Name.Location);
+        Assert.Equal(new SourceLocation(0, 5), (SourceLocation)node.Name.Location);
         Assert.Equal("field", node.FieldName.Value.ToString());
         Assert.Equal("arg", node.ArgumentName.Value.ToString());
     }
@@ -58,5 +58,20 @@ public sealed class SchemaCoordinateParserTests
         Assert.IsType<MemberCoordinateNode>(fromString);
         Assert.Equal(fromMemory.Kind, fromString.Kind);
         Assert.Equal(fromMemory.Location, fromString.Location);
+    }
+
+    [Theory]
+    [InlineData(false, null, null, "Thing")]
+    [InlineData(false, "field", null, "Thing.field")]
+    [InlineData(false, "field", "arg", "Thing.field(arg:)")]
+    [InlineData(true, null, null, "@directive")]
+    [InlineData(true, null, "arg", "@directive(arg:)")]
+    public void BaseCoordinateConstructionPrintsItsComponents(bool ofDirective, string? member, string? argument, string expected)
+    {
+        var coordinate = new SchemaCoordinateNode(new Location(0, 1, 1, 1), ofDirective,
+            new NameNode(ofDirective ? "directive" : "Thing"), member is null ? null : new NameNode(member),
+            argument is null ? null : new NameNode(argument));
+
+        Assert.Equal(expected, GraphQLPrinter.Print(coordinate));
     }
 }

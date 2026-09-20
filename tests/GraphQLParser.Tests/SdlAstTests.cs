@@ -18,13 +18,19 @@ public sealed class SdlAstTests
         var definition = new ObjectTypeDefinitionNode(name, [new NamedTypeNode(Name("Node"), Location)], [directive], [field], Location, description);
         var directiveDefinition = new DirectiveDefinitionNode(Name("audit"), [input], true, [Name("FIELD"), Name("OBJECT")], Location, description);
 
-        Assert.Equal(AstNodeKind.ObjectTypeDefinition, definition.Kind);
+        Assert.Equal(AstNodeKind.ObjectTypeDefinition, definition.AstKind);
+        NamedSyntaxNode namedSyntax = definition;
+        Assert.Same(name, namedSyntax.Name);
+        Assert.Same(directive, Assert.Single(namedSyntax.Directives));
+        ComplexTypeDefinitionNodeBase complexType = definition;
+        Assert.Same(field, Assert.Single(complexType.Fields));
+        Assert.Equal("Node", Assert.Single(complexType.Interfaces).Name.Value.ToString());
         Assert.Same(description, definition.Description);
         Assert.Same(directive, Assert.Single(definition.Directives));
         Assert.Same(field, Assert.Single(definition.Fields));
         Assert.Same(input, Assert.Single(field.Arguments));
         Assert.Same(description, input.Description);
-        Assert.Same(input.DefaultValue, new InputValueDefinitionNode(Name("x"), new NamedTypeNode(Name("Int"), Location), input.DefaultValue, [], Location).DefaultValue);
+        Assert.Same(input.DefaultValue, new InputValueDefinitionNode(Name("x"), new NamedTypeNode(Name("Int"), Location), (ValueNode?)input.DefaultValue, [], Location).DefaultValue);
         Assert.True(directiveDefinition.Repeatable);
         Assert.Equal(new[] { "FIELD", "OBJECT" }, directiveDefinition.Locations.Select(item => item.Value.ToString()));
     }
@@ -51,9 +57,25 @@ public sealed class SdlAstTests
             new DirectiveDefinitionNode(Name("d"), [], false, [Name("FIELD")], Location),
         ];
 
-        Assert.Equal(definitions.Length, definitions.Select(node => node.Kind).Distinct().Count());
-        Assert.Equal(AstNodeKind.SchemaDefinition, definitions[0].Kind);
-        Assert.Equal(AstNodeKind.DirectiveDefinition, definitions[^1].Kind);
+        Assert.Equal(definitions.Length, definitions.Select(node => node.AstKind).Distinct().Count());
+        SchemaDefinitionNodeBase schemaBase = Assert.IsType<SchemaDefinitionNode>(definitions[0]);
+        Assert.Same(op, Assert.Single(schemaBase.OperationTypes));
+        UnionTypeDefinitionNodeBase unionBase = Assert.IsType<UnionTypeDefinitionNode>(definitions[8]);
+        Assert.Same(named, Assert.Single(unionBase.Types));
+        EnumTypeDefinitionNodeBase enumBase = Assert.IsType<EnumTypeDefinitionNode>(definitions[10]);
+        Assert.Same(enumValue, Assert.Single(enumBase.Values));
+        InputObjectTypeDefinitionNodeBase inputBase = Assert.IsType<InputObjectTypeDefinitionNode>(definitions[12]);
+        Assert.Same(input, Assert.Single(inputBase.Fields));
+        ComplexTypeDefinitionNodeBase complexExtensionBase = Assert.IsType<ObjectTypeExtensionNode>(definitions[5]);
+        Assert.Same(field, Assert.Single(complexExtensionBase.Fields));
+        UnionTypeDefinitionNodeBase unionExtensionBase = Assert.IsType<UnionTypeExtensionNode>(definitions[9]);
+        Assert.Same(named, Assert.Single(unionExtensionBase.Types));
+        EnumTypeDefinitionNodeBase enumExtensionBase = Assert.IsType<EnumTypeExtensionNode>(definitions[11]);
+        Assert.Empty(enumExtensionBase.Values);
+        InputObjectTypeDefinitionNodeBase inputExtensionBase = Assert.IsType<InputObjectTypeExtensionNode>(definitions[13]);
+        Assert.Same(input, Assert.Single(inputExtensionBase.Fields));
+        Assert.Equal(AstNodeKind.SchemaDefinition, definitions[0].AstKind);
+        Assert.Equal(AstNodeKind.DirectiveDefinition, definitions[^1].AstKind);
     }
 
     [Fact]

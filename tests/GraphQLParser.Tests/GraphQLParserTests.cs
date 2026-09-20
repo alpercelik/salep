@@ -11,16 +11,16 @@ public sealed class GraphQLParserTests
         const string source = "  { viewer } query Find($id: [ID!]! = 1) { user }  ";
         var document = GraphQLParser.Parse(new SourceText(source.AsMemory()));
 
-        Assert.Equal(new SourceLocation(0, source.Length), document.Location);
+        Assert.Equal(new SourceLocation(0, source.Length), (SourceLocation)document.Location);
         Assert.Equal(2, document.Definitions.Count);
         var shorthand = Assert.IsType<OperationDefinitionNode>(document.Definitions[0]);
         Assert.Equal(OperationType.Query, shorthand.Operation);
         Assert.Null(shorthand.Name);
-        Assert.Equal(new SourceLocation(2, 12), shorthand.Location);
+        Assert.Equal(new SourceLocation(2, 12), (SourceLocation)shorthand.Location);
 
         var named = Assert.IsType<OperationDefinitionNode>(document.Definitions[1]);
         Assert.Equal("Find", named.Name!.Value.ToString());
-        Assert.Equal(new SourceLocation(13, source.Length - 2), named.Location);
+        Assert.Equal(new SourceLocation(13, source.Length - 2), (SourceLocation)named.Location);
         var variable = Assert.Single(named.VariableDefinitions);
         Assert.Equal("id", variable.Variable.Name.Value.ToString());
         Assert.IsType<NonNullTypeNode>(variable.Type);
@@ -61,7 +61,7 @@ public sealed class GraphQLParserTests
         Assert.Equal("user", field.Name.Value.ToString());
         Assert.Equal("id", Assert.IsType<VariableNode>(field.Arguments.Single().Value).Name.Value.ToString());
         Assert.Equal("include", Assert.Single(field.Directives).Name.Value.ToString());
-        Assert.Equal(new SourceLocation(source.IndexOf("alias", StringComparison.Ordinal), source.IndexOf("} } fragment", StringComparison.Ordinal) + 1), field.Location);
+        Assert.Equal(new SourceLocation(source.IndexOf("alias", StringComparison.Ordinal), source.IndexOf("} } fragment", StringComparison.Ordinal) + 1), (SourceLocation)field.Location);
 
         var nested = field.SelectionSet!.Selections;
         Assert.IsType<FragmentSpreadNode>(nested[0]);

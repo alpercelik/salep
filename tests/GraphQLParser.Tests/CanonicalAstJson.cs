@@ -5,10 +5,11 @@ namespace GraphQLParser.Tests;
 
 internal static class CanonicalAstJson
 {
-    public static JsonObject Project(AstNode node)
+    public static JsonObject Project(ISyntaxNode node)
     {
-        var result = new JsonObject { ["kind"] = Kind(node) };
-        if (node.HasLocation) result["loc"] = Location(node.Location);
+        var astNode = (AstNode)node;
+        var result = new JsonObject { ["kind"] = Kind(astNode) };
+        if (astNode.HasLocation) result["loc"] = Location(astNode.Location);
         switch (node)
         {
             case NameNode name:
@@ -235,8 +236,8 @@ internal static class CanonicalAstJson
         return result;
     }
 
-    private static JsonNode? Node(AstNode? node) => node is null ? null : Project(node);
-    private static JsonArray Nodes<T>(IEnumerable<T> nodes) where T : AstNode
+    private static JsonNode? Node(ISyntaxNode? node) => node is null ? null : Project(node);
+    private static JsonArray Nodes<T>(IEnumerable<T> nodes) where T : ISyntaxNode
     {
         var array = new JsonArray();
         foreach (var node in nodes) array.Add(Project(node));
@@ -252,12 +253,12 @@ internal static class CanonicalAstJson
         _ => throw new ArgumentOutOfRangeException(nameof(operation)),
     };
 
-    private static string Kind(AstNode node) => node.Kind.ToString();
-    private static void AddTypeDefinition(JsonObject json, TypeDefinitionNode type)
+    private static string Kind(AstNode node) => node.AstKind.ToString();
+    private static void AddTypeDefinition(JsonObject json, ITypeDefinitionNode type)
     {
         json["description"] = Node(type.Description);
         json["name"] = Project(type.Name);
     }
 
-    private static void AddTypeExtension(JsonObject json, TypeExtensionNode type) => json["name"] = Project(type.Name);
+    private static void AddTypeExtension(JsonObject json, ITypeExtensionNode type) => json["name"] = Project(type.Name);
 }

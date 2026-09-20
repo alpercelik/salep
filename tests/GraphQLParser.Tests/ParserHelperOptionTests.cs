@@ -16,7 +16,7 @@ public sealed class ParserHelperOptionTests
         var operation = Assert.IsType<OperationDefinitionNode>(Assert.Single(suppressed.Definitions));
         Assert.False(suppressed.HasLocation);
         Assert.False(operation.HasLocation);
-        Assert.Equal(new SourceLocation(0, source.Length, hasLocation: false), suppressed.Location);
+        Assert.Equal(0, suppressed.Location.Start);
         Assert.Equal(source.Length, suppressed.Location.End);
         var canonical = CanonicalAstJson.Project(suppressed).ToJsonString();
         Assert.DoesNotContain("\"loc\"", canonical, StringComparison.Ordinal);

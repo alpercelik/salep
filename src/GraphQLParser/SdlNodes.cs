@@ -1,40 +1,109 @@
 namespace GraphQLParser;
 
-/// <summary>Base class for schema and named type definitions.</summary>
-public abstract class TypeDefinitionNode : DefinitionNode
+/// <summary>Base class for named syntax nodes with directives.</summary>
+public abstract class NamedSyntaxNode : DefinitionNode, INamedSyntaxNode
 {
-    /// <summary>Creates a named type definition.</summary>
-    protected TypeDefinitionNode(AstNodeKind kind, NameNode name, StringValueNode? description, SourceLocation location)
+    /// <summary>Creates a named syntax node.</summary>
+    protected NamedSyntaxNode(AstNodeKind kind, NameNode name, SourceLocation location)
         : base(kind, location)
     {
         ArgumentNullException.ThrowIfNull(name);
         Name = name;
-        Description = description;
     }
 
-    /// <summary>Gets the type name.</summary>
+    /// <summary>Gets the syntax node name.</summary>
     public NameNode Name { get; }
+    /// <summary>Gets associated directives in source order.</summary>
+    public abstract IReadOnlyList<DirectiveNode> Directives { get; }
+    internal abstract IReadOnlyList<DirectiveNode> ContractDirectives { get; }
+}
+
+/// <summary>Base class for schema and named type definitions.</summary>
+public abstract class TypeDefinitionNode : NamedSyntaxNode, ITypeDefinitionNode
+{
+    /// <summary>Creates a named type definition.</summary>
+    protected TypeDefinitionNode(AstNodeKind kind, NameNode name, StringValueNode? description, SourceLocation location)
+        : base(kind, name, location)
+    {
+        Description = description;
+    }
     /// <summary>Gets the optional evaluated description.</summary>
     public StringValueNode? Description { get; }
 }
 
+/// <summary>Base class for object and interface type definitions.</summary>
+public abstract class ComplexTypeDefinitionNodeBase : NamedSyntaxNode
+{
+    /// <summary>Creates a complex type definition.</summary>
+    protected ComplexTypeDefinitionNodeBase(AstNodeKind kind, NameNode name, SourceLocation location)
+        : base(kind, name, location)
+    {
+    }
+
+    /// <summary>Gets implemented interfaces in source order.</summary>
+    public abstract IReadOnlyList<NamedTypeNode> Interfaces { get; }
+    /// <summary>Gets field definitions in source order.</summary>
+    public abstract IReadOnlyList<FieldDefinitionNode> Fields { get; }
+}
+
+/// <summary>Base class for enum type definitions.</summary>
+public abstract class EnumTypeDefinitionNodeBase : NamedSyntaxNode
+{
+    /// <summary>Creates an enum type definition.</summary>
+    protected EnumTypeDefinitionNodeBase(AstNodeKind kind, NameNode name, SourceLocation location)
+        : base(kind, name, location) { }
+
+    /// <summary>Gets enum values in source order.</summary>
+    public abstract IReadOnlyList<EnumValueDefinitionNode> Values { get; }
+}
+
+/// <summary>Base class for input-object type definitions.</summary>
+public abstract class InputObjectTypeDefinitionNodeBase : NamedSyntaxNode
+{
+    /// <summary>Creates an input-object type definition.</summary>
+    protected InputObjectTypeDefinitionNodeBase(AstNodeKind kind, NameNode name, SourceLocation location)
+        : base(kind, name, location) { }
+
+    /// <summary>Gets input fields in source order.</summary>
+    public abstract IReadOnlyList<InputValueDefinitionNode> Fields { get; }
+}
+
+/// <summary>Base class for union type definitions.</summary>
+public abstract class UnionTypeDefinitionNodeBase : NamedSyntaxNode
+{
+    /// <summary>Creates a union type definition.</summary>
+    protected UnionTypeDefinitionNodeBase(AstNodeKind kind, NameNode name, SourceLocation location)
+        : base(kind, name, location) { }
+
+    /// <summary>Gets union member types in source order.</summary>
+    public abstract IReadOnlyList<NamedTypeNode> Types { get; }
+}
+
 /// <summary>Base class for named type extensions.</summary>
-public abstract class TypeExtensionNode : DefinitionNode
+public abstract class TypeExtensionNode : NamedSyntaxNode, ITypeExtensionNode
 {
     /// <summary>Creates a named type extension.</summary>
     protected TypeExtensionNode(AstNodeKind kind, NameNode name, SourceLocation location)
-        : base(kind, location)
+        : base(kind, name, location)
     {
-        ArgumentNullException.ThrowIfNull(name);
-        Name = name;
     }
+}
 
-    /// <summary>Gets the extended type name.</summary>
-    public NameNode Name { get; }
+/// <summary>Base class for schema definitions and extensions.</summary>
+public abstract class SchemaDefinitionNodeBase : DefinitionNode, IHasDirectives
+{
+    /// <summary>Creates a schema syntax node.</summary>
+    protected SchemaDefinitionNodeBase(AstNodeKind kind, SourceLocation location)
+        : base(kind, location) { }
+
+    /// <summary>Gets root operation mappings in source order.</summary>
+    public abstract IReadOnlyList<OperationTypeDefinitionNode> OperationTypes { get; }
+    /// <summary>Gets associated directives in source order.</summary>
+    public abstract IReadOnlyList<DirectiveNode> Directives { get; }
 }
 
 /// <summary>A schema definition with one or more root operation mappings.</summary>
-public sealed class SchemaDefinitionNode : DefinitionNode
+public sealed partial class SchemaDefinitionNode : SchemaDefinitionNodeBase, ITypeSystemDefinitionNode
 {
     /// <summary>Creates an immutable schema definition.</summary>
     public SchemaDefinitionNode(
@@ -57,15 +126,15 @@ public sealed class SchemaDefinitionNode : DefinitionNode
     }
 
     /// <summary>Gets root operation mappings in source order.</summary>
-    public AstNodeList<OperationTypeDefinitionNode> OperationTypes { get; }
+    public override AstNodeList<OperationTypeDefinitionNode> OperationTypes { get; }
     /// <summary>Gets directives in source order.</summary>
-    public AstNodeList<DirectiveNode> Directives { get; }
+    public override AstNodeList<DirectiveNode> Directives { get; }
     /// <summary>Gets the optional evaluated description.</summary>
     public StringValueNode? Description { get; }
 }
 
 /// <summary>A schema extension adding root mappings or directives.</summary>
-public sealed class SchemaExtensionNode : DefinitionNode
+public sealed partial class SchemaExtensionNode : SchemaDefinitionNodeBase, ITypeSystemExtensionNode
 {
     /// <summary>Creates an immutable schema extension.</summary>
     public SchemaExtensionNode(
@@ -85,13 +154,13 @@ public sealed class SchemaExtensionNode : DefinitionNode
     }
 
     /// <summary>Gets added root operation mappings in source order.</summary>
-    public AstNodeList<OperationTypeDefinitionNode> OperationTypes { get; }
+    public override AstNodeList<OperationTypeDefinitionNode> OperationTypes { get; }
     /// <summary>Gets added directives in source order.</summary>
-    public AstNodeList<DirectiveNode> Directives { get; }
+    public override AstNodeList<DirectiveNode> Directives { get; }
 }
 
 /// <summary>A schema root operation mapping.</summary>
-public sealed class OperationTypeDefinitionNode : AstNode
+public sealed partial class OperationTypeDefinitionNode : AstNode
 {
     /// <summary>Creates an immutable root operation mapping.</summary>
     public OperationTypeDefinitionNode(OperationType operation, NamedTypeNode type, SourceLocation location)
@@ -114,7 +183,7 @@ public sealed class OperationTypeDefinitionNode : AstNode
 }
 
 /// <summary>A scalar type definition.</summary>
-public sealed class ScalarTypeDefinitionNode : TypeDefinitionNode
+public sealed partial class ScalarTypeDefinitionNode : TypeDefinitionNode
 {
     /// <summary>Creates an immutable scalar definition.</summary>
     public ScalarTypeDefinitionNode(NameNode name, IEnumerable<DirectiveNode> directives, SourceLocation location, StringValueNode? description = null)
@@ -125,11 +194,12 @@ public sealed class ScalarTypeDefinitionNode : TypeDefinitionNode
     }
 
     /// <summary>Gets directives in source order.</summary>
-    public AstNodeList<DirectiveNode> Directives { get; }
+    public override AstNodeList<DirectiveNode> Directives { get; }
+    internal override IReadOnlyList<DirectiveNode> ContractDirectives => Directives;
 }
 
 /// <summary>A scalar type extension.</summary>
-public sealed class ScalarTypeExtensionNode : TypeExtensionNode
+public sealed partial class ScalarTypeExtensionNode : TypeExtensionNode
 {
     /// <summary>Creates an immutable scalar extension.</summary>
     public ScalarTypeExtensionNode(NameNode name, IEnumerable<DirectiveNode> directives, SourceLocation location)
@@ -141,7 +211,8 @@ public sealed class ScalarTypeExtensionNode : TypeExtensionNode
     }
 
     /// <summary>Gets added directives in source order.</summary>
-    public AstNodeList<DirectiveNode> Directives { get; }
+    public override AstNodeList<DirectiveNode> Directives { get; }
+    internal override IReadOnlyList<DirectiveNode> ContractDirectives => Directives;
 
     private static void RequireAddedContent(bool hasContent, string parameterName)
     {
@@ -150,7 +221,7 @@ public sealed class ScalarTypeExtensionNode : TypeExtensionNode
 }
 
 /// <summary>An object type definition.</summary>
-public sealed class ObjectTypeDefinitionNode : TypeDefinitionNode
+public sealed partial class ObjectTypeDefinitionNode : ComplexTypeDefinitionNodeBase, ITypeDefinitionNode
 {
     /// <summary>Creates an immutable object type definition.</summary>
     public ObjectTypeDefinitionNode(
@@ -160,7 +231,7 @@ public sealed class ObjectTypeDefinitionNode : TypeDefinitionNode
         IEnumerable<FieldDefinitionNode> fields,
         SourceLocation location,
         StringValueNode? description = null)
-        : base(AstNodeKind.ObjectTypeDefinition, name, description, location)
+        : base(AstNodeKind.ObjectTypeDefinition, name, location)
     {
         ArgumentNullException.ThrowIfNull(interfaces);
         ArgumentNullException.ThrowIfNull(directives);
@@ -168,18 +239,22 @@ public sealed class ObjectTypeDefinitionNode : TypeDefinitionNode
         Interfaces = new AstNodeList<NamedTypeNode>(interfaces);
         Directives = new AstNodeList<DirectiveNode>(directives);
         Fields = new AstNodeList<FieldDefinitionNode>(fields);
+        Description = description;
     }
 
     /// <summary>Gets implemented interfaces in source order.</summary>
-    public AstNodeList<NamedTypeNode> Interfaces { get; }
+    public override AstNodeList<NamedTypeNode> Interfaces { get; }
     /// <summary>Gets directives in source order.</summary>
-    public AstNodeList<DirectiveNode> Directives { get; }
+    public override AstNodeList<DirectiveNode> Directives { get; }
+    internal override IReadOnlyList<DirectiveNode> ContractDirectives => Directives;
     /// <summary>Gets field definitions in source order.</summary>
-    public AstNodeList<FieldDefinitionNode> Fields { get; }
+    public override AstNodeList<FieldDefinitionNode> Fields { get; }
+    /// <summary>Gets the optional evaluated description.</summary>
+    public StringValueNode? Description { get; }
 }
 
 /// <summary>An object type extension.</summary>
-public sealed class ObjectTypeExtensionNode : TypeExtensionNode
+public sealed partial class ObjectTypeExtensionNode : ComplexTypeDefinitionNodeBase, ITypeExtensionNode
 {
     /// <summary>Creates an immutable object type extension.</summary>
     public ObjectTypeExtensionNode(
@@ -203,15 +278,16 @@ public sealed class ObjectTypeExtensionNode : TypeExtensionNode
     }
 
     /// <summary>Gets added interfaces in source order.</summary>
-    public AstNodeList<NamedTypeNode> Interfaces { get; }
+    public override AstNodeList<NamedTypeNode> Interfaces { get; }
     /// <summary>Gets added directives in source order.</summary>
-    public AstNodeList<DirectiveNode> Directives { get; }
+    public override AstNodeList<DirectiveNode> Directives { get; }
+    internal override IReadOnlyList<DirectiveNode> ContractDirectives => Directives;
     /// <summary>Gets added field definitions in source order.</summary>
-    public AstNodeList<FieldDefinitionNode> Fields { get; }
+    public override AstNodeList<FieldDefinitionNode> Fields { get; }
 }
 
 /// <summary>An interface type definition.</summary>
-public sealed class InterfaceTypeDefinitionNode : TypeDefinitionNode
+public sealed partial class InterfaceTypeDefinitionNode : ComplexTypeDefinitionNodeBase, ITypeDefinitionNode
 {
     /// <summary>Creates an immutable interface type definition.</summary>
     public InterfaceTypeDefinitionNode(
@@ -221,7 +297,7 @@ public sealed class InterfaceTypeDefinitionNode : TypeDefinitionNode
         IEnumerable<FieldDefinitionNode> fields,
         SourceLocation location,
         StringValueNode? description = null)
-        : base(AstNodeKind.InterfaceTypeDefinition, name, description, location)
+        : base(AstNodeKind.InterfaceTypeDefinition, name, location)
     {
         ArgumentNullException.ThrowIfNull(interfaces);
         ArgumentNullException.ThrowIfNull(directives);
@@ -229,18 +305,22 @@ public sealed class InterfaceTypeDefinitionNode : TypeDefinitionNode
         Interfaces = new AstNodeList<NamedTypeNode>(interfaces);
         Directives = new AstNodeList<DirectiveNode>(directives);
         Fields = new AstNodeList<FieldDefinitionNode>(fields);
+        Description = description;
     }
 
     /// <summary>Gets implemented interfaces in source order.</summary>
-    public AstNodeList<NamedTypeNode> Interfaces { get; }
+    public override AstNodeList<NamedTypeNode> Interfaces { get; }
     /// <summary>Gets directives in source order.</summary>
-    public AstNodeList<DirectiveNode> Directives { get; }
+    public override AstNodeList<DirectiveNode> Directives { get; }
+    internal override IReadOnlyList<DirectiveNode> ContractDirectives => Directives;
     /// <summary>Gets field definitions in source order.</summary>
-    public AstNodeList<FieldDefinitionNode> Fields { get; }
+    public override AstNodeList<FieldDefinitionNode> Fields { get; }
+    /// <summary>Gets the optional evaluated description.</summary>
+    public StringValueNode? Description { get; }
 }
 
 /// <summary>An interface type extension.</summary>
-public sealed class InterfaceTypeExtensionNode : TypeExtensionNode
+public sealed partial class InterfaceTypeExtensionNode : ComplexTypeDefinitionNodeBase, ITypeExtensionNode
 {
     /// <summary>Creates an immutable interface type extension.</summary>
     public InterfaceTypeExtensionNode(
@@ -264,15 +344,16 @@ public sealed class InterfaceTypeExtensionNode : TypeExtensionNode
     }
 
     /// <summary>Gets added interfaces in source order.</summary>
-    public AstNodeList<NamedTypeNode> Interfaces { get; }
+    public override AstNodeList<NamedTypeNode> Interfaces { get; }
     /// <summary>Gets added directives in source order.</summary>
-    public AstNodeList<DirectiveNode> Directives { get; }
+    public override AstNodeList<DirectiveNode> Directives { get; }
+    internal override IReadOnlyList<DirectiveNode> ContractDirectives => Directives;
     /// <summary>Gets added field definitions in source order.</summary>
-    public AstNodeList<FieldDefinitionNode> Fields { get; }
+    public override AstNodeList<FieldDefinitionNode> Fields { get; }
 }
 
 /// <summary>A union type definition.</summary>
-public sealed class UnionTypeDefinitionNode : TypeDefinitionNode
+public sealed partial class UnionTypeDefinitionNode : UnionTypeDefinitionNodeBase, ITypeDefinitionNode
 {
     /// <summary>Creates an immutable union type definition.</summary>
     public UnionTypeDefinitionNode(
@@ -281,22 +362,26 @@ public sealed class UnionTypeDefinitionNode : TypeDefinitionNode
         IEnumerable<NamedTypeNode> types,
         SourceLocation location,
         StringValueNode? description = null)
-        : base(AstNodeKind.UnionTypeDefinition, name, description, location)
+        : base(AstNodeKind.UnionTypeDefinition, name, location)
     {
         ArgumentNullException.ThrowIfNull(directives);
         ArgumentNullException.ThrowIfNull(types);
         Directives = new AstNodeList<DirectiveNode>(directives);
         Types = new AstNodeList<NamedTypeNode>(types);
+        Description = description;
     }
 
     /// <summary>Gets directives in source order.</summary>
-    public AstNodeList<DirectiveNode> Directives { get; }
+    public override AstNodeList<DirectiveNode> Directives { get; }
+    internal override IReadOnlyList<DirectiveNode> ContractDirectives => Directives;
     /// <summary>Gets union member types in source order.</summary>
-    public AstNodeList<NamedTypeNode> Types { get; }
+    public override AstNodeList<NamedTypeNode> Types { get; }
+    /// <summary>Gets the optional evaluated description.</summary>
+    public StringValueNode? Description { get; }
 }
 
 /// <summary>A union type extension.</summary>
-public sealed class UnionTypeExtensionNode : TypeExtensionNode
+public sealed partial class UnionTypeExtensionNode : UnionTypeDefinitionNodeBase, ITypeExtensionNode
 {
     /// <summary>Creates an immutable union type extension.</summary>
     public UnionTypeExtensionNode(NameNode name, IEnumerable<DirectiveNode> directives, IEnumerable<NamedTypeNode> types, SourceLocation location)
@@ -313,13 +398,14 @@ public sealed class UnionTypeExtensionNode : TypeExtensionNode
     }
 
     /// <summary>Gets added directives in source order.</summary>
-    public AstNodeList<DirectiveNode> Directives { get; }
+    public override AstNodeList<DirectiveNode> Directives { get; }
+    internal override IReadOnlyList<DirectiveNode> ContractDirectives => Directives;
     /// <summary>Gets added member types in source order.</summary>
-    public AstNodeList<NamedTypeNode> Types { get; }
+    public override AstNodeList<NamedTypeNode> Types { get; }
 }
 
 /// <summary>An enum type definition.</summary>
-public sealed class EnumTypeDefinitionNode : TypeDefinitionNode
+public sealed partial class EnumTypeDefinitionNode : EnumTypeDefinitionNodeBase, ITypeDefinitionNode
 {
     /// <summary>Creates an immutable enum type definition.</summary>
     public EnumTypeDefinitionNode(
@@ -328,22 +414,26 @@ public sealed class EnumTypeDefinitionNode : TypeDefinitionNode
         IEnumerable<EnumValueDefinitionNode> values,
         SourceLocation location,
         StringValueNode? description = null)
-        : base(AstNodeKind.EnumTypeDefinition, name, description, location)
+        : base(AstNodeKind.EnumTypeDefinition, name, location)
     {
         ArgumentNullException.ThrowIfNull(directives);
         ArgumentNullException.ThrowIfNull(values);
         Directives = new AstNodeList<DirectiveNode>(directives);
         Values = new AstNodeList<EnumValueDefinitionNode>(values);
+        Description = description;
     }
 
     /// <summary>Gets directives in source order.</summary>
-    public AstNodeList<DirectiveNode> Directives { get; }
+    public override AstNodeList<DirectiveNode> Directives { get; }
+    internal override IReadOnlyList<DirectiveNode> ContractDirectives => Directives;
     /// <summary>Gets enum values in source order.</summary>
-    public AstNodeList<EnumValueDefinitionNode> Values { get; }
+    public override AstNodeList<EnumValueDefinitionNode> Values { get; }
+    /// <summary>Gets the optional evaluated description.</summary>
+    public StringValueNode? Description { get; }
 }
 
 /// <summary>An enum type extension.</summary>
-public sealed class EnumTypeExtensionNode : TypeExtensionNode
+public sealed partial class EnumTypeExtensionNode : EnumTypeDefinitionNodeBase, ITypeExtensionNode
 {
     /// <summary>Creates an immutable enum type extension.</summary>
     public EnumTypeExtensionNode(NameNode name, IEnumerable<DirectiveNode> directives, IEnumerable<EnumValueDefinitionNode> values, SourceLocation location)
@@ -360,13 +450,14 @@ public sealed class EnumTypeExtensionNode : TypeExtensionNode
     }
 
     /// <summary>Gets added directives in source order.</summary>
-    public AstNodeList<DirectiveNode> Directives { get; }
+    public override AstNodeList<DirectiveNode> Directives { get; }
+    internal override IReadOnlyList<DirectiveNode> ContractDirectives => Directives;
     /// <summary>Gets added enum values in source order.</summary>
-    public AstNodeList<EnumValueDefinitionNode> Values { get; }
+    public override AstNodeList<EnumValueDefinitionNode> Values { get; }
 }
 
 /// <summary>An input-object type definition.</summary>
-public sealed class InputObjectTypeDefinitionNode : TypeDefinitionNode
+public sealed partial class InputObjectTypeDefinitionNode : InputObjectTypeDefinitionNodeBase, ITypeDefinitionNode
 {
     /// <summary>Creates an immutable input-object definition.</summary>
     public InputObjectTypeDefinitionNode(
@@ -375,22 +466,26 @@ public sealed class InputObjectTypeDefinitionNode : TypeDefinitionNode
         IEnumerable<InputValueDefinitionNode> fields,
         SourceLocation location,
         StringValueNode? description = null)
-        : base(AstNodeKind.InputObjectTypeDefinition, name, description, location)
+        : base(AstNodeKind.InputObjectTypeDefinition, name, location)
     {
         ArgumentNullException.ThrowIfNull(directives);
         ArgumentNullException.ThrowIfNull(fields);
         Directives = new AstNodeList<DirectiveNode>(directives);
         Fields = new AstNodeList<InputValueDefinitionNode>(fields);
+        Description = description;
     }
 
     /// <summary>Gets directives in source order.</summary>
-    public AstNodeList<DirectiveNode> Directives { get; }
+    public override AstNodeList<DirectiveNode> Directives { get; }
+    internal override IReadOnlyList<DirectiveNode> ContractDirectives => Directives;
     /// <summary>Gets input fields in source order.</summary>
-    public AstNodeList<InputValueDefinitionNode> Fields { get; }
+    public override AstNodeList<InputValueDefinitionNode> Fields { get; }
+    /// <summary>Gets the optional evaluated description.</summary>
+    public StringValueNode? Description { get; }
 }
 
 /// <summary>An input-object type extension.</summary>
-public sealed class InputObjectTypeExtensionNode : TypeExtensionNode
+public sealed partial class InputObjectTypeExtensionNode : InputObjectTypeDefinitionNodeBase, ITypeExtensionNode
 {
     /// <summary>Creates an immutable input-object type extension.</summary>
     public InputObjectTypeExtensionNode(NameNode name, IEnumerable<DirectiveNode> directives, IEnumerable<InputValueDefinitionNode> fields, SourceLocation location)
@@ -407,13 +502,14 @@ public sealed class InputObjectTypeExtensionNode : TypeExtensionNode
     }
 
     /// <summary>Gets added directives in source order.</summary>
-    public AstNodeList<DirectiveNode> Directives { get; }
+    public override AstNodeList<DirectiveNode> Directives { get; }
+    internal override IReadOnlyList<DirectiveNode> ContractDirectives => Directives;
     /// <summary>Gets added input fields in source order.</summary>
-    public AstNodeList<InputValueDefinitionNode> Fields { get; }
+    public override AstNodeList<InputValueDefinitionNode> Fields { get; }
 }
 
 /// <summary>A field definition within an object or interface.</summary>
-public sealed class FieldDefinitionNode : AstNode
+public sealed partial class FieldDefinitionNode : NamedSyntaxNode
 {
     /// <summary>Creates an immutable field definition.</summary>
     public FieldDefinitionNode(
@@ -423,13 +519,12 @@ public sealed class FieldDefinitionNode : AstNode
         IEnumerable<DirectiveNode> directives,
         SourceLocation location,
         StringValueNode? description = null)
-        : base(AstNodeKind.FieldDefinition, location)
+        : base(AstNodeKind.FieldDefinition, name, location)
     {
         ArgumentNullException.ThrowIfNull(name);
         ArgumentNullException.ThrowIfNull(arguments);
         ArgumentNullException.ThrowIfNull(type);
         ArgumentNullException.ThrowIfNull(directives);
-        Name = name;
         Arguments = new AstNodeList<InputValueDefinitionNode>(arguments);
         Type = type;
         Directives = new AstNodeList<DirectiveNode>(directives);
@@ -437,19 +532,19 @@ public sealed class FieldDefinitionNode : AstNode
     }
 
     /// <summary>Gets the field name.</summary>
-    public NameNode Name { get; }
     /// <summary>Gets argument definitions in source order.</summary>
-    public AstNodeList<InputValueDefinitionNode> Arguments { get; }
+    public IReadOnlyList<InputValueDefinitionNode> Arguments { get; }
     /// <summary>Gets the required field type.</summary>
-    public TypeNode Type { get; }
+    public ITypeNode Type { get; }
     /// <summary>Gets directives in source order.</summary>
-    public AstNodeList<DirectiveNode> Directives { get; }
+    public override AstNodeList<DirectiveNode> Directives { get; }
+    internal override IReadOnlyList<DirectiveNode> ContractDirectives => Directives;
     /// <summary>Gets the optional evaluated description.</summary>
     public StringValueNode? Description { get; }
 }
 
 /// <summary>An argument or input-object field definition.</summary>
-public sealed class InputValueDefinitionNode : AstNode
+public sealed partial class InputValueDefinitionNode : NamedSyntaxNode
 {
     /// <summary>Creates an immutable input-value definition.</summary>
     public InputValueDefinitionNode(
@@ -459,12 +554,11 @@ public sealed class InputValueDefinitionNode : AstNode
         IEnumerable<DirectiveNode> directives,
         SourceLocation location,
         StringValueNode? description = null)
-        : base(AstNodeKind.InputValueDefinition, location)
+        : base(AstNodeKind.InputValueDefinition, name, location)
     {
         ArgumentNullException.ThrowIfNull(name);
         ArgumentNullException.ThrowIfNull(type);
         ArgumentNullException.ThrowIfNull(directives);
-        Name = name;
         Type = type;
         DefaultValue = defaultValue;
         Directives = new AstNodeList<DirectiveNode>(directives);
@@ -472,41 +566,40 @@ public sealed class InputValueDefinitionNode : AstNode
     }
 
     /// <summary>Gets the input-value name.</summary>
-    public NameNode Name { get; }
     /// <summary>Gets the required input-value type.</summary>
-    public TypeNode Type { get; }
+    public ITypeNode Type { get; }
     /// <summary>Gets the optional constant default value.</summary>
-    public ValueNode? DefaultValue { get; }
+    public IValueNode? DefaultValue { get; }
     /// <summary>Gets directives in source order.</summary>
-    public AstNodeList<DirectiveNode> Directives { get; }
+    public override AstNodeList<DirectiveNode> Directives { get; }
+    internal override IReadOnlyList<DirectiveNode> ContractDirectives => Directives;
     /// <summary>Gets the optional evaluated description.</summary>
     public StringValueNode? Description { get; }
 }
 
 /// <summary>An enum value definition.</summary>
-public sealed class EnumValueDefinitionNode : AstNode
+public sealed partial class EnumValueDefinitionNode : NamedSyntaxNode
 {
     /// <summary>Creates an immutable enum value definition.</summary>
     public EnumValueDefinitionNode(NameNode name, IEnumerable<DirectiveNode> directives, SourceLocation location, StringValueNode? description = null)
-        : base(AstNodeKind.EnumValueDefinition, location)
+        : base(AstNodeKind.EnumValueDefinition, name, location)
     {
         ArgumentNullException.ThrowIfNull(name);
         ArgumentNullException.ThrowIfNull(directives);
-        Name = name;
         Directives = new AstNodeList<DirectiveNode>(directives);
         Description = description;
     }
 
     /// <summary>Gets the enum value name.</summary>
-    public NameNode Name { get; }
     /// <summary>Gets directives in source order.</summary>
-    public AstNodeList<DirectiveNode> Directives { get; }
+    public override AstNodeList<DirectiveNode> Directives { get; }
+    internal override IReadOnlyList<DirectiveNode> ContractDirectives => Directives;
     /// <summary>Gets the optional evaluated description.</summary>
     public StringValueNode? Description { get; }
 }
 
 /// <summary>A directive definition, including its application locations.</summary>
-public sealed class DirectiveDefinitionNode : DefinitionNode
+public sealed partial class DirectiveDefinitionNode : DefinitionNode, ITypeSystemDefinitionNode, IHasName, IHasDirectives
 {
     /// <summary>Creates an immutable directive definition.</summary>
     public DirectiveDefinitionNode(
@@ -516,15 +609,29 @@ public sealed class DirectiveDefinitionNode : DefinitionNode
         IEnumerable<NameNode> locations,
         SourceLocation location,
         StringValueNode? description = null)
+        : this(name, arguments, repeatable, locations, location, description, [])
+    {
+    }
+
+    private DirectiveDefinitionNode(
+        NameNode name,
+        IEnumerable<InputValueDefinitionNode> arguments,
+        bool repeatable,
+        IEnumerable<NameNode> locations,
+        SourceLocation location,
+        StringValueNode? description,
+        IEnumerable<DirectiveNode> directives)
         : base(AstNodeKind.DirectiveDefinition, location)
     {
         ArgumentNullException.ThrowIfNull(name);
         ArgumentNullException.ThrowIfNull(arguments);
         ArgumentNullException.ThrowIfNull(locations);
+        ArgumentNullException.ThrowIfNull(directives);
         Name = name;
         Arguments = new AstNodeList<InputValueDefinitionNode>(arguments);
         Repeatable = repeatable;
         Locations = new AstNodeList<NameNode>(locations);
+        Directives = new AstNodeList<DirectiveNode>(directives);
         if (Locations.Count == 0)
         {
             throw new ArgumentException("A directive definition requires at least one location.", nameof(locations));
@@ -536,11 +643,14 @@ public sealed class DirectiveDefinitionNode : DefinitionNode
     /// <summary>Gets the directive name.</summary>
     public NameNode Name { get; }
     /// <summary>Gets argument definitions in source order.</summary>
-    public AstNodeList<InputValueDefinitionNode> Arguments { get; }
+    public IReadOnlyList<InputValueDefinitionNode> Arguments { get; }
     /// <summary>Gets whether applications may repeat.</summary>
     public bool Repeatable { get; }
     /// <summary>Gets allowed directive locations in source order.</summary>
-    public AstNodeList<NameNode> Locations { get; }
+    public IReadOnlyList<NameNode> Locations { get; }
+    /// <summary>Gets directives associated with this definition.</summary>
+    public IReadOnlyList<DirectiveNode> Directives { get; }
+    IReadOnlyList<DirectiveNode> IHasDirectives.Directives => Directives;
     /// <summary>Gets the optional evaluated description.</summary>
     public StringValueNode? Description { get; }
 }

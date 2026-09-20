@@ -11,14 +11,19 @@ public abstract class DefinitionNode : AstNode
 }
 
 /// <summary>A GraphQL document containing source-ordered definitions.</summary>
-public sealed class DocumentNode : AstNode
+public sealed partial class DocumentNode : AstNode
 {
     /// <summary>Creates a document and snapshots its definitions in source order.</summary>
     public DocumentNode(SourceText source, IEnumerable<DefinitionNode> definitions, SourceLocation location, Source? sourceInfo = null)
+        : this(source, definitions, location, sourceInfo, allowEmpty: false)
+    {
+    }
+
+    private DocumentNode(SourceText source, IEnumerable<DefinitionNode> definitions, SourceLocation location, Source? sourceInfo, bool allowEmpty)
         : base(AstNodeKind.Document, location)
     {
-        Definitions = new AstNodeList<DefinitionNode>(definitions);
-        if (Definitions.Count == 0)
+        Definitions = Array.AsReadOnly(definitions.Cast<IDefinitionNode>().ToArray());
+        if (Definitions.Count == 0 && !allowEmpty)
         {
             throw new ArgumentException("A GraphQL document must contain at least one definition.", nameof(definitions));
         }
@@ -58,7 +63,7 @@ public sealed class DocumentNode : AstNode
     public Source? SourceInfo { get; }
 
     /// <summary>Gets the document definitions in source order.</summary>
-    public AstNodeList<DefinitionNode> Definitions { get; }
+    public IReadOnlyList<IDefinitionNode> Definitions { get; }
 }
 
 /// <summary>Identifies a GraphQL executable operation.</summary>
@@ -73,7 +78,7 @@ public enum OperationType : byte
 }
 
 /// <summary>A query, mutation, or subscription definition.</summary>
-public sealed class OperationDefinitionNode : DefinitionNode
+public sealed partial class OperationDefinitionNode : DefinitionNode, IExecutableDefinitionNode, IHasDirectives
 {
     /// <summary>Creates an immutable operation definition.</summary>
     public OperationDefinitionNode(
@@ -107,9 +112,10 @@ public sealed class OperationDefinitionNode : DefinitionNode
     /// <summary>Gets the optional operation name.</summary>
     public NameNode? Name { get; }
     /// <summary>Gets variable definitions in source order.</summary>
-    public AstNodeList<VariableDefinitionNode> VariableDefinitions { get; }
+    public IReadOnlyList<VariableDefinitionNode> VariableDefinitions { get; }
     /// <summary>Gets directives in source order.</summary>
-    public AstNodeList<DirectiveNode> Directives { get; }
+    public IReadOnlyList<DirectiveNode> Directives { get; }
+    IReadOnlyList<DirectiveNode> IHasDirectives.Directives => Directives;
     /// <summary>Gets the required operation selection set.</summary>
     public SelectionSetNode SelectionSet { get; }
     /// <summary>Gets the optional operation description.</summary>
@@ -117,7 +123,7 @@ public sealed class OperationDefinitionNode : DefinitionNode
 }
 
 /// <summary>A fragment definition with a required type condition and selection set.</summary>
-public sealed class FragmentDefinitionNode : DefinitionNode
+public sealed partial class FragmentDefinitionNode : NamedSyntaxNode, IExecutableDefinitionNode
 {
     /// <summary>Creates an immutable fragment definition.</summary>
     public FragmentDefinitionNode(
@@ -128,13 +134,12 @@ public sealed class FragmentDefinitionNode : DefinitionNode
         SourceLocation location,
         StringValueNode? description = null,
         IEnumerable<VariableDefinitionNode>? variableDefinitions = null)
-        : base(AstNodeKind.FragmentDefinition, location)
+        : base(AstNodeKind.FragmentDefinition, name, location)
     {
         ArgumentNullException.ThrowIfNull(name);
         ArgumentNullException.ThrowIfNull(typeCondition);
         ArgumentNullException.ThrowIfNull(directives);
         ArgumentNullException.ThrowIfNull(selectionSet);
-        Name = name;
         TypeCondition = typeCondition;
         Directives = new AstNodeList<DirectiveNode>(directives);
         SelectionSet = selectionSet;
@@ -142,16 +147,15 @@ public sealed class FragmentDefinitionNode : DefinitionNode
         VariableDefinitions = variableDefinitions is null ? AstNodeList<VariableDefinitionNode>.Empty : new AstNodeList<VariableDefinitionNode>(variableDefinitions);
     }
 
-    /// <summary>Gets the fragment name.</summary>
-    public NameNode Name { get; }
     /// <summary>Gets the required fragment type condition.</summary>
     public NamedTypeNode TypeCondition { get; }
     /// <summary>Gets directives in source order.</summary>
-    public AstNodeList<DirectiveNode> Directives { get; }
+    public override IReadOnlyList<DirectiveNode> Directives { get; }
+    internal override IReadOnlyList<DirectiveNode> ContractDirectives => Directives;
     /// <summary>Gets the required fragment selection set.</summary>
     public SelectionSetNode SelectionSet { get; }
     /// <summary>Gets fragment variable definitions, empty unless enabled by parser options.</summary>
-    public AstNodeList<VariableDefinitionNode> VariableDefinitions { get; }
+    public IReadOnlyList<VariableDefinitionNode> VariableDefinitions { get; }
     /// <summary>Gets the optional fragment description.</summary>
     public StringValueNode? Description { get; }
 }

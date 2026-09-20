@@ -126,7 +126,7 @@ public sealed class ExecutableAstTests
             [operation, fragment],
             new SourceLocation(0, sourceText.Length));
 
-        Assert.Equal(AstNodeKind.Document, document.Kind);
+        Assert.Equal(AstNodeKind.Document, document.AstKind);
         Assert.Equal(source, document.Source.Content);
         Assert.Equal(2, document.Definitions.Count);
         Assert.Same(operation, document.Definitions[0]);
@@ -169,17 +169,17 @@ public sealed class ExecutableAstTests
         var directive = new DirectiveNode(name, [argument], new SourceLocation(0, 13));
         var definition = new VariableDefinitionNode(variable, type, defaultValue: null, [directive], new SourceLocation(0, 13));
 
-        Assert.Equal(AstNodeKind.IntValue, integer.Kind);
+        Assert.Equal(AstNodeKind.IntValue, integer.AstKind);
         Assert.Equal("12", integer.Value.ToString());
         Assert.Equal("-2.5E+6", floating.Value.ToString());
         Assert.Equal("decoded\nvalue", text.Value.ToString());
         Assert.False(text.IsBlock);
         Assert.Equal("READY", enumValue.Value.ToString());
         Assert.True(boolean.Value);
-        Assert.Equal(AstNodeKind.NullValue, nullValue.Kind);
+        Assert.Equal(AstNodeKind.NullValue, nullValue.AstKind);
         Assert.Same(variable, definition.Variable);
-        Assert.Equal(AstNodeKind.NonNullType, definition.Type.Kind);
-        Assert.Equal(AstNodeKind.ListType, ((NonNullTypeNode)definition.Type).Type.Kind);
+        Assert.Equal(AstNodeKind.NonNullType, ((AstNode)definition.Type).AstKind);
+        Assert.Equal(AstNodeKind.ListType, ((AstNode)((NonNullTypeNode)definition.Type).Type).AstKind);
         Assert.Same(directive, definition.Directives[0]);
         Assert.Same(argument, directive.Arguments[0]);
         Assert.Same(objectValue, argument.Value);
