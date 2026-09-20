@@ -18,21 +18,22 @@ Verified on 2026-09-20:
 
 | Gate | Result |
 | --- | --- |
-| Release test harness | 1,485 passed, 0 failed, 0 skipped; Release build succeeded |
+| Release test harness | 1,559 passed, 0 failed, 0 skipped; Release build succeeded |
 | Pinned oracle fixtures | 23 passed (7 valid, 16 invalid) |
 | GraphQL.js reference language corpus | 1,227 focused checks passed (1,226 cases plus provenance); 220 upstream tests passed |
 | Corpus regeneration check | Passed at pinned GraphQL.js commit; 1,226 cases from 220 upstream tests |
 | Deterministic mutation fuzz | 512 cases, seed `20260925`, passed |
 | Deep nesting resource stress | 10,000 nested delimiters rejected at configured depth before recursive descent |
 | Default source bound | Input one UTF-16 code unit above 1,048,576 rejected before tokenization |
-| Repeated/concurrent parsing | 100 sequential and 64 concurrent parses produced identical canonical AST output |
+| Repeated/concurrent parsing | 100 sequential parses, 64 concurrent parses, and 64 concurrent reads of one owned document produced identical results |
+| Package and standalone consumer | Clean local-feed restore/build/run passed; package contains the net10.0 assembly, XML docs, and package readme; 119 API contract types and 992 usable members verified with an empty difference allowlist |
 | Benchmark harness smoke | 50 iterations; lexer, strict executable/SDL parsing, and diagnostic parsing completed |
 
-The parser defaults to a 1,048,576 UTF-16 code-unit source limit, 250,000 non-EOF tokens, combined delimiter nesting depth 128, and 100 diagnostics. Applications can configure these bounds through `GraphQLParserOptions`; exceeding a source, token, or nesting bound throws `GraphQLResourceLimitException` in both strict and diagnostic modes. The language utility surface includes GraphQL source metadata, source excerpts, quoted and block-string formatters, AST predicates, a deterministic syntax printer, a strict schema-coordinate lexer, and read-only visitor traversal. Editable visitor rewrites and complete public API implementation remain in the public API compatibility milestone. The current full benchmark comparison and the decision not to keep an unproven pooling or interning change are in [performance baseline](performance-baseline.md).
+The parser defaults to a 1,048,576 UTF-16 code-unit source limit, 250,000 non-EOF tokens, combined delimiter nesting depth 128, and 100 diagnostics. Applications can configure these bounds through `GraphQLParserOptions`; exceeding a source, token, or nesting bound throws `GraphQLResourceLimitException` in both strict and diagnostic modes. The language utility surface includes GraphQL source metadata, source excerpts, quoted and block-string formatters, AST predicates, a deterministic syntax printer, schema-coordinate parsing, visitor traversal, and immutable visitor rewrites. The current full benchmark comparison and the decision not to keep an unproven pooling or interning change are in [performance baseline](performance-baseline.md).
 
 ## Remaining limits
 
 - The 1,226 applicable corpus cases cover 12 pinned GraphQL.js language test files, not the entire GraphQL.js test suite. Nine explicitly excluded assertions are listed in the generated corpus; the broader inventory still contains contract-review and out-of-scope cases.
 - Parsing is syntactic. Schema-dependent validation, operation validation, value coercion, and execution are outside this library's scope.
 - The benchmark corpus is small and fixed, and its local throughput values are sensitive to machine load. They are comparative measurements, not performance guarantees.
-- `SourceText` and source-backed AST values retain caller-owned memory. Callers must keep that backing storage alive and must not mutate it while the AST is in use.
+- Default document, diagnostic, and schema-coordinate parsing snapshots input into immutable storage. Explicit borrowed-memory entry points and direct low-level lexer use retain caller storage, which must remain alive and unchanged while returned tokens or AST nodes are in use.

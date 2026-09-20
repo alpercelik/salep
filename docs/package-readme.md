@@ -11,4 +11,4 @@ DocumentNode document = GraphQLParser.GraphQLParser.Parse(source);
 
 Parsing checks GraphQL syntax. Schema-dependent validation, value coercion, and execution are not included.
 
-`SourceText` and source-backed syntax nodes retain caller-owned memory. Keep its backing storage alive and unchanged while parsing and while the resulting syntax tree is in use.
+Default parse entry points snapshot source into immutable storage. The explicitly borrowed `ParseBorrowed`, `ParseWithDiagnosticsBorrowed`, and `ParseSchemaCoordinateBorrowed` methods retain caller-owned memory; keep its backing storage alive and unchanged while the returned syntax tree is in use.

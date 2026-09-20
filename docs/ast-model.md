@@ -4,9 +4,11 @@ AST locations use validated zero-based, half-open offsets in UTF-16 code units, 
 
 ## Source-backed values
 
-Unchanged names and other values that exactly match a source range are represented by `ReadOnlyMemory<char>` slices over the caller's original source. `NameNode` stores such a slice without copying. The caller must keep the input memory alive and must not mutate its backing storage while the AST is in use.
+Default `GraphQLParser.Parse`, diagnostic parsing, and schema-coordinate parsing snapshot `SourceText` into an immutable string before creating source slices. The caller may release or mutate the original memory after parsing without changing the document, names, values, or locations. `DocumentNode.Source` retains the private immutable snapshot used by its AST.
 
-Quoted strings and block strings retain their full raw lexeme on the token for locations and diagnostics. Their `Value` contains the evaluated text: an unescaped quoted string can point into the original source; a string with escapes points to the decoder-owned string; a block string points to the normalized string. AST value nodes will store the corresponding `ReadOnlyMemory<char>` directly, so they retain the backing source or decoded string without another copy. This ownership is safe because `ReadOnlyMemory<char>` holds the backing object alive, while mutation of caller-owned memory remains prohibited.
+`ParseBorrowed`, `ParseWithDiagnosticsBorrowed`, and `ParseSchemaCoordinateBorrowed` are explicit zero-copy alternatives. Their AST values and source retain the supplied memory; callers must keep its backing storage alive and must not mutate it while parsing or while any returned node is in use. Direct `GraphQLLexer` use and manually constructed nodes over `SourceText` are also borrowed-memory APIs.
+
+Quoted strings and block strings retain their full raw lexeme on the token for locations and diagnostics. Their `Value` contains evaluated text: unescaped quoted strings may point into the immutable source snapshot; escaped strings point to decoder-owned strings; block strings point to normalized strings. AST value nodes retain the backing string through `ReadOnlyMemory<char>`.
 
 ## Child collections
 

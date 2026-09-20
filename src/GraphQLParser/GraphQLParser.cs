@@ -25,21 +25,26 @@ public sealed class GraphQLParser
     private List<GraphQLDiagnostic>? _activeDiagnostics;
     private bool _diagnosticsTruncated;
 
-    /// <summary>Creates a parser over caller-owned source memory.</summary>
+    /// <summary>Creates a parser that snapshots the supplied source into immutable storage.</summary>
     public GraphQLParser(SourceText source)
-        : this(source, GraphQLParserOptions.Default)
+        : this(source, GraphQLParserOptions.Default, copySource: true)
     {
     }
 
     /// <summary>Creates a parser over a named source body.</summary>
     public GraphQLParser(Source source)
-        : this(new SourceText((source ?? throw new ArgumentNullException(nameof(source))).Body.AsMemory()))
+        : this(new SourceText((source ?? throw new ArgumentNullException(nameof(source))).Body.AsMemory()), GraphQLParserOptions.Default, copySource: false)
     {
         _sourceInfo = source;
     }
 
-    /// <summary>Creates a parser with explicit input and work limits.</summary>
+    /// <summary>Creates a parser with explicit input and work limits, snapshotting source into immutable storage.</summary>
     public GraphQLParser(SourceText source, GraphQLParserOptions options)
+        : this(source, options, copySource: true)
+    {
+    }
+
+    private GraphQLParser(SourceText source, GraphQLParserOptions options, bool copySource)
     {
         ArgumentNullException.ThrowIfNull(options);
         if (source.Length > options.MaximumSourceLength)
@@ -48,10 +53,10 @@ public sealed class GraphQLParser
                 new SourceLocation(options.MaximumSourceLength, source.Length));
         }
 
-        _source = source;
+        _source = copySource ? source.ToOwned() : source;
         _options = options;
-        _lineStarts = BuildLineStarts(source.Content.Span);
-        var lexer = new GraphQLLexer(source);
+        _lineStarts = BuildLineStarts(_source.Content.Span);
+        var lexer = new GraphQLLexer(_source);
         var tokenCount = 0;
         var nestingDepth = 0;
         try
@@ -92,13 +97,13 @@ public sealed class GraphQLParser
         catch (GraphQLLexicalException exception)
         {
             _lexicalError = exception;
-            _tokens.Add(new Token(TokenKind.EndOfFile, exception.Position, exception.Position, source.Slice(exception.Position, 0)));
+                    _tokens.Add(new Token(TokenKind.EndOfFile, exception.Position, exception.Position, _source.Slice(exception.Position, 0)));
         }
     }
 
     /// <summary>Creates a parser over a named source body with explicit options.</summary>
     public GraphQLParser(Source source, GraphQLParserOptions options)
-        : this(new SourceText((source ?? throw new ArgumentNullException(nameof(source))).Body.AsMemory()), options)
+        : this(new SourceText((source ?? throw new ArgumentNullException(nameof(source))).Body.AsMemory()), options, copySource: false)
     {
         _sourceInfo = source;
     }
@@ -114,6 +119,24 @@ public sealed class GraphQLParser
 
     /// <summary>Parses one non-empty GraphQL document with explicit resource limits.</summary>
     public static DocumentNode Parse(SourceText source, GraphQLParserOptions options) => new GraphQLParser(source, options).ParseDocument();
+
+    /// <summary>Parses a document while retaining the caller's source memory without copying.</summary>
+    /// <remarks>The caller must keep the backing memory alive and unchanged while the returned document is in use.</remarks>
+    public static DocumentNode ParseBorrowed(SourceText source) => ParseBorrowed(source, GraphQLParserOptions.Default);
+
+    /// <summary>Parses a document with explicit limits while retaining the caller's source memory without copying.</summary>
+    /// <remarks>The caller must keep the backing memory alive and unchanged while the returned document is in use.</remarks>
+    public static DocumentNode ParseBorrowed(SourceText source, GraphQLParserOptions options) => new GraphQLParser(source, options, copySource: false).ParseDocument();
+
+    /// <summary>Parses a document with language API options while retaining the caller's source memory without copying.</summary>
+    /// <remarks>The caller must keep the backing memory alive and unchanged while the returned document is in use.</remarks>
+    public static DocumentNode ParseBorrowed(SourceText source, ParserOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        var document = new GraphQLParser(source, options.ToGraphQLParserOptions(), copySource: false).ParseDocument();
+        options.ValidateTree(document);
+        return document;
+    }
 
     /// <summary>Parses one non-empty GraphQL document using language API parser options.</summary>
     public static DocumentNode Parse(SourceText source, ParserOptions options)
@@ -145,8 +168,20 @@ public sealed class GraphQLParser
     /// <summary>Parses a document with explicit resource limits and diagnostic recovery.</summary>
     public static GraphQLParseResult ParseWithDiagnostics(SourceText source, GraphQLParserOptions options) => new GraphQLParser(source, options).ParseDocumentWithDiagnostics();
 
+    /// <summary>Parses with diagnostics while retaining the caller's source memory without copying.</summary>
+    /// <remarks>The caller must keep the backing memory alive and unchanged while the returned result is in use.</remarks>
+    public static GraphQLParseResult ParseWithDiagnosticsBorrowed(SourceText source) => ParseWithDiagnosticsBorrowed(source, GraphQLParserOptions.Default);
+
+    /// <summary>Parses with explicit limits and diagnostics while retaining the caller's source memory without copying.</summary>
+    /// <remarks>The caller must keep the backing memory alive and unchanged while the returned result is in use.</remarks>
+    public static GraphQLParseResult ParseWithDiagnosticsBorrowed(SourceText source, GraphQLParserOptions options) => new GraphQLParser(source, options, copySource: false).ParseDocumentWithDiagnostics();
+
     /// <summary>Parses one strict GraphQL schema coordinate.</summary>
-    public static SchemaCoordinateNode ParseSchemaCoordinate(SourceText source) => new SchemaCoordinateParser(source).Parse();
+    public static SchemaCoordinateNode ParseSchemaCoordinate(SourceText source) => new SchemaCoordinateParser(source.ToOwned()).Parse();
+
+    /// <summary>Parses a schema coordinate while retaining the caller's source memory without copying.</summary>
+    /// <remarks>The caller must keep the backing memory alive and unchanged while the returned coordinate is in use.</remarks>
+    public static SchemaCoordinateNode ParseSchemaCoordinateBorrowed(SourceText source) => new SchemaCoordinateParser(source).Parse();
 
     /// <summary>Parses one strict GraphQL schema coordinate from a named source body.</summary>
     public static SchemaCoordinateNode ParseSchemaCoordinate(Source source)

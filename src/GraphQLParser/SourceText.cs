@@ -4,8 +4,9 @@ namespace GraphQLParser;
 /// Provides a read-only view over GraphQL source without copying its characters.
 /// </summary>
 /// <remarks>
-/// The owner of the memory must keep it alive and must not mutate its backing storage
-/// while parsing is in progress or while source-backed syntax nodes are in use.
+/// <see cref="GraphQLParser.Parse(SourceText)"/> snapshots this view into immutable storage by default.
+/// The explicitly borrowed parser entry points retain this memory; their callers must keep its
+/// backing storage alive and unchanged while parsing and while the resulting syntax tree is in use.
 /// </remarks>
 public readonly struct SourceText
 {
@@ -34,4 +35,6 @@ public readonly struct SourceText
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">The requested range is outside the source.</exception>
     public ReadOnlyMemory<char> Slice(int start, int length) => _content.Slice(start, length);
+
+    internal SourceText ToOwned() => new(_content.ToString().AsMemory());
 }

@@ -40,4 +40,4 @@ The oracle check names each fixture when a snapshot differs. Review regenerated 
 
 ## Source input ownership
 
-The source abstraction accepts `ReadOnlyMemory<char>` and returns slices over the caller's storage without copying. The caller must keep the backing storage alive and unchanged while parsing and while source-backed AST nodes are in use. Source offsets are measured in UTF-16 code units.
+Default document, diagnostic, and schema-coordinate parsing snapshots `SourceText` into immutable storage. Callers may release or mutate their input after parsing. The explicitly named `ParseBorrowed`, `ParseWithDiagnosticsBorrowed`, and `ParseSchemaCoordinateBorrowed` entry points retain caller-owned memory; callers must keep that memory alive and unchanged while returned nodes are in use. Direct lexer use also borrows its `SourceText`. Source offsets are measured in UTF-16 code units.

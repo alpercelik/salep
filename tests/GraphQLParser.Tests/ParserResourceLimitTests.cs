@@ -116,24 +116,84 @@ public sealed class ParserResourceLimitTests
     }
 
     [Fact]
-    public void ParsedDocumentRetainsCallerSourceMemoryAndSourceBackedNames()
+    public void DefaultParsingSnapshotsMutableCallerMemoryIntoImmutableStorage()
     {
-        var buffer = "{ retainedField }".ToCharArray();
-        var document = ParseFromTemporaryBuffer(buffer);
+        var document = ParseFromTemporaryBuffer(out var bufferReference);
 
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
 
-        Assert.True(MemoryMarshal.TryGetArray(document.Source.Content, out ArraySegment<char> sourceSegment));
-        Assert.Same(buffer, sourceSegment.Array);
+        Assert.False(bufferReference.TryGetTarget(out _));
+        Assert.False(MemoryMarshal.TryGetArray(document.Source.Content, out _));
+        Assert.Equal("{ retainedField }", document.Source.Content.ToString());
         var operation = Assert.IsType<OperationDefinitionNode>(document.Definitions[0]);
         var field = Assert.IsType<FieldNode>(operation.SelectionSet.Selections[0]);
         Assert.Equal("retainedField", field.Name.Value.ToString());
+        Assert.Equal(new Location(2, 15, 1, 3), field.Name.Location);
     }
 
-    private static DocumentNode ParseFromTemporaryBuffer(char[] buffer) =>
-        Parser.Parse(new SourceText(buffer.AsMemory()));
+    [Fact]
+    public void BorrowedParsingIsExplicitAndReflectsTheRetainedCallerBuffer()
+    {
+        var buffer = "{ borrowedName }".ToCharArray();
+        var document = Parser.ParseBorrowed(new SourceText(buffer.AsMemory()));
+
+        Assert.True(MemoryMarshal.TryGetArray(document.Source.Content, out ArraySegment<char> sourceSegment));
+        Assert.Same(buffer, sourceSegment.Array);
+        buffer[2] = 'B';
+
+        var operation = Assert.IsType<OperationDefinitionNode>(document.Definitions[0]);
+        var field = Assert.IsType<FieldNode>(operation.SelectionSet.Selections[0]);
+        Assert.Equal("BorrowedName", field.Name.Value);
+        Assert.Equal(new Location(2, 14, 1, 3), field.Name.Location);
+    }
+
+    [Fact]
+    public void BorrowedDiagnosticAndCoordinateEntriesRetainTheirInput()
+    {
+        var diagnosticBuffer = "{ diagnosticField }".ToCharArray();
+        var diagnosticResult = Parser.ParseWithDiagnosticsBorrowed(new SourceText(diagnosticBuffer.AsMemory()));
+        Assert.True(diagnosticResult.Success);
+        Assert.True(MemoryMarshal.TryGetArray(diagnosticResult.Document!.Source.Content, out var diagnosticSource));
+        Assert.Same(diagnosticBuffer, diagnosticSource.Array);
+
+        var coordinateBuffer = "TypeName.field".ToCharArray();
+        var coordinate = Parser.ParseSchemaCoordinateBorrowed(new SourceText(coordinateBuffer.AsMemory()));
+        Assert.True(MemoryMarshal.TryGetArray(coordinate.Name.SourceValue, out var coordinateName));
+        Assert.Same(coordinateBuffer, coordinateName.Array);
+    }
+
+    [Fact]
+    public void DefaultSchemaCoordinateParsingOwnsNamesFromMutableCallerMemory()
+    {
+        var buffer = "TypeName.field".ToCharArray();
+        var coordinate = Parser.ParseSchemaCoordinate(new SourceText(buffer.AsMemory()));
+        buffer[0] = 'X';
+
+        Assert.Equal("TypeName", coordinate.Name.Value);
+        Assert.Equal("TypeName.field", coordinate.ToString());
+        Assert.Equal(new Location(0, 14, 1, 1), coordinate.Location);
+    }
+
+    [Fact]
+    public void ConcurrentReadsOfOneOwnedDocumentRemainStable()
+    {
+        var document = Parser.Parse(new SourceText("query Q { user { id name } }".AsMemory()));
+        var expected = GraphQLPrinter.Print(document);
+        var results = new string[64];
+
+        Parallel.For(0, results.Length, index => results[index] = GraphQLPrinter.Print(document));
+
+        Assert.All(results, result => Assert.Equal(expected, result));
+    }
+
+    private static DocumentNode ParseFromTemporaryBuffer(out WeakReference<char[]> bufferReference)
+    {
+        var buffer = "{ retainedField }".ToCharArray();
+        bufferReference = new WeakReference<char[]>(buffer);
+        return Parser.Parse(new SourceText(buffer.AsMemory()));
+    }
 
     [Fact]
     public void ResourceFailureIsConsistentInStrictAndDiagnosticEntryPoints()

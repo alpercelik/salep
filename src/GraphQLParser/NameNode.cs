@@ -2,8 +2,9 @@ namespace GraphQLParser;
 
 /// <summary>A source-backed GraphQL name.</summary>
 /// <remarks>
-/// The value references the original caller-owned source when created from a token. The source
-/// must remain alive and unchanged while this node or any syntax node containing it is in use.
+/// The value references its parser source when created from a token. Default parser entry points
+/// use an immutable snapshot; explicitly borrowed entry points require the caller to keep source
+/// memory alive and unchanged while this node or any containing syntax tree is in use.
 /// </remarks>
 public sealed partial class NameNode : AstNode, IEquatable<NameNode>
 {
