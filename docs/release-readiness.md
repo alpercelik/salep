@@ -2,7 +2,9 @@
 
 ## Supported surface
 
-The parser targets the GraphQL specification's September 2025 edition. It parses lexical input, executable documents, and schema definition language (SDL) syntax into an immutable, source-located AST. It does not build or validate schemas, validate executable operations against a schema, or execute requests. The syntax coverage matrix and detailed exclusions are in [spec coverage](spec-coverage.md).
+The parser targets the GraphQL specification's September 2025 edition. It parses lexical input, executable documents, and schema definition language (SDL) syntax into an immutable, source-located AST. The supported compatibility package is `GraphQLParser` targeting `net10.0`, with this project's `GraphQLParser` namespace and assembly identity. The selected normalized API inventory has 119 public types and 992 declared public members; runtime signature comparison and package-only consumer verification passed with an empty difference allowlist. The supported API families and target limitation are detailed in [public API contract](public-api-contract.md).
+
+The parser does not build or validate schemas, validate executable operations against a schema, or execute requests. The syntax coverage matrix and detailed exclusions are in [spec coverage](spec-coverage.md).
 
 ## Differential coverage
 
@@ -14,26 +16,28 @@ Regenerate and verify the expanded corpus with `npm run reference:write` and `np
 
 ## Release-candidate gates
 
-Verified on 2026-09-20:
+Verified on 2026-09-20 from the current checkout:
 
 | Gate | Result |
 | --- | --- |
-| Release test harness | 1,559 passed, 0 failed, 0 skipped; Release build succeeded |
+| Clean Release rebuild and test harness | Single-node `Rebuild` succeeded with 0 warnings and 0 errors; 1,559 passed, 0 failed, 0 skipped |
 | Pinned oracle fixtures | 23 passed (7 valid, 16 invalid) |
 | GraphQL.js reference language corpus | 1,227 focused checks passed (1,226 cases plus provenance); 220 upstream tests passed |
-| Corpus regeneration check | Passed at pinned GraphQL.js commit; 1,226 cases from 220 upstream tests |
+| Reference corpus freshness | Passed at pinned source commit; 1,226 cases from 220 upstream tests; 9 explicitly excluded assertions |
+| Full upstream test inventory freshness | 1,983 stable identities from 1,980 core tests and 3 package integrations across 119 core test files; 220 applicable, 53 contract-review, 1,710 out of scope |
+| Original oracle fixture freshness | All 23 valid/invalid fixture expectations match the pinned package |
 | Deterministic mutation fuzz | 512 cases, seed `20260925`, passed |
-| Deep nesting resource stress | 10,000 nested delimiters rejected at configured depth before recursive descent |
-| Default source bound | Input one UTF-16 code unit above 1,048,576 rejected before tokenization |
-| Repeated/concurrent parsing | 100 sequential parses, 64 concurrent parses, and 64 concurrent reads of one owned document produced identical results |
-| Package and standalone consumer | Clean local-feed restore/build/run passed; package contains the net10.0 assembly, XML docs, and package readme; 119 API contract types and 992 usable members verified with an empty difference allowlist |
-| Benchmark harness smoke | 50 iterations; lexer, strict executable/SDL parsing, and diagnostic parsing completed |
+| Resource-bound tests | 14 focused tests passed, covering configurable and default input/token/depth/diagnostic limits and failure behavior |
+| Standalone API consumer | Passed; parsed and traversed representative documents and visited 19 AST nodes |
+| Package-only consumer and contents | Temporary local-feed restore/build/run passed with 0 warnings/errors; package contains only the `net10.0` assembly plus XML docs and package readme; 119 types and 992 declared members match with an empty difference allowlist |
+| Reproducible benchmark | Corpus v1 integrity passed: 8 categories/cases, 1,000 measured iterations × 3 repetitions, 48 raw samples across 16 operations; all 16 deterministic allocation budgets passed |
 
-The parser defaults to a 1,048,576 UTF-16 code-unit source limit, 250,000 non-EOF tokens, combined delimiter nesting depth 128, and 100 diagnostics. Applications can configure these bounds through `GraphQLParserOptions`; exceeding a source, token, or nesting bound throws `GraphQLResourceLimitException` in both strict and diagnostic modes. The language utility surface includes GraphQL source metadata, source excerpts, quoted and block-string formatters, AST predicates, a deterministic syntax printer, schema-coordinate parsing, visitor traversal, and immutable visitor rewrites. The current full benchmark comparison and the decision not to keep an unproven pooling or interning change are in [performance baseline](performance-baseline.md).
+The supported language API includes document and schema-coordinate parser entry points and parser options; lexer, tokens, syntax exceptions and diagnostics; immutable AST nodes and source/location helpers; quoted/block-string formatters and predicates; a deterministic printer; and visitor, navigator, and immutable rewrite APIs. UTF-8 reader/parsing APIs are included. HTTP request envelopes, request caches, operation-document hashing and its wrapper, schema-dependent validation, and execution are excluded. The complete selected inventory is [machine-readable](public-api-contract.json) and [described here](public-api-contract.md).
+
+Default document, diagnostic, and schema-coordinate parsing snapshots input into immutable storage. Explicit borrowed-memory entry points and direct low-level lexer use retain caller storage, which must stay alive and unchanged while returned tokens or AST nodes are in use. Performance numbers and deterministic allocation budgets are recorded in [performance baseline](performance-baseline.md); throughput is local comparative data, not a guarantee.
 
 ## Remaining limits
 
-- The 1,226 applicable corpus cases cover 12 pinned GraphQL.js language test files, not the entire GraphQL.js test suite. Nine explicitly excluded assertions are listed in the generated corpus; the broader inventory still contains contract-review and out-of-scope cases.
+- The 1,226 applicable corpus cases cover 12 pinned language test files, not the entire reference test suite. Nine explicitly excluded assertions across eight test identities are listed with reasons; the full inventory separately accounts for 53 contract-review and 1,710 out-of-scope test identities.
 - Parsing is syntactic. Schema-dependent validation, operation validation, value coercion, and execution are outside this library's scope.
-- The benchmark corpus is small and fixed, and its local throughput values are sensitive to machine load. They are comparative measurements, not performance guarantees.
-- Default document, diagnostic, and schema-coordinate parsing snapshots input into immutable storage. Explicit borrowed-memory entry points and direct low-level lexer use retain caller storage, which must remain alive and unchanged while returned tokens or AST nodes are in use.
+- The benchmark corpus is versioned and representative but remains small. Allocation thresholds apply only to its 16 case/operation combinations; measured throughput is sensitive to machine load and is not a performance guarantee.

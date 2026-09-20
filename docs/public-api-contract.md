@@ -1,6 +1,6 @@
 # Public language API contract
 
-This inventory defines the compatibility surface for GraphQL syntax parsing and its language-level utilities. The package metadata is pinned at version 16.6.6. Member signatures were reflected from the net10.0 reference assemblies; the metadata declares `netstandard2.0`, `net8.0`, `net9.0`, `net10.0`, and `net11.0` assets. The current project targets net10.0, so framework parity remains implementation and release work.
+This inventory defines the selected compatibility surface for GraphQL syntax parsing and its language-level utilities. The reference metadata is pinned at version 16.6.6. Member signatures were reflected from the `net10.0` reference assemblies; that metadata also declares `netstandard2.0`, `net8.0`, `net9.0`, and `net11.0` assets. This project builds and packages `net10.0` only. Compatibility has been verified for that target; the other target frameworks are not claimed as supported.
 
 The normalized, machine-readable signature baseline is [public-api-contract.json](public-api-contract.json). It records 119 public types and 992 declared public members, including constructors, overloads, return and parameter types, optional parameters, properties, and constants. All library-owned names use this project's namespace and assembly identity. The baseline contains API metadata only; it contains no implementation source.
 
@@ -18,4 +18,4 @@ HTTP request envelopes, request caches, operation-document hashing and UTF-8 ope
 
 ## Contract tests
 
-`PublicApiContractInventoryTests` verifies normalized project identity, declared target frameworks, unique public type names, signature record shape, and the presence of the parser, syntax tree, printer, and rewrite API families. The compatibility milestone adds runtime reflection comparisons between the baseline and the project assembly, plus compile-and-run consumer coverage. Those implementation comparisons are expected to remain incomplete until that milestone is delivered.
+`PublicApiContractInventoryTests` verifies normalized project identity, declared target frameworks, unique public type names, signature record shape, and the presence of the parser, syntax tree, printer, and rewrite API families. The completed package-compatibility gate compared all 119 selected types and 992 declared member signatures through runtime reflection, compiled and ran standalone and package-only consumers, and passed with an empty difference allowlist. The package-only `net10.0` restore, build, and run passed.

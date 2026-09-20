@@ -1,4 +1,6 @@
-# Next milestones: GraphQL language and API parity
+# GraphQL language and API parity milestones
+
+All planned milestones are now complete. The release gates and exact supported surface are recorded in [release readiness](release-readiness.md); individual implementation and verification evidence remains in the completed Backlog tasks.
 
 ## Objective and boundary
 
@@ -30,4 +32,4 @@ The continuously runnable test harness is a gate for every task. Each completed 
 
 ## Release decision
 
-The release requires complete coverage of the chosen language API contract and all applicable tests in the pinned reference language suite, with explicit accounting for every reference test outside the library boundary. Specification parity means the pinned grammar and language utilities are covered by tests; it does not imply schema validation or execution support.
+The release gates passed for the chosen language API contract and every applicable case in the pinned reference language corpus. The full pinned test inventory accounts for every upstream identity and labels each as applicable, contract-review, or out of scope. The parser targets the pinned grammar and language utilities; it does not provide schema validation or execution. Verified build, test, package, fuzz, resource, and benchmark results are in [release readiness](release-readiness.md).
