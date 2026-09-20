@@ -174,13 +174,13 @@ public ref struct Utf8GraphQLReader
     public static string GetString(ReadOnlySpan<byte> unescapedValue) => Decode(unescapedValue);
 
     /// <summary>Unescapes a UTF-8 GraphQL string payload in place and shortens the supplied span.</summary>
-    public void UnescapeValue(scoped ref Span<byte> value)
+    public void UnescapeValue(scoped ref Span<byte> unescapedValue)
     {
         ThrowIfDisposed();
-        var decoded = GetString(value, isBlockString: false);
+        var decoded = GetString(unescapedValue, isBlockString: false);
         var bytes = StrictUtf8.GetBytes(decoded);
-        bytes.CopyTo(value);
-        value = bytes;
+        bytes.CopyTo(unescapedValue);
+        unescapedValue = bytes;
     }
 
     /// <summary>Releases reader resources and invalidates subsequent operations.</summary>

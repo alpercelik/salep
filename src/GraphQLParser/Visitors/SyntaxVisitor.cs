@@ -197,8 +197,8 @@ public class SyntaxVisitor : SyntaxVisitor<object>
     }
 
     /// <summary>Creates a SyntaxVisitor value.</summary>
-    public SyntaxVisitor(ISyntaxVisitorAction defaultAction, SyntaxVisitorOptions options = default)
-        : base((_, _) => defaultAction, null) { ArgumentNullException.ThrowIfNull(defaultAction); }
+    public SyntaxVisitor(ISyntaxVisitorAction defaultResult, SyntaxVisitorOptions options = default)
+        : base((_, _) => defaultResult, null) { ArgumentNullException.ThrowIfNull(defaultResult); }
 
     /// <summary>Creates a SyntaxVisitor value.</summary>
     public SyntaxVisitor(SyntaxVisitorOptions options = default)

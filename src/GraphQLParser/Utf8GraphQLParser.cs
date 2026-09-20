@@ -11,7 +11,7 @@ public class Utf8EncodingException : Exception
     /// <summary>Creates a Utf8EncodingException value.</summary>
     public Utf8EncodingException(string message) : base(message) { }
     /// <summary>Creates a Utf8EncodingException value.</summary>
-    public Utf8EncodingException(string message, Exception innerException) : base(message, innerException) { }
+    public Utf8EncodingException(string message, Exception inner) : base(message, inner) { }
 }
 
 /// <summary>Parses UTF-8 GraphQL input through the project-owned syntax API.</summary>

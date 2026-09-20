@@ -3,6 +3,10 @@ using GraphQLParser;
 using GraphQLParser.Utilities;
 using GraphQLParser.Visitors;
 
+#if PACKAGE_VERIFICATION
+PackageApiContractVerifier.Verify();
+#endif
+
 const string query = "query Sample($id: ID!) { user(id: $id) { name } }";
 var source = new SourceText(query.AsMemory());
 var document = GraphQLParser.GraphQLParser.Parse(source);

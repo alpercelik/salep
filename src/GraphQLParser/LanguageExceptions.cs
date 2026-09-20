@@ -8,7 +8,7 @@ public class LanguageException : Exception
     /// <summary>Creates a language exception with a message.</summary>
     public LanguageException(string? message) : base(message) { }
     /// <summary>Creates a language exception with a message and inner exception.</summary>
-    public LanguageException(string? message, Exception? innerException) : base(message, innerException) { }
+    public LanguageException(string? message, Exception? inner) : base(message, inner) { }
 }
 
 /// <summary>Reports a value that does not have the required GraphQL language format.</summary>

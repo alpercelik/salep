@@ -92,7 +92,7 @@ public sealed partial class OperationDefinitionNode
     /// <summary>Returns a copy with a different selection set.</summary>
     public OperationDefinitionNode WithSelectionSet(SelectionSetNode selectionSet) => new(Operation, Name, VariableDefinitions, Directives, selectionSet, Location, Description);
     /// <summary>Returns a copy with different variable definitions.</summary>
-    public OperationDefinitionNode WithVariableDefinitions(IReadOnlyList<VariableDefinitionNode> variables) => new(Operation, Name, variables, Directives, SelectionSet, Location, Description);
+    public OperationDefinitionNode WithVariableDefinitions(IReadOnlyList<VariableDefinitionNode> variableDefinitions) => new(Operation, Name, variableDefinitions, Directives, SelectionSet, Location, Description);
 }
 
 public sealed partial class SelectionSetNode
@@ -204,7 +204,7 @@ public sealed partial class FragmentDefinitionNode
     /// <summary>Returns a copy with a different type condition.</summary>
     public FragmentDefinitionNode WithTypeCondition(NamedTypeNode typeCondition) => new(Name, typeCondition, Directives, SelectionSet, Location, Description, VariableDefinitions);
     /// <summary>Returns a copy with different variable definitions.</summary>
-    public FragmentDefinitionNode WithVariableDefinitions(IReadOnlyList<VariableDefinitionNode> variables) => new(Name, TypeCondition, Directives, SelectionSet, Location, Description, variables);
+    public FragmentDefinitionNode WithVariableDefinitions(IReadOnlyList<VariableDefinitionNode> variableDefinitions) => new(Name, TypeCondition, Directives, SelectionSet, Location, Description, variableDefinitions);
 }
 
 public sealed partial class FieldNode
@@ -531,7 +531,7 @@ public sealed partial class FieldDefinitionNode
 public sealed partial class InputValueDefinitionNode
 {
     /// <summary>Returns a copy with a different default value.</summary>
-    public InputValueDefinitionNode WithDefaultValue(IValueNode? value) => new(Name, (TypeNode)Type, value is null ? null : value as ValueNode ?? throw new ArgumentException("Values must be parser value nodes.", nameof(value)), Directives, Location, Description);
+    public InputValueDefinitionNode WithDefaultValue(IValueNode? defaultValue) => new(Name, (TypeNode)Type, defaultValue is null ? null : defaultValue as ValueNode ?? throw new ArgumentException("Values must be parser value nodes.", nameof(defaultValue)), Directives, Location, Description);
     /// <summary>Returns a copy with a different optional description.</summary>
     public InputValueDefinitionNode WithDescription(StringValueNode? description) => new(Name, (TypeNode)Type, DefaultValue is null ? null : (ValueNode)DefaultValue, Directives, Location, description);
     /// <summary>Returns a copy with different directives.</summary>
@@ -559,18 +559,17 @@ public sealed partial class EnumValueDefinitionNode
 public sealed partial class DirectiveDefinitionNode
 {
     /// <summary>Creates a directive definition without applied directives.</summary>
-    public DirectiveDefinitionNode(Location location, NameNode name, StringValueNode? description, bool repeatable, IReadOnlyList<InputValueDefinitionNode> arguments, IReadOnlyList<NameNode> locations)
-        : this(name, arguments, repeatable, locations, (SourceLocation)(location ?? throw new ArgumentNullException(nameof(location))), description) { }
+    public DirectiveDefinitionNode(Location location, NameNode name, StringValueNode? description, bool isRepeatable, IReadOnlyList<InputValueDefinitionNode> arguments, IReadOnlyList<NameNode> locations)
+        : this(name, arguments, isRepeatable, locations, (SourceLocation)(location ?? throw new ArgumentNullException(nameof(location))), description) { }
     /// <summary>Creates a directive definition with applied directives.</summary>
-    public DirectiveDefinitionNode(Location location, NameNode name, StringValueNode? description, bool repeatable, IReadOnlyList<InputValueDefinitionNode> arguments, IReadOnlyList<DirectiveNode> directives, IReadOnlyList<NameNode> locations)
-        : this(name, arguments, repeatable, locations, (SourceLocation)(location ?? throw new ArgumentNullException(nameof(location))), description, directives) { }
+    public DirectiveDefinitionNode(Location location, NameNode name, StringValueNode? description, bool isRepeatable, IReadOnlyList<InputValueDefinitionNode> arguments, IReadOnlyList<DirectiveNode> directives, IReadOnlyList<NameNode> locations)
+        : this(name, arguments, isRepeatable, locations, (SourceLocation)(location ?? throw new ArgumentNullException(nameof(location))), description, directives) { }
 
     /// <summary>Gets whether the directive is repeatable.</summary>
     public bool IsRepeatable => Repeatable;
     /// <summary>Returns a copy with repetition enabled.</summary>
-    public DirectiveDefinitionNode AsRepeatable() => Repeatable ? this : new(Name, Arguments, true, Locations, Location, Description);
     /// <summary>Returns a copy with the repeatable state set to the supplied value.</summary>
-    public DirectiveDefinitionNode AsRepeatable(bool repeatable) => Repeatable == repeatable
+    public DirectiveDefinitionNode AsRepeatable(bool repeatable = true) => Repeatable == repeatable
         ? this
         : new(Name, Arguments, repeatable, Locations, SourceRange, Description, Directives);
     /// <summary>Returns a copy with different argument definitions.</summary>
