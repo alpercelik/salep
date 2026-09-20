@@ -1,0 +1,50 @@
+query FragmentCorpus { root {
+  ...Fragment00
+  ...Fragment01
+  ...Fragment02
+  ...Fragment03
+  ...Fragment04
+  ...Fragment05
+  ...Fragment06
+  ...Fragment07
+  ...Fragment08
+  ...Fragment09
+  ...Fragment10
+  ...Fragment11
+  ...Fragment12
+  ...Fragment13
+  ...Fragment14
+  ...Fragment15
+  ...Fragment16
+  ...Fragment17
+  ...Fragment18
+  ...Fragment19
+  ...Fragment20
+  ...Fragment21
+  ...Fragment22
+  ...Fragment23
+} }
+fragment Fragment00 on Node { id field_00 }
+fragment Fragment01 on Node { id field_01 }
+fragment Fragment02 on Node { id field_02 }
+fragment Fragment03 on Node { id field_03 }
+fragment Fragment04 on Node { id field_04 }
+fragment Fragment05 on Node { id field_05 }
+fragment Fragment06 on Node { id field_06 }
+fragment Fragment07 on Node { id field_07 }
+fragment Fragment08 on Node { id field_08 }
+fragment Fragment09 on Node { id field_09 }
+fragment Fragment10 on Node { id field_10 }
+fragment Fragment11 on Node { id field_11 }
+fragment Fragment12 on Node { id field_12 }
+fragment Fragment13 on Node { id field_13 }
+fragment Fragment14 on Node { id field_14 }
+fragment Fragment15 on Node { id field_15 }
+fragment Fragment16 on Node { id field_16 }
+fragment Fragment17 on Node { id field_17 }
+fragment Fragment18 on Node { id field_18 }
+fragment Fragment19 on Node { id field_19 }
+fragment Fragment20 on Node { id field_20 }
+fragment Fragment21 on Node { id field_21 }
+fragment Fragment22 on Node { id field_22 }
+fragment Fragment23 on Node { id field_23 }

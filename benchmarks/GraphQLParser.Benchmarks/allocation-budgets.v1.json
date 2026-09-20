@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "corpusVersion": 1,
+  "method": "For each case and operation, ceil(captured 3-repetition median bytes/op * 1.15 + 64 bytes); this fixed 15% plus 64-byte headroom is a deterministic allocation-only regression gate. Throughput is recorded but remains informational.",
+  "budgets": [
+    {
+      "caseId": "small-executable",
+      "operation": "lexer",
+      "maximumBytesPerOperation": 64
+    },
+    {
+      "caseId": "small-executable",
+      "operation": "strict-parse",
+      "maximumBytesPerOperation": 7848
+    },
+    {
+      "caseId": "large-executable",
+      "operation": "lexer",
+      "maximumBytesPerOperation": 64
+    },
+    {
+      "caseId": "large-executable",
+      "operation": "strict-parse",
+      "maximumBytesPerOperation": 521225
+    },
+    {
+      "caseId": "small-sdl",
+      "operation": "lexer",
+      "maximumBytesPerOperation": 64
+    },
+    {
+      "caseId": "small-sdl",
+      "operation": "strict-parse",
+      "maximumBytesPerOperation": 8216
+    },
+    {
+      "caseId": "large-sdl",
+      "operation": "lexer",
+      "maximumBytesPerOperation": 64
+    },
+    {
+      "caseId": "large-sdl",
+      "operation": "strict-parse",
+      "maximumBytesPerOperation": 548374
+    },
+    {
+      "caseId": "strings",
+      "operation": "lexer",
+      "maximumBytesPerOperation": 28768
+    },
+    {
+      "caseId": "strings",
+      "operation": "strict-parse",
+      "maximumBytesPerOperation": 151871
+    },
+    {
+      "caseId": "fragments",
+      "operation": "lexer",
+      "maximumBytesPerOperation": 64
+    },
+    {
+      "caseId": "fragments",
+      "operation": "strict-parse",
+      "maximumBytesPerOperation": 83217
+    },
+    {
+      "caseId": "malformed",
+      "operation": "lexer",
+      "maximumBytesPerOperation": 64
+    },
+    {
+      "caseId": "malformed",
+      "operation": "diagnostic-parse",
+      "maximumBytesPerOperation": 8525
+    },
+    {
+      "caseId": "adversarial-nesting",
+      "operation": "lexer",
+      "maximumBytesPerOperation": 64
+    },
+    {
+      "caseId": "adversarial-nesting",
+      "operation": "strict-parse",
+      "maximumBytesPerOperation": 63676
+    }
+  ]
+}

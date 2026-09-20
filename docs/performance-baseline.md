@@ -1,5 +1,7 @@
 # Lexer and parser performance baseline
 
+The original embedded-input results below are retained as historical comparisons. The current reproducible benchmark uses the versioned corpus and repeated raw measurements described in [Versioned benchmark corpus](#versioned-benchmark-corpus).
+
 Recorded 2026-09-20 before optimization. The dependency-free harness is `benchmarks/GraphQLParser.Benchmarks`; run it from the repository root with `./scripts/benchmark.sh 10000`. It performs 500 warmup operations, forces a full collection, then measures 10,000 operations using `Stopwatch` and `GC.GetAllocatedBytesForCurrentThread`. Three consecutive Release runs were used; throughput below is the median. Runtime, operating system, GC mode, iteration count, input character count, and checksums are printed on every run.
 
 Environment: .NET 10.0.11 (`net10.0`), macOS 27.0.0, workstation GC. No BenchmarkDotNet or other package is used, so the harness runs without adding NuGet dependencies.
@@ -35,3 +37,13 @@ Three additional Release runs were collected after TASK-0026 on the same runtime
 The hardened build adds about 8 allocated bytes per parse in these cases. Throughput is mixed: executable and SDL strict parsing improved in these runs, lexer and diagnostic throughput varied in opposite directions. The small fixed corpus and Stopwatch harness do not identify a safe source-pooling, interning, or slicing change with a repeatable net benefit. No such optimization was retained; the lexer remains allocation-free for these inputs and source-backed names already use `ReadOnlyMemory<char>`. The default parser's immutable source snapshot and explicit borrowed APIs keep ownership behavior clear.
 
 These local measurements are evidence for the tested inputs only, not an SLA or a whole-workload performance claim. See [release readiness](release-readiness.md) for the conformance scope and remaining limitations.
+
+## Versioned benchmark corpus
+
+`benchmarks/corpus/v1` is the checked-in benchmark corpus for the September 2025 GraphQL specification target. Its manifest pins each UTF-8 file with SHA-256 and defines the operation used for each case. Run `python3 benchmarks/generate-corpus.py` to deterministically regenerate the files and manifest. The benchmark rejects hash mismatches, duplicate identifiers, missing required categories, unsupported corpus versions, and strict/diagnostic operation mismatches.
+
+The eight cases cover small and large executable documents, small and large SDL documents, escaped and block strings, fragments, malformed input, and 120 levels of nested list values. Valid cases run lexer and strict parse operations; malformed input runs lexer and diagnostic parse. The report records raw samples and medians, corpus and manifest hashes, UTF-16 input lengths, checksums, runtime/framework, OS and architecture, processor count, GC mode, configuration, warmup, iteration, and repetition counts. The CPU identifier is included when the runtime exposes it.
+
+Reproduce the checked-in local capture with `./scripts/benchmark.sh 1000 3 benchmarks/results/2026-09-20.json`. Output includes three separate timing and allocation samples per case/operation. Allocation ceilings in `benchmarks/GraphQLParser.Benchmarks/allocation-budgets.v1.json` use `ceil(three-repetition median bytes/op * 1.15 + 64 bytes)`. They are deterministic allocation-only guardrails; throughput and the recorded local rates are informational because machine load affects Stopwatch measurements. A throughput change never suppresses or weakens parsing, conformance, or test-suite failures.
+
+The checked-in report at `benchmarks/results/2026-09-20.json` is one local capture, not a performance guarantee. Compare captures only when the corpus version, runtime, configuration, and workload are compatible. Keep correctness tests and differential checks as independent mandatory gates.

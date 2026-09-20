@@ -1,0 +1,98 @@
+query StringCorpus {
+  field_00(text: "escaped\n-00-λ-\u263A", block: """line one
+line two 00""")
+  field_01(text: "escaped\n-01-λ-\u263A", block: """line one
+line two 01""")
+  field_02(text: "escaped\n-02-λ-\u263A", block: """line one
+line two 02""")
+  field_03(text: "escaped\n-03-λ-\u263A", block: """line one
+line two 03""")
+  field_04(text: "escaped\n-04-λ-\u263A", block: """line one
+line two 04""")
+  field_05(text: "escaped\n-05-λ-\u263A", block: """line one
+line two 05""")
+  field_06(text: "escaped\n-06-λ-\u263A", block: """line one
+line two 06""")
+  field_07(text: "escaped\n-07-λ-\u263A", block: """line one
+line two 07""")
+  field_08(text: "escaped\n-08-λ-\u263A", block: """line one
+line two 08""")
+  field_09(text: "escaped\n-09-λ-\u263A", block: """line one
+line two 09""")
+  field_10(text: "escaped\n-10-λ-\u263A", block: """line one
+line two 10""")
+  field_11(text: "escaped\n-11-λ-\u263A", block: """line one
+line two 11""")
+  field_12(text: "escaped\n-12-λ-\u263A", block: """line one
+line two 12""")
+  field_13(text: "escaped\n-13-λ-\u263A", block: """line one
+line two 13""")
+  field_14(text: "escaped\n-14-λ-\u263A", block: """line one
+line two 14""")
+  field_15(text: "escaped\n-15-λ-\u263A", block: """line one
+line two 15""")
+  field_16(text: "escaped\n-16-λ-\u263A", block: """line one
+line two 16""")
+  field_17(text: "escaped\n-17-λ-\u263A", block: """line one
+line two 17""")
+  field_18(text: "escaped\n-18-λ-\u263A", block: """line one
+line two 18""")
+  field_19(text: "escaped\n-19-λ-\u263A", block: """line one
+line two 19""")
+  field_20(text: "escaped\n-20-λ-\u263A", block: """line one
+line two 20""")
+  field_21(text: "escaped\n-21-λ-\u263A", block: """line one
+line two 21""")
+  field_22(text: "escaped\n-22-λ-\u263A", block: """line one
+line two 22""")
+  field_23(text: "escaped\n-23-λ-\u263A", block: """line one
+line two 23""")
+  field_24(text: "escaped\n-24-λ-\u263A", block: """line one
+line two 24""")
+  field_25(text: "escaped\n-25-λ-\u263A", block: """line one
+line two 25""")
+  field_26(text: "escaped\n-26-λ-\u263A", block: """line one
+line two 26""")
+  field_27(text: "escaped\n-27-λ-\u263A", block: """line one
+line two 27""")
+  field_28(text: "escaped\n-28-λ-\u263A", block: """line one
+line two 28""")
+  field_29(text: "escaped\n-29-λ-\u263A", block: """line one
+line two 29""")
+  field_30(text: "escaped\n-30-λ-\u263A", block: """line one
+line two 30""")
+  field_31(text: "escaped\n-31-λ-\u263A", block: """line one
+line two 31""")
+  field_32(text: "escaped\n-32-λ-\u263A", block: """line one
+line two 32""")
+  field_33(text: "escaped\n-33-λ-\u263A", block: """line one
+line two 33""")
+  field_34(text: "escaped\n-34-λ-\u263A", block: """line one
+line two 34""")
+  field_35(text: "escaped\n-35-λ-\u263A", block: """line one
+line two 35""")
+  field_36(text: "escaped\n-36-λ-\u263A", block: """line one
+line two 36""")
+  field_37(text: "escaped\n-37-λ-\u263A", block: """line one
+line two 37""")
+  field_38(text: "escaped\n-38-λ-\u263A", block: """line one
+line two 38""")
+  field_39(text: "escaped\n-39-λ-\u263A", block: """line one
+line two 39""")
+  field_40(text: "escaped\n-40-λ-\u263A", block: """line one
+line two 40""")
+  field_41(text: "escaped\n-41-λ-\u263A", block: """line one
+line two 41""")
+  field_42(text: "escaped\n-42-λ-\u263A", block: """line one
+line two 42""")
+  field_43(text: "escaped\n-43-λ-\u263A", block: """line one
+line two 43""")
+  field_44(text: "escaped\n-44-λ-\u263A", block: """line one
+line two 44""")
+  field_45(text: "escaped\n-45-λ-\u263A", block: """line one
+line two 45""")
+  field_46(text: "escaped\n-46-λ-\u263A", block: """line one
+line two 46""")
+  field_47(text: "escaped\n-47-λ-\u263A", block: """line one
+line two 47""")
+}

@@ -1,0 +1,3 @@
+schema { query: Query }
+input Filter { text: String }
+type Query { search(filter: Filter): [String!]! }

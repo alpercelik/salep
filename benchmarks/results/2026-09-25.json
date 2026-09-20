@@ -1,0 +1,729 @@
+{
+  "CapturedAtUtc": "2026-09-20T07:49:43.616814+00:00",
+  "CorpusVersion": 1,
+  "SpecificationTarget": "September 2025 GraphQL specification",
+  "CorpusManifestSha256": "8b7c924404bf00ce65a65fa6f165199096d7a14a59e7fecdc74b4bd27e7e28bd",
+  "RuntimeVersion": "10.0.11",
+  "Framework": ".NET 10.0.11",
+  "OperatingSystem": "macOS 27.0.0",
+  "OperatingSystemArchitecture": "Arm64",
+  "ProcessArchitecture": "Arm64",
+  "LogicalProcessorCount": 10,
+  "ProcessorIdentifier": null,
+  "ServerGc": false,
+  "GcLatencyMode": "Interactive",
+  "Configuration": "Release",
+  "IterationsPerSample": 1000,
+  "WarmupIterations": 100,
+  "Repetitions": 3,
+  "Cases": [
+    {
+      "Id": "small-executable",
+      "Category": "small-executable",
+      "Utf16Characters": 52,
+      "Sha256": "e7c384d416cbe4d0d2e91d308088af9f4931cd66f0f885a3e699a5010819e32d",
+      "Operations": [
+        "lexer",
+        "strict-parse"
+      ]
+    },
+    {
+      "Id": "large-executable",
+      "Category": "large-executable",
+      "Utf16Characters": 6698,
+      "Sha256": "a1dc9fb2449c5f711e90632971d440d1b3453b1fa34c9b7131aa9ed1370167a1",
+      "Operations": [
+        "lexer",
+        "strict-parse"
+      ]
+    },
+    {
+      "Id": "small-sdl",
+      "Category": "small-sdl",
+      "Utf16Characters": 104,
+      "Sha256": "551ed3fb617b22bd0e36231c63146f0f3f15fb13e9893ac6f4c5daa587c5c38b",
+      "Operations": [
+        "lexer",
+        "strict-parse"
+      ]
+    },
+    {
+      "Id": "large-sdl",
+      "Category": "large-sdl",
+      "Utf16Characters": 6811,
+      "Sha256": "7f136ee1a44b3f7afc2cfb2719c6cf0caf4a656d89f5839af90ffc9f7a3af755",
+      "Operations": [
+        "lexer",
+        "strict-parse"
+      ]
+    },
+    {
+      "Id": "strings",
+      "Category": "strings",
+      "Utf16Characters": 3719,
+      "Sha256": "1f0156a45aa12bba047ff56a5f07597998bac29ad8364418cbc8b0ee9eea91f3",
+      "Operations": [
+        "lexer",
+        "strict-parse"
+      ]
+    },
+    {
+      "Id": "fragments",
+      "Category": "fragments",
+      "Utf16Characters": 1474,
+      "Sha256": "58fb4ee8e0b40bc934a3275954ab3f86f233a1c3b1a286a36ffc5beacd2cd9dc",
+      "Operations": [
+        "lexer",
+        "strict-parse"
+      ]
+    },
+    {
+      "Id": "malformed",
+      "Category": "malformed",
+      "Utf16Characters": 81,
+      "Sha256": "2bb24d9a8de31021b30f5d603ba208655e21966d44055b17e0b62d81dcb92a30",
+      "Operations": [
+        "lexer",
+        "diagnostic-parse"
+      ]
+    },
+    {
+      "Id": "adversarial-nesting",
+      "Category": "adversarial-nesting",
+      "Utf16Characters": 269,
+      "Sha256": "92cbf36c064fed58d572fc16cec14539253dc0ba56605e8343a04a172a4f0df4",
+      "Operations": [
+        "lexer",
+        "strict-parse"
+      ]
+    }
+  ],
+  "Samples": [
+    {
+      "CaseId": "small-executable",
+      "Operation": "lexer",
+      "Repetition": 1,
+      "Utf16Characters": 52,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 2.425,
+      "BytesPerOperation": 0,
+      "OperationsPerSecond": 412371.13402061857,
+      "Checksum": 24200
+    },
+    {
+      "CaseId": "small-executable",
+      "Operation": "lexer",
+      "Repetition": 2,
+      "Utf16Characters": 52,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 2.4085,
+      "BytesPerOperation": 0,
+      "OperationsPerSecond": 415196.1801951422,
+      "Checksum": 24200
+    },
+    {
+      "CaseId": "small-executable",
+      "Operation": "lexer",
+      "Repetition": 3,
+      "Utf16Characters": 52,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 2.2322,
+      "BytesPerOperation": 0,
+      "OperationsPerSecond": 447988.5314935937,
+      "Checksum": 24200
+    },
+    {
+      "CaseId": "small-executable",
+      "Operation": "strict-parse",
+      "Repetition": 1,
+      "Utf16Characters": 52,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 9.095,
+      "BytesPerOperation": 6768.48,
+      "OperationsPerSecond": 109950.52226498075,
+      "Checksum": 1100
+    },
+    {
+      "CaseId": "small-executable",
+      "Operation": "strict-parse",
+      "Repetition": 2,
+      "Utf16Characters": 52,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 8.5015,
+      "BytesPerOperation": 6768.48,
+      "OperationsPerSecond": 117626.30124095747,
+      "Checksum": 1100
+    },
+    {
+      "CaseId": "small-executable",
+      "Operation": "strict-parse",
+      "Repetition": 3,
+      "Utf16Characters": 52,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 8.4012,
+      "BytesPerOperation": 6768.48,
+      "OperationsPerSecond": 119030.61467409419,
+      "Checksum": 1100
+    },
+    {
+      "CaseId": "large-executable",
+      "Operation": "lexer",
+      "Repetition": 1,
+      "Utf16Characters": 6698,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 122.3228,
+      "BytesPerOperation": 0,
+      "OperationsPerSecond": 8175.090825259069,
+      "Checksum": 1708300
+    },
+    {
+      "CaseId": "large-executable",
+      "Operation": "lexer",
+      "Repetition": 2,
+      "Utf16Characters": 6698,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 15.4427,
+      "BytesPerOperation": 0,
+      "OperationsPerSecond": 64755.51555103706,
+      "Checksum": 1708300
+    },
+    {
+      "CaseId": "large-executable",
+      "Operation": "lexer",
+      "Repetition": 3,
+      "Utf16Characters": 6698,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 15.4012,
+      "BytesPerOperation": 0,
+      "OperationsPerSecond": 64930.00545412046,
+      "Checksum": 1708300
+    },
+    {
+      "CaseId": "large-executable",
+      "Operation": "strict-parse",
+      "Repetition": 1,
+      "Utf16Characters": 6698,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 294.1403,
+      "BytesPerOperation": 453183.12,
+      "OperationsPerSecond": 3399.7381521675197,
+      "Checksum": 1100
+    },
+    {
+      "CaseId": "large-executable",
+      "Operation": "strict-parse",
+      "Repetition": 2,
+      "Utf16Characters": 6698,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 158.9696,
+      "BytesPerOperation": 453183.12,
+      "OperationsPerSecond": 6290.510890132454,
+      "Checksum": 1100
+    },
+    {
+      "CaseId": "large-executable",
+      "Operation": "strict-parse",
+      "Repetition": 3,
+      "Utf16Characters": 6698,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 158.7917,
+      "BytesPerOperation": 453183.12,
+      "OperationsPerSecond": 6297.558373642954,
+      "Checksum": 1100
+    },
+    {
+      "CaseId": "small-sdl",
+      "Operation": "lexer",
+      "Repetition": 1,
+      "Utf16Characters": 104,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 0.2985,
+      "BytesPerOperation": 0,
+      "OperationsPerSecond": 3350083.7520938027,
+      "Checksum": 31900
+    },
+    {
+      "CaseId": "small-sdl",
+      "Operation": "lexer",
+      "Repetition": 2,
+      "Utf16Characters": 104,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 0.2862,
+      "BytesPerOperation": 0,
+      "OperationsPerSecond": 3494060.0978336823,
+      "Checksum": 31900
+    },
+    {
+      "CaseId": "small-sdl",
+      "Operation": "lexer",
+      "Repetition": 3,
+      "Utf16Characters": 104,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 0.2845,
+      "BytesPerOperation": 0,
+      "OperationsPerSecond": 3514938.4885764504,
+      "Checksum": 31900
+    },
+    {
+      "CaseId": "small-sdl",
+      "Operation": "strict-parse",
+      "Repetition": 1,
+      "Utf16Characters": 104,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 2.0187,
+      "BytesPerOperation": 7088.48,
+      "OperationsPerSecond": 495368.30633576063,
+      "Checksum": 3300
+    },
+    {
+      "CaseId": "small-sdl",
+      "Operation": "strict-parse",
+      "Repetition": 2,
+      "Utf16Characters": 104,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 2.0045,
+      "BytesPerOperation": 7088.48,
+      "OperationsPerSecond": 498877.52556747315,
+      "Checksum": 3300
+    },
+    {
+      "CaseId": "small-sdl",
+      "Operation": "strict-parse",
+      "Repetition": 3,
+      "Utf16Characters": 104,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 2.1783,
+      "BytesPerOperation": 7088.48,
+      "OperationsPerSecond": 459073.58949639625,
+      "Checksum": 3300
+    },
+    {
+      "CaseId": "large-sdl",
+      "Operation": "lexer",
+      "Repetition": 1,
+      "Utf16Characters": 6811,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 19.0378,
+      "BytesPerOperation": 0,
+      "OperationsPerSecond": 52527.07770855876,
+      "Checksum": 2125200
+    },
+    {
+      "CaseId": "large-sdl",
+      "Operation": "lexer",
+      "Repetition": 2,
+      "Utf16Characters": 6811,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 18.7902,
+      "BytesPerOperation": 0,
+      "OperationsPerSecond": 53219.23130142308,
+      "Checksum": 2125200
+    },
+    {
+      "CaseId": "large-sdl",
+      "Operation": "lexer",
+      "Repetition": 3,
+      "Utf16Characters": 6811,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 18.6492,
+      "BytesPerOperation": 0,
+      "OperationsPerSecond": 53621.60307144542,
+      "Checksum": 2125200
+    },
+    {
+      "CaseId": "large-sdl",
+      "Operation": "strict-parse",
+      "Repetition": 1,
+      "Utf16Characters": 6811,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 176.7354,
+      "BytesPerOperation": 476791.12,
+      "OperationsPerSecond": 5658.176007749438,
+      "Checksum": 47300
+    },
+    {
+      "CaseId": "large-sdl",
+      "Operation": "strict-parse",
+      "Repetition": 2,
+      "Utf16Characters": 6811,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 157.3855,
+      "BytesPerOperation": 476791.12,
+      "OperationsPerSecond": 6353.825479475555,
+      "Checksum": 47300
+    },
+    {
+      "CaseId": "large-sdl",
+      "Operation": "strict-parse",
+      "Repetition": 3,
+      "Utf16Characters": 6811,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 157.3192,
+      "BytesPerOperation": 476791.12,
+      "OperationsPerSecond": 6356.503211305423,
+      "Checksum": 47300
+    },
+    {
+      "CaseId": "strings",
+      "Operation": "lexer",
+      "Repetition": 1,
+      "Utf16Characters": 3719,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 52.5105,
+      "BytesPerOperation": 24960,
+      "OperationsPerSecond": 19043.810285561936,
+      "Checksum": 479600
+    },
+    {
+      "CaseId": "strings",
+      "Operation": "lexer",
+      "Repetition": 2,
+      "Utf16Characters": 3719,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 42.4802,
+      "BytesPerOperation": 24960,
+      "OperationsPerSecond": 23540.378811775838,
+      "Checksum": 479600
+    },
+    {
+      "CaseId": "strings",
+      "Operation": "lexer",
+      "Repetition": 3,
+      "Utf16Characters": 3719,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 40.058,
+      "BytesPerOperation": 24960,
+      "OperationsPerSecond": 24963.802486394725,
+      "Checksum": 479600
+    },
+    {
+      "CaseId": "strings",
+      "Operation": "strict-parse",
+      "Repetition": 1,
+      "Utf16Characters": 3719,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 63.005,
+      "BytesPerOperation": 132005.28,
+      "OperationsPerSecond": 15871.756209824616,
+      "Checksum": 1100
+    },
+    {
+      "CaseId": "strings",
+      "Operation": "strict-parse",
+      "Repetition": 2,
+      "Utf16Characters": 3719,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 37.4295,
+      "BytesPerOperation": 132005.28,
+      "OperationsPerSecond": 26716.89442819167,
+      "Checksum": 1100
+    },
+    {
+      "CaseId": "strings",
+      "Operation": "strict-parse",
+      "Repetition": 3,
+      "Utf16Characters": 3719,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 39.2387,
+      "BytesPerOperation": 132005.28,
+      "OperationsPerSecond": 25485.044101868818,
+      "Checksum": 1100
+    },
+    {
+      "CaseId": "fragments",
+      "Operation": "lexer",
+      "Repetition": 1,
+      "Utf16Characters": 1474,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 3.0432,
+      "BytesPerOperation": 0,
+      "OperationsPerSecond": 328601.47213459515,
+      "Checksum": 271700
+    },
+    {
+      "CaseId": "fragments",
+      "Operation": "lexer",
+      "Repetition": 2,
+      "Utf16Characters": 1474,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 3.0632,
+      "BytesPerOperation": 0,
+      "OperationsPerSecond": 326455.99373204494,
+      "Checksum": 271700
+    },
+    {
+      "CaseId": "fragments",
+      "Operation": "lexer",
+      "Repetition": 3,
+      "Utf16Characters": 1474,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 3.1012,
+      "BytesPerOperation": 0,
+      "OperationsPerSecond": 322455.82355217333,
+      "Checksum": 271700
+    },
+    {
+      "CaseId": "fragments",
+      "Operation": "strict-parse",
+      "Repetition": 1,
+      "Utf16Characters": 1474,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 24.8775,
+      "BytesPerOperation": 72306.88,
+      "OperationsPerSecond": 40196.96512913275,
+      "Checksum": 27500
+    },
+    {
+      "CaseId": "fragments",
+      "Operation": "strict-parse",
+      "Repetition": 2,
+      "Utf16Characters": 1474,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 25.0146,
+      "BytesPerOperation": 72306.88,
+      "OperationsPerSecond": 39976.65363427758,
+      "Checksum": 27500
+    },
+    {
+      "CaseId": "fragments",
+      "Operation": "strict-parse",
+      "Repetition": 3,
+      "Utf16Characters": 1474,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 24.9815,
+      "BytesPerOperation": 72306.88,
+      "OperationsPerSecond": 40029.62192022096,
+      "Checksum": 27500
+    },
+    {
+      "CaseId": "malformed",
+      "Operation": "lexer",
+      "Repetition": 1,
+      "Utf16Characters": 81,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 0.2642,
+      "BytesPerOperation": 0,
+      "OperationsPerSecond": 3785011.355034065,
+      "Checksum": 28600
+    },
+    {
+      "CaseId": "malformed",
+      "Operation": "lexer",
+      "Repetition": 2,
+      "Utf16Characters": 81,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 0.2558,
+      "BytesPerOperation": 0,
+      "OperationsPerSecond": 3909304.1438623928,
+      "Checksum": 28600
+    },
+    {
+      "CaseId": "malformed",
+      "Operation": "lexer",
+      "Repetition": 3,
+      "Utf16Characters": 81,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 0.2517,
+      "BytesPerOperation": 0,
+      "OperationsPerSecond": 3972983.710766786,
+      "Checksum": 28600
+    },
+    {
+      "CaseId": "malformed",
+      "Operation": "diagnostic-parse",
+      "Repetition": 1,
+      "Utf16Characters": 81,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 6.7564,
+      "BytesPerOperation": 7356.712,
+      "OperationsPerSecond": 148007.8148126221,
+      "Checksum": 3300
+    },
+    {
+      "CaseId": "malformed",
+      "Operation": "diagnostic-parse",
+      "Repetition": 2,
+      "Utf16Characters": 81,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 6.4287,
+      "BytesPerOperation": 7357.248,
+      "OperationsPerSecond": 155552.44450666543,
+      "Checksum": 3300
+    },
+    {
+      "CaseId": "malformed",
+      "Operation": "diagnostic-parse",
+      "Repetition": 3,
+      "Utf16Characters": 81,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 6.3455,
+      "BytesPerOperation": 7357.248,
+      "OperationsPerSecond": 157591.9943266882,
+      "Checksum": 3300
+    },
+    {
+      "CaseId": "adversarial-nesting",
+      "Operation": "lexer",
+      "Repetition": 1,
+      "Utf16Characters": 269,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 1.8142,
+      "BytesPerOperation": 0,
+      "OperationsPerSecond": 551207.1436445817,
+      "Checksum": 275000
+    },
+    {
+      "CaseId": "adversarial-nesting",
+      "Operation": "lexer",
+      "Repetition": 2,
+      "Utf16Characters": 269,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 1.7725,
+      "BytesPerOperation": 0,
+      "OperationsPerSecond": 564174.8942172073,
+      "Checksum": 275000
+    },
+    {
+      "CaseId": "adversarial-nesting",
+      "Operation": "lexer",
+      "Repetition": 3,
+      "Utf16Characters": 269,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 1.7705,
+      "BytesPerOperation": 0,
+      "OperationsPerSecond": 564812.1999435188,
+      "Checksum": 275000
+    },
+    {
+      "CaseId": "adversarial-nesting",
+      "Operation": "strict-parse",
+      "Repetition": 1,
+      "Utf16Characters": 269,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 14.5588,
+      "BytesPerOperation": 55314.16,
+      "OperationsPerSecond": 68686.9796961288,
+      "Checksum": 1100
+    },
+    {
+      "CaseId": "adversarial-nesting",
+      "Operation": "strict-parse",
+      "Repetition": 2,
+      "Utf16Characters": 269,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 14.5307,
+      "BytesPerOperation": 55314.16,
+      "OperationsPerSecond": 68819.80909384957,
+      "Checksum": 1100
+    },
+    {
+      "CaseId": "adversarial-nesting",
+      "Operation": "strict-parse",
+      "Repetition": 3,
+      "Utf16Characters": 269,
+      "Iterations": 1000,
+      "ElapsedMilliseconds": 14.4514,
+      "BytesPerOperation": 55314.16,
+      "OperationsPerSecond": 69197.44799811783,
+      "Checksum": 1100
+    }
+  ],
+  "Summary": [
+    {
+      "CaseId": "small-executable",
+      "Operation": "lexer",
+      "MedianBytesPerOperation": 0,
+      "MedianOperationsPerSecond": 415196.1801951422
+    },
+    {
+      "CaseId": "small-executable",
+      "Operation": "strict-parse",
+      "MedianBytesPerOperation": 6768.48,
+      "MedianOperationsPerSecond": 117626.30124095747
+    },
+    {
+      "CaseId": "large-executable",
+      "Operation": "lexer",
+      "MedianBytesPerOperation": 0,
+      "MedianOperationsPerSecond": 64755.51555103706
+    },
+    {
+      "CaseId": "large-executable",
+      "Operation": "strict-parse",
+      "MedianBytesPerOperation": 453183.12,
+      "MedianOperationsPerSecond": 6290.510890132454
+    },
+    {
+      "CaseId": "small-sdl",
+      "Operation": "lexer",
+      "MedianBytesPerOperation": 0,
+      "MedianOperationsPerSecond": 3494060.0978336823
+    },
+    {
+      "CaseId": "small-sdl",
+      "Operation": "strict-parse",
+      "MedianBytesPerOperation": 7088.48,
+      "MedianOperationsPerSecond": 495368.30633576063
+    },
+    {
+      "CaseId": "large-sdl",
+      "Operation": "lexer",
+      "MedianBytesPerOperation": 0,
+      "MedianOperationsPerSecond": 53219.23130142308
+    },
+    {
+      "CaseId": "large-sdl",
+      "Operation": "strict-parse",
+      "MedianBytesPerOperation": 476791.12,
+      "MedianOperationsPerSecond": 6353.825479475555
+    },
+    {
+      "CaseId": "strings",
+      "Operation": "lexer",
+      "MedianBytesPerOperation": 24960,
+      "MedianOperationsPerSecond": 23540.378811775838
+    },
+    {
+      "CaseId": "strings",
+      "Operation": "strict-parse",
+      "MedianBytesPerOperation": 132005.28,
+      "MedianOperationsPerSecond": 25485.044101868818
+    },
+    {
+      "CaseId": "fragments",
+      "Operation": "lexer",
+      "MedianBytesPerOperation": 0,
+      "MedianOperationsPerSecond": 326455.99373204494
+    },
+    {
+      "CaseId": "fragments",
+      "Operation": "strict-parse",
+      "MedianBytesPerOperation": 72306.88,
+      "MedianOperationsPerSecond": 40029.62192022096
+    },
+    {
+      "CaseId": "malformed",
+      "Operation": "lexer",
+      "MedianBytesPerOperation": 0,
+      "MedianOperationsPerSecond": 3909304.1438623928
+    },
+    {
+      "CaseId": "malformed",
+      "Operation": "diagnostic-parse",
+      "MedianBytesPerOperation": 7357.248,
+      "MedianOperationsPerSecond": 155552.44450666543
+    },
+    {
+      "CaseId": "adversarial-nesting",
+      "Operation": "lexer",
+      "MedianBytesPerOperation": 0,
+      "MedianOperationsPerSecond": 564174.8942172073
+    },
+    {
+      "CaseId": "adversarial-nesting",
+      "Operation": "strict-parse",
+      "MedianBytesPerOperation": 55314.16,
+      "MedianOperationsPerSecond": 68819.80909384957
+    }
+  ]
+}

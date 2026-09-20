@@ -1,0 +1,2 @@
+query Broken { first(arg: ) { name } second(arg: [1, 2]) }
+query Later { valid }

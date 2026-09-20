@@ -7,5 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/GraphQLParser/GraphQLParser.csproj" />
+    <None Include="../corpus/**/*" Link="corpus/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="allocation-budgets.v1.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

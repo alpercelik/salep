@@ -1,0 +1,84 @@
+schema { query: Query }
+scalar Date
+type Record00 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record01 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record02 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record03 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record04 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record05 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record06 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record07 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record08 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record09 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record10 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record11 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record12 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record13 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record14 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record15 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record16 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record17 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record18 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record19 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record20 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record21 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record22 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record23 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record24 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record25 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record26 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record27 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record28 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record29 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record30 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record31 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record32 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record33 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record34 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record35 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record36 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record37 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record38 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Record39 { id: ID! name: String! created: Date field_00(arg: Int = 0): String field_01(arg: Int = 1): String field_02(arg: Int = 2): String }
+type Query {
+  record_00: Record00
+  record_01: Record01
+  record_02: Record02
+  record_03: Record03
+  record_04: Record04
+  record_05: Record05
+  record_06: Record06
+  record_07: Record07
+  record_08: Record08
+  record_09: Record09
+  record_10: Record10
+  record_11: Record11
+  record_12: Record12
+  record_13: Record13
+  record_14: Record14
+  record_15: Record15
+  record_16: Record16
+  record_17: Record17
+  record_18: Record18
+  record_19: Record19
+  record_20: Record20
+  record_21: Record21
+  record_22: Record22
+  record_23: Record23
+  record_24: Record24
+  record_25: Record25
+  record_26: Record26
+  record_27: Record27
+  record_28: Record28
+  record_29: Record29
+  record_30: Record30
+  record_31: Record31
+  record_32: Record32
+  record_33: Record33
+  record_34: Record34
+  record_35: Record35
+  record_36: Record36
+  record_37: Record37
+  record_38: Record38
+  record_39: Record39
+}

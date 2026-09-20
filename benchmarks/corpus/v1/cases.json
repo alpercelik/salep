@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "specificationTarget": "September 2025 GraphQL specification",
+  "requiredCategories": [
+    "small-executable",
+    "large-executable",
+    "small-sdl",
+    "large-sdl",
+    "strings",
+    "fragments",
+    "malformed",
+    "adversarial-nesting"
+  ],
+  "cases": [
+    {
+      "id": "small-executable",
+      "category": "small-executable",
+      "path": "small-executable.graphql",
+      "valid": true,
+      "operations": [
+        "lexer",
+        "strict-parse"
+      ],
+      "sha256": "e7c384d416cbe4d0d2e91d308088af9f4931cd66f0f885a3e699a5010819e32d"
+    },
+    {
+      "id": "large-executable",
+      "category": "large-executable",
+      "path": "large-executable.graphql",
+      "valid": true,
+      "operations": [
+        "lexer",
+        "strict-parse"
+      ],
+      "sha256": "a1dc9fb2449c5f711e90632971d440d1b3453b1fa34c9b7131aa9ed1370167a1"
+    },
+    {
+      "id": "small-sdl",
+      "category": "small-sdl",
+      "path": "small-sdl.graphql",
+      "valid": true,
+      "operations": [
+        "lexer",
+        "strict-parse"
+      ],
+      "sha256": "551ed3fb617b22bd0e36231c63146f0f3f15fb13e9893ac6f4c5daa587c5c38b"
+    },
+    {
+      "id": "large-sdl",
+      "category": "large-sdl",
+      "path": "large-sdl.graphql",
+      "valid": true,
+      "operations": [
+        "lexer",
+        "strict-parse"
+      ],
+      "sha256": "7f136ee1a44b3f7afc2cfb2719c6cf0caf4a656d89f5839af90ffc9f7a3af755"
+    },
+    {
+      "id": "strings",
+      "category": "strings",
+      "path": "strings.graphql",
+      "valid": true,
+      "operations": [
+        "lexer",
+        "strict-parse"
+      ],
+      "sha256": "1f0156a45aa12bba047ff56a5f07597998bac29ad8364418cbc8b0ee9eea91f3"
+    },
+    {
+      "id": "fragments",
+      "category": "fragments",
+      "path": "fragments.graphql",
+      "valid": true,
+      "operations": [
+        "lexer",
+        "strict-parse"
+      ],
+      "sha256": "58fb4ee8e0b40bc934a3275954ab3f86f233a1c3b1a286a36ffc5beacd2cd9dc"
+    },
+    {
+      "id": "malformed",
+      "category": "malformed",
+      "path": "malformed.graphql",
+      "valid": false,
+      "operations": [
+        "lexer",
+        "diagnostic-parse"
+      ],
+      "sha256": "2bb24d9a8de31021b30f5d603ba208655e21966d44055b17e0b62d81dcb92a30"
+    },
+    {
+      "id": "adversarial-nesting",
+      "category": "adversarial-nesting",
+      "path": "adversarial-nesting.graphql",
+      "valid": true,
+      "operations": [
+        "lexer",
+        "strict-parse"
+      ],
+      "sha256": "92cbf36c064fed58d572fc16cec14539253dc0ba56605e8343a04a172a4f0df4"
+    }
+  ]
+}
