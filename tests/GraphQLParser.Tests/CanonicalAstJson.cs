@@ -7,7 +7,8 @@ internal static class CanonicalAstJson
 {
     public static JsonObject Project(AstNode node)
     {
-        var result = new JsonObject { ["kind"] = Kind(node), ["loc"] = Location(node.Location) };
+        var result = new JsonObject { ["kind"] = Kind(node) };
+        if (node.HasLocation) result["loc"] = Location(node.Location);
         switch (node)
         {
             case NameNode name:

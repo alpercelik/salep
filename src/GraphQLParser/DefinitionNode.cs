@@ -117,7 +117,8 @@ public sealed class FragmentDefinitionNode : DefinitionNode
         IEnumerable<DirectiveNode> directives,
         SelectionSetNode selectionSet,
         SourceLocation location,
-        StringValueNode? description = null)
+        StringValueNode? description = null,
+        IEnumerable<VariableDefinitionNode>? variableDefinitions = null)
         : base(AstNodeKind.FragmentDefinition, location)
     {
         ArgumentNullException.ThrowIfNull(name);
@@ -129,7 +130,7 @@ public sealed class FragmentDefinitionNode : DefinitionNode
         Directives = new AstNodeList<DirectiveNode>(directives);
         SelectionSet = selectionSet;
         Description = description;
-        VariableDefinitions = AstNodeList<VariableDefinitionNode>.Empty;
+        VariableDefinitions = variableDefinitions is null ? AstNodeList<VariableDefinitionNode>.Empty : new AstNodeList<VariableDefinitionNode>(variableDefinitions);
     }
 
     /// <summary>Gets the fragment name.</summary>
@@ -140,7 +141,7 @@ public sealed class FragmentDefinitionNode : DefinitionNode
     public AstNodeList<DirectiveNode> Directives { get; }
     /// <summary>Gets the required fragment selection set.</summary>
     public SelectionSetNode SelectionSet { get; }
-    /// <summary>Gets the empty fragment variable-definition list used by the pinned oracle AST shape.</summary>
+    /// <summary>Gets fragment variable definitions, empty unless enabled by parser options.</summary>
     public AstNodeList<VariableDefinitionNode> VariableDefinitions { get; }
     /// <summary>Gets the optional fragment description.</summary>
     public StringValueNode? Description { get; }

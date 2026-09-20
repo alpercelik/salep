@@ -5,7 +5,7 @@ public readonly record struct SourceLocation
 {
     /// <summary>Creates a validated source range.</summary>
     /// <exception cref="ArgumentOutOfRangeException">The range starts below zero or ends before it starts.</exception>
-    public SourceLocation(int start, int end)
+    public SourceLocation(int start, int end, bool hasLocation = true)
     {
         if (start < 0)
         {
@@ -19,6 +19,7 @@ public readonly record struct SourceLocation
 
         Start = start;
         End = end;
+        HasLocation = hasLocation;
     }
 
     /// <summary>Gets the inclusive start offset.</summary>
@@ -26,6 +27,9 @@ public readonly record struct SourceLocation
 
     /// <summary>Gets the exclusive end offset.</summary>
     public int End { get; }
+
+    /// <summary>Gets whether this range should be exposed as an AST location.</summary>
+    public bool HasLocation { get; }
 
     /// <summary>Gets the number of UTF-16 code units in the range.</summary>
     public int Length => End - Start;

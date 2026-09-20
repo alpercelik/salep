@@ -15,4 +15,7 @@ public abstract class AstNode
 
     /// <summary>Gets this node's half-open source range.</summary>
     public SourceLocation Location { get; }
+
+    /// <summary>Gets whether this node exposes source location metadata.</summary>
+    public bool HasLocation => Location.HasLocation;
 }

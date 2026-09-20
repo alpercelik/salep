@@ -89,4 +89,14 @@ public enum AstNodeKind : byte
     InputValueDefinition,
     /// <summary>A directive definition.</summary>
     DirectiveDefinition,
+    /// <summary>A type schema coordinate.</summary>
+    TypeCoordinate,
+    /// <summary>A field schema coordinate.</summary>
+    MemberCoordinate,
+    /// <summary>A field argument schema coordinate.</summary>
+    ArgumentCoordinate,
+    /// <summary>A directive schema coordinate.</summary>
+    DirectiveCoordinate,
+    /// <summary>A directive argument schema coordinate.</summary>
+    DirectiveArgumentCoordinate,
 }

@@ -98,6 +98,16 @@ public sealed class GraphQLParser
     /// <summary>Parses a document with explicit resource limits and diagnostic recovery.</summary>
     public static GraphQLParseResult ParseWithDiagnostics(SourceText source, GraphQLParserOptions options) => new GraphQLParser(source, options).ParseDocumentWithDiagnostics();
 
+    /// <summary>Parses one strict GraphQL schema coordinate.</summary>
+    public static SchemaCoordinateNode ParseSchemaCoordinate(SourceText source) => new SchemaCoordinateParser(source).Parse();
+
+    /// <summary>Parses one strict GraphQL schema coordinate from a string.</summary>
+    public static SchemaCoordinateNode ParseSchemaCoordinate(string source)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        return ParseSchemaCoordinate(new SourceText(source.AsMemory()));
+    }
+
     /// <summary>Parses one non-empty GraphQL document.</summary>
     public DocumentNode ParseDocument()
     {
@@ -117,7 +127,7 @@ public sealed class GraphQLParser
 
         if (_lexicalError is not null) throw _lexicalError;
 
-        return new DocumentNode(_source, definitions, new SourceLocation(0, _source.Length));
+        return new DocumentNode(_source, definitions, AstLocation(0, _source.Length));
     }
 
     /// <summary>Parses a document, returning valid definitions and source-ordered diagnostics.</summary>
@@ -170,7 +180,7 @@ public sealed class GraphQLParser
             }
         }
 
-        DocumentNode? document = definitions.Count == 0 ? null : new DocumentNode(_source, definitions, new SourceLocation(0, _source.Length));
+        DocumentNode? document = definitions.Count == 0 ? null : new DocumentNode(_source, definitions, AstLocation(0, _source.Length));
         _activeDiagnostics = null;
         return new GraphQLParseResult(document, diagnostics, _diagnosticsTruncated);
     }
@@ -229,7 +239,7 @@ public sealed class GraphQLParser
         {
             if (description is not null) throw Error("Descriptions cannot be applied to shorthand operations.", description.Location);
             var selectionSet = ParseSelectionSet();
-            return new OperationDefinitionNode(OperationType.Query, null, [], [], selectionSet, new SourceLocation(start, selectionSet.Location.End));
+            return new OperationDefinitionNode(OperationType.Query, null, [], [], selectionSet, AstLocation(start, selectionSet.Location.End));
         }
 
         var operation = ParseOperationType();
@@ -237,7 +247,7 @@ public sealed class GraphQLParser
         var variables = Current.Kind == TokenKind.ParenthesisLeft ? ParseVariableDefinitions() : [];
         var directives = ParseDirectives();
         var selection = ParseSelectionSet();
-        return new OperationDefinitionNode(operation, name, variables, directives, selection, new SourceLocation(start, selection.Location.End), description);
+        return new OperationDefinitionNode(operation, name, variables, directives, selection, AstLocation(start, selection.Location.End), description);
     }
 
     private FragmentDefinitionNode ParseFragmentDefinition()
@@ -247,12 +257,13 @@ public sealed class GraphQLParser
         var start = description?.Location.Start ?? fragmentStart;
         var name = ReadRequiredName("Expected a fragment name.");
         if (name.Value.Span.SequenceEqual("on")) throw Error("A fragment name cannot be 'on'.", name.Location);
+        var variables = _options.AllowLegacyFragmentVariables && Current.Kind == TokenKind.ParenthesisLeft ? ParseVariableDefinitions() : [];
         ExpectName("on", "Expected 'on' after the fragment name.");
         var typeName = ReadRequiredName("Expected a fragment type condition.");
         var type = new NamedTypeNode(typeName, typeName.Location);
         var directives = ParseDirectives();
         var selection = ParseSelectionSet();
-        return new FragmentDefinitionNode(name, type, directives, selection, new SourceLocation(start, selection.Location.End), description);
+        return new FragmentDefinitionNode(name, type, directives, selection, AstLocation(start, selection.Location.End), description, variables);
     }
 
     private bool ShouldParseTypeSystemDefinition()
@@ -311,13 +322,13 @@ public sealed class GraphQLParser
             var operation = ParseOperationType();
             Expect(TokenKind.Colon, "Expected ':' after root operation kind.");
             var typeName = ReadRequiredName("Expected a root operation type.");
-            operations.Add(new OperationTypeDefinitionNode(operation, new NamedTypeNode(typeName, typeName.Location), new SourceLocation(opStart, typeName.Location.End)));
+            operations.Add(new OperationTypeDefinitionNode(operation, new NamedTypeNode(typeName, typeName.Location), AstLocation(opStart, typeName.Location.End)));
         }
 
         if (operations.Count == 0) throw Error("A schema definition requires at least one root operation mapping.");
         var close = Advance();
         _ = open;
-        return new SchemaDefinitionNode(operations, directives, new SourceLocation(start, close.End), description);
+        return new SchemaDefinitionNode(operations, directives, AstLocation(start, close.End), description);
     }
 
     private ScalarTypeDefinitionNode ParseScalarTypeDefinition(int start, StringValueNode? description)
@@ -325,7 +336,7 @@ public sealed class GraphQLParser
         Advance();
         var name = ReadRequiredName("Expected a scalar type name.");
         var directives = ParseDirectives(constantArguments: true);
-        return new ScalarTypeDefinitionNode(name, directives, new SourceLocation(start, LastConsumedEnd(name.Location.End)), description);
+        return new ScalarTypeDefinitionNode(name, directives, AstLocation(start, LastConsumedEnd(name.Location.End)), description);
     }
 
     private ObjectTypeDefinitionNode ParseObjectTypeDefinition(int start, StringValueNode? description)
@@ -335,7 +346,7 @@ public sealed class GraphQLParser
         var interfaces = ParseImplementsInterfaces();
         var directives = ParseDirectives(constantArguments: true);
         var fields = ParseFieldDefinitions(required: false);
-        return new ObjectTypeDefinitionNode(name, interfaces, directives, fields, new SourceLocation(start, LastConsumedEnd(name.Location.End)), description);
+        return new ObjectTypeDefinitionNode(name, interfaces, directives, fields, AstLocation(start, LastConsumedEnd(name.Location.End)), description);
     }
 
     private InterfaceTypeDefinitionNode ParseInterfaceTypeDefinition(int start, StringValueNode? description)
@@ -345,7 +356,7 @@ public sealed class GraphQLParser
         var interfaces = ParseImplementsInterfaces();
         var directives = ParseDirectives(constantArguments: true);
         var fields = ParseFieldDefinitions(required: false);
-        return new InterfaceTypeDefinitionNode(name, interfaces, directives, fields, new SourceLocation(start, LastConsumedEnd(name.Location.End)), description);
+        return new InterfaceTypeDefinitionNode(name, interfaces, directives, fields, AstLocation(start, LastConsumedEnd(name.Location.End)), description);
     }
 
     private List<NamedTypeNode> ParseImplementsInterfaces()
@@ -384,7 +395,7 @@ public sealed class GraphQLParser
             Expect(TokenKind.Colon, "Expected ':' after field definition name.");
             var type = ParseTypeReference();
             var directives = ParseDirectives(constantArguments: true);
-            fields.Add(new FieldDefinitionNode(name, arguments, type, directives, new SourceLocation(start, LastConsumedEnd(type.Location.End)), description));
+            fields.Add(new FieldDefinitionNode(name, arguments, type, directives, AstLocation(start, LastConsumedEnd(type.Location.End)), description));
         }
 
         Advance();
@@ -423,7 +434,7 @@ public sealed class GraphQLParser
 
         var directives = ParseDirectives(constantArguments: true);
         var end = directives.Count > 0 ? directives[^1].Location.End : (defaultValue ?? (AstNode)type).Location.End;
-        return new InputValueDefinitionNode(name, type, defaultValue, directives, new SourceLocation(start, end), description);
+        return new InputValueDefinitionNode(name, type, defaultValue, directives, AstLocation(start, end), description);
     }
 
     private UnionTypeDefinitionNode ParseUnionTypeDefinition(int start, StringValueNode? description)
@@ -444,7 +455,7 @@ public sealed class GraphQLParser
             }
         }
 
-        return new UnionTypeDefinitionNode(name, directives, types, new SourceLocation(start, LastConsumedEnd(name.Location.End)), description);
+        return new UnionTypeDefinitionNode(name, directives, types, AstLocation(start, LastConsumedEnd(name.Location.End)), description);
     }
 
     private EnumTypeDefinitionNode ParseEnumTypeDefinition(int start, StringValueNode? description)
@@ -464,14 +475,14 @@ public sealed class GraphQLParser
                 if (Current.Kind != TokenKind.Name || IsName("true") || IsName("false") || IsName("null")) throw Error("Expected an enum value name other than true, false, or null.");
                 var valueName = ReadName();
                 var valueDirectives = ParseDirectives(constantArguments: true);
-                values.Add(new EnumValueDefinitionNode(valueName, valueDirectives, new SourceLocation(valueStart, LastConsumedEnd(valueName.Location.End)), valueDescription));
+                values.Add(new EnumValueDefinitionNode(valueName, valueDirectives, AstLocation(valueStart, LastConsumedEnd(valueName.Location.End)), valueDescription));
             }
 
             if (values.Count == 0) throw Error("An enum value block cannot be empty.");
             Advance();
         }
 
-        return new EnumTypeDefinitionNode(name, directives, values, new SourceLocation(start, LastConsumedEnd(name.Location.End)), description);
+        return new EnumTypeDefinitionNode(name, directives, values, AstLocation(start, LastConsumedEnd(name.Location.End)), description);
     }
 
     private InputObjectTypeDefinitionNode ParseInputObjectTypeDefinition(int start, StringValueNode? description)
@@ -493,7 +504,7 @@ public sealed class GraphQLParser
             Advance();
         }
 
-        return new InputObjectTypeDefinitionNode(name, directives, fields, new SourceLocation(start, LastConsumedEnd(name.Location.End)), description);
+        return new InputObjectTypeDefinitionNode(name, directives, fields, AstLocation(start, LastConsumedEnd(name.Location.End)), description);
     }
 
     private NamedTypeNode ParseNamedType()
@@ -523,7 +534,7 @@ public sealed class GraphQLParser
         }
 
         return new DirectiveDefinitionNode(name, arguments, repeatable, locations,
-            new SourceLocation(start, LastConsumedEnd(name.Location.End)), description);
+            AstLocation(start, LastConsumedEnd(name.Location.End)), description);
     }
 
     private NameNode ParseDirectiveLocation()
@@ -551,7 +562,7 @@ public sealed class GraphQLParser
                     var operation = ParseOperationType();
                     Expect(TokenKind.Colon, "Expected ':' after root operation kind.");
                     var typeName = ReadRequiredName("Expected a root operation type.");
-                    operations.Add(new OperationTypeDefinitionNode(operation, new NamedTypeNode(typeName, typeName.Location), new SourceLocation(opStart, typeName.Location.End)));
+                    operations.Add(new OperationTypeDefinitionNode(operation, new NamedTypeNode(typeName, typeName.Location), AstLocation(opStart, typeName.Location.End)));
                 }
 
                 if (operations.Count == 0) throw Error("A schema extension root-operation block cannot be empty.");
@@ -559,7 +570,7 @@ public sealed class GraphQLParser
             }
 
             if (operations.Count == 0 && directives.Count == 0) throw Error("A schema extension must add a root operation mapping or directive.");
-            return new SchemaExtensionNode(operations, directives, new SourceLocation(start, LastConsumedEnd(start)));
+            return new SchemaExtensionNode(operations, directives, AstLocation(start, LastConsumedEnd(start)));
         }
 
         if (IsName("scalar"))
@@ -568,7 +579,7 @@ public sealed class GraphQLParser
             var name = ReadRequiredName("Expected a scalar type name.");
             var directives = ParseDirectives(constantArguments: true);
             if (directives.Count == 0) throw Error("A scalar extension must add at least one directive.");
-            return new ScalarTypeExtensionNode(name, directives, new SourceLocation(start, LastConsumedEnd(name.Location.End)));
+            return new ScalarTypeExtensionNode(name, directives, AstLocation(start, LastConsumedEnd(name.Location.End)));
         }
 
         if (IsName("type"))
@@ -579,7 +590,7 @@ public sealed class GraphQLParser
             var directives = ParseDirectives(constantArguments: true);
             var fields = ParseFieldDefinitionsIfPresent();
             if (interfaces.Count == 0 && directives.Count == 0 && fields.Count == 0) throw Error("An object type extension must add content.");
-            return new ObjectTypeExtensionNode(name, interfaces, directives, fields, new SourceLocation(start, LastConsumedEnd(name.Location.End)));
+            return new ObjectTypeExtensionNode(name, interfaces, directives, fields, AstLocation(start, LastConsumedEnd(name.Location.End)));
         }
 
         if (IsName("interface"))
@@ -590,7 +601,7 @@ public sealed class GraphQLParser
             var directives = ParseDirectives(constantArguments: true);
             var fields = ParseFieldDefinitionsIfPresent();
             if (interfaces.Count == 0 && directives.Count == 0 && fields.Count == 0) throw Error("An interface type extension must add content.");
-            return new InterfaceTypeExtensionNode(name, interfaces, directives, fields, new SourceLocation(start, LastConsumedEnd(name.Location.End)));
+            return new InterfaceTypeExtensionNode(name, interfaces, directives, fields, AstLocation(start, LastConsumedEnd(name.Location.End)));
         }
 
         if (IsName("union"))
@@ -600,7 +611,7 @@ public sealed class GraphQLParser
             var directives = ParseDirectives(constantArguments: true);
             var types = ParseUnionMembersIfPresent();
             if (directives.Count == 0 && types.Count == 0) throw Error("A union extension must add content.");
-            return new UnionTypeExtensionNode(name, directives, types, new SourceLocation(start, LastConsumedEnd(name.Location.End)));
+            return new UnionTypeExtensionNode(name, directives, types, AstLocation(start, LastConsumedEnd(name.Location.End)));
         }
 
         if (IsName("enum"))
@@ -610,7 +621,7 @@ public sealed class GraphQLParser
             var directives = ParseDirectives(constantArguments: true);
             var values = ParseEnumValuesIfPresent();
             if (directives.Count == 0 && values.Count == 0) throw Error("An enum extension must add content.");
-            return new EnumTypeExtensionNode(name, directives, values, new SourceLocation(start, LastConsumedEnd(name.Location.End)));
+            return new EnumTypeExtensionNode(name, directives, values, AstLocation(start, LastConsumedEnd(name.Location.End)));
         }
 
         if (IsName("input"))
@@ -620,7 +631,7 @@ public sealed class GraphQLParser
             var directives = ParseDirectives(constantArguments: true);
             var fields = ParseInputFieldsIfPresent();
             if (directives.Count == 0 && fields.Count == 0) throw Error("An input-object extension must add content.");
-            return new InputObjectTypeExtensionNode(name, directives, fields, new SourceLocation(start, LastConsumedEnd(name.Location.End)));
+            return new InputObjectTypeExtensionNode(name, directives, fields, AstLocation(start, LastConsumedEnd(name.Location.End)));
         }
 
         throw Error("Expected a schema, scalar, object, interface, union, enum, or input extension.");
@@ -656,7 +667,7 @@ public sealed class GraphQLParser
             if (Current.Kind != TokenKind.Name || IsName("true") || IsName("false") || IsName("null")) throw Error("Expected an enum value name other than true, false, or null.");
             var name = ReadName();
             var directives = ParseDirectives(constantArguments: true);
-            values.Add(new EnumValueDefinitionNode(name, directives, new SourceLocation(start, LastConsumedEnd(name.Location.End)), description));
+            values.Add(new EnumValueDefinitionNode(name, directives, AstLocation(start, LastConsumedEnd(name.Location.End)), description));
         }
 
         if (values.Count == 0) throw Error("An enum value block cannot be empty.");
@@ -704,7 +715,7 @@ public sealed class GraphQLParser
             Expect(TokenKind.Dollar, "Expected '$' before a variable name.");
             var variableStart = _tokens[_index - 1].Start;
             var variableName = ReadRequiredName("Expected a variable name.");
-            var variable = new VariableNode(variableName, new SourceLocation(variableStart, variableName.Location.End));
+            var variable = new VariableNode(variableName, AstLocation(variableStart, variableName.Location.End));
             Expect(TokenKind.Colon, "Expected ':' after the variable name.");
             var type = ParseTypeReference();
             ValueNode? defaultValue = null;
@@ -716,7 +727,7 @@ public sealed class GraphQLParser
 
             var directives = ParseDirectives(constantArguments: true);
             var end = directives.Count > 0 ? directives[^1].Location.End : (defaultValue ?? (AstNode)type).Location.End;
-            variables.Add(new VariableDefinitionNode(variable, type, defaultValue, directives, new SourceLocation(start, end), description));
+            variables.Add(new VariableDefinitionNode(variable, type, defaultValue, directives, AstLocation(start, end), description));
         }
 
         if (variables.Count == 0) throw Error("Variable definitions cannot be empty.");
@@ -733,7 +744,7 @@ public sealed class GraphQLParser
             Advance();
             var inner = ParseTypeReference();
             var close = Expect(TokenKind.BracketRight, "Expected ']' in list type.");
-            type = new ListTypeNode(inner, new SourceLocation(start, close.End));
+            type = new ListTypeNode(inner, AstLocation(start, close.End));
         }
         else
         {
@@ -746,7 +757,7 @@ public sealed class GraphQLParser
             if (type is NonNullTypeNode) throw Error("A non-null type cannot wrap another non-null type.");
             var start = type.Location.Start;
             var bang = Advance();
-            type = new NonNullTypeNode(type, new SourceLocation(start, bang.End));
+            type = new NonNullTypeNode(type, AstLocation(start, bang.End));
         }
 
         return type;
@@ -766,7 +777,7 @@ public sealed class GraphQLParser
                 values.Add(ParseConstantValue());
             }
 
-            return new ListValueNode(values, new SourceLocation(start, Advance().End));
+            return new ListValueNode(values, AstLocation(start, Advance().End));
         }
 
         if (token.Kind == TokenKind.BraceLeft)
@@ -779,10 +790,10 @@ public sealed class GraphQLParser
                 var fieldName = ReadRequiredName("Expected a constant input-object field name.");
                 Expect(TokenKind.Colon, "Expected ':' after the constant input-object field name.");
                 var value = ParseConstantValue();
-                fields.Add(new ObjectFieldNode(fieldName, value, new SourceLocation(fieldName.Location.Start, value.Location.End)));
+                fields.Add(new ObjectFieldNode(fieldName, value, AstLocation(fieldName.Location.Start, value.Location.End)));
             }
 
-            return new ObjectValueNode(fields, new SourceLocation(start, Advance().End));
+            return new ObjectValueNode(fields, AstLocation(start, Advance().End));
         }
 
         if (token.Kind is TokenKind.Integer or TokenKind.Float or TokenKind.String or TokenKind.BlockString)
@@ -832,7 +843,7 @@ public sealed class GraphQLParser
 
         if (selections.Count == 0) throw Error("A selection set cannot be empty.");
         var close = Advance();
-        return new SelectionSetNode(selections, new SourceLocation(open.Start, close.End));
+        return new SelectionSetNode(selections, AstLocation(open.Start, close.End));
     }
 
     private void RecoverToNextSelection(int braceDepth, int parenthesisDepth, int bracketDepth)
@@ -867,7 +878,7 @@ public sealed class GraphQLParser
         var directives = ParseDirectives();
         var selection = Current.Kind == TokenKind.BraceLeft ? ParseSelectionSet() : null;
         var end = selection?.Location.End ?? _tokens[_index - 1].End;
-        return new FieldNode(name, alias, arguments, directives, selection, new SourceLocation(first.Location.Start, end));
+        return new FieldNode(name, alias, arguments, directives, selection, AstLocation(first.Location.Start, end));
     }
 
     private SelectionNode ParseFragmentSelection()
@@ -880,20 +891,20 @@ public sealed class GraphQLParser
             var type = new NamedTypeNode(typeName, typeName.Location);
             var directives = ParseDirectives();
             var selection = ParseSelectionSet();
-            return new InlineFragmentNode(type, directives, selection, new SourceLocation(start, selection.Location.End));
+            return new InlineFragmentNode(type, directives, selection, AstLocation(start, selection.Location.End));
         }
 
         if (Current.Kind is TokenKind.At or TokenKind.BraceLeft)
         {
             var directives = ParseDirectives();
             var selection = ParseSelectionSet();
-            return new InlineFragmentNode(null, directives, selection, new SourceLocation(start, selection.Location.End));
+            return new InlineFragmentNode(null, directives, selection, AstLocation(start, selection.Location.End));
         }
 
         var name = ReadRequiredName("Expected a fragment name or 'on' after '...'.");
         var spreadDirectives = ParseDirectives();
         var end = spreadDirectives.Count > 0 ? spreadDirectives[^1].Location.End : name.Location.End;
-        return new FragmentSpreadNode(name, spreadDirectives, new SourceLocation(start, end));
+        return new FragmentSpreadNode(name, spreadDirectives, AstLocation(start, end));
     }
 
     private List<ArgumentNode> ParseArguments(bool constantValues = false)
@@ -908,7 +919,7 @@ public sealed class GraphQLParser
             var name = ReadRequiredName("Expected an argument name.");
             Expect(TokenKind.Colon, "Expected ':' after the argument name.");
             var value = constantValues ? ParseConstantValue() : ParseValue();
-            arguments.Add(new ArgumentNode(name, value, new SourceLocation(start, value.Location.End)));
+            arguments.Add(new ArgumentNode(name, value, AstLocation(start, value.Location.End)));
         }
 
         if (arguments.Count == 0) throw Error("Arguments cannot be empty.");
@@ -925,7 +936,7 @@ public sealed class GraphQLParser
             var name = ReadRequiredName("Expected a directive name after '@'.");
             var arguments = ParseArguments(constantArguments);
             var end = arguments.Count > 0 ? _tokens[_index - 1].End : name.Location.End;
-            directives.Add(new DirectiveNode(name, arguments, new SourceLocation(start, end)));
+            directives.Add(new DirectiveNode(name, arguments, AstLocation(start, end)));
         }
 
         return directives;
@@ -937,7 +948,7 @@ public sealed class GraphQLParser
         {
             var start = Advance().Start;
             var name = ReadRequiredName("Expected a variable name after '$'.");
-            return new VariableNode(name, new SourceLocation(start, name.Location.End));
+            return new VariableNode(name, AstLocation(start, name.Location.End));
         }
 
         if (Current.Kind == TokenKind.BracketLeft)
@@ -951,7 +962,7 @@ public sealed class GraphQLParser
             }
 
             var end = Advance().End;
-            return new ListValueNode(values, new SourceLocation(start, end));
+            return new ListValueNode(values, AstLocation(start, end));
         }
 
         if (Current.Kind == TokenKind.BraceLeft)
@@ -964,11 +975,11 @@ public sealed class GraphQLParser
                 var fieldName = ReadRequiredName("Expected an input-object field name.");
                 Expect(TokenKind.Colon, "Expected ':' after the input-object field name.");
                 var fieldValue = ParseValue();
-                fields.Add(new ObjectFieldNode(fieldName, fieldValue, new SourceLocation(fieldName.Location.Start, fieldValue.Location.End)));
+                fields.Add(new ObjectFieldNode(fieldName, fieldValue, AstLocation(fieldName.Location.Start, fieldValue.Location.End)));
             }
 
             var end = Advance().End;
-            return new ObjectValueNode(fields, new SourceLocation(start, end));
+            return new ObjectValueNode(fields, AstLocation(start, end));
         }
 
         return ParseConstantValue();
@@ -1022,7 +1033,8 @@ public sealed class GraphQLParser
         return token;
     }
     private Token Current => _tokens[_index];
-    private SourceLocation Span(Token token) => new(token.Start, token.End);
+    private SourceLocation Span(Token token) => AstLocation(token.Start, token.End);
+    private SourceLocation AstLocation(int start, int end) => new(start, end, !_options.NoLocation);
     private Exception Error(string message)
     {
         if (_lexicalError is not null && _index == _tokens.Count - 1) return _lexicalError;
