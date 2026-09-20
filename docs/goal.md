@@ -1,6 +1,8 @@
 # GraphQL C# Parser Implementation Plan
 
-This document outlines a step-by-step implementation plan for an AI agent to build a custom, spec-compliant GraphQL lexer and recursive-descent parser in C#. The target implementation must support all current GraphQL specification features (executable documents and SDL), provide feature parity with the GraphQL reference implementation without copying source code, and maintain low memory allocations using modern C# features (`ReadOnlySpan<char>`, `ReadOnlyMemory<char>`, `ref struct`).
+The first implementation cycle is complete. [Next milestones](next-milestones.md) define the remaining GraphQL language suite, public API, source ownership, performance, and release work.
+
+This document records the initial implementation plan for a custom GraphQL lexer and recursive-descent parser in C#. The target is the pinned September 2025 GraphQL language specification for executable documents and SDL, with low memory allocations where correctness permits. The current work and release gates are defined in the next milestones.
 
 The intended result is a production-ready, battle-tested parser. Correctness, predictable diagnostics, bounded resource use, and maintainability take priority over an allocation target when they conflict. Pin the supported GraphQL specification edition and document any remaining limitations before claiming conformance.
 
