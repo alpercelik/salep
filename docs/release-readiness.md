@@ -10,7 +10,7 @@ The reference implementation is pinned to GraphQL.js 16.14.0, source commit `57b
 
 The full pinned upstream test inventory accounts for 1,980 core test identities and three package integration identities, with two additional fuzz programs listed separately. It classifies 220 GraphQL language tests as applicable, 53 error/AST utility tests for public API contract review, and 1,710 schema, validation, execution, infrastructure, and integration tests as outside parser scope. Inventory counts are not pass counts; only the 413 cases above currently have differential C# results. See [pinned reference suite inventory](reference-suite-inventory.md).
 
-Regenerate and verify the expanded corpus with `npm run reference:write` and `npm run reference:check`, setting `GRAPHQL_JS_CHECKOUT` to a checkout at the pinned commit and `GRAPHQL_JS_NODE` to Node 20. The four executed upstream files are `lexer-test.ts`, `parser-test.ts`, `schema-parser-test.ts`, and `blockString-test.ts`. Thirty upstream cases are explicitly excluded from document parsing: 15 block-string printing/predicate utility cases, 12 schema-coordinate helper calls, two legacy fragment-variable option cases, and one location-suppression option case. Schema-coordinate parsing and the two parser options have a dedicated C# API contract suite; block-string printing/predicate utilities remain outside the parser API. The 23-case oracle is retained as an independently generated regression set. These selected language suites do not represent every GraphQL.js test or prove exhaustive specification conformance.
+Regenerate and verify the expanded corpus with `npm run reference:write` and `npm run reference:check`, setting `GRAPHQL_JS_CHECKOUT` to a checkout at the pinned commit and `GRAPHQL_JS_NODE` to Node 20. The four executed upstream files are `lexer-test.ts`, `parser-test.ts`, `schema-parser-test.ts`, and `blockString-test.ts`. Thirty upstream helper cases are excluded from the document corpus: 15 block-string formatting/predicate cases, 12 schema-coordinate helper calls, two legacy fragment-variable option cases, and one location-suppression option case. Dedicated C# API tests cover these helper behaviors separately from the 413 document and token cases. The 23-case oracle is retained as an independently generated regression set. These selected language suites do not represent every GraphQL.js test or prove exhaustive specification conformance.
 
 ## Release-candidate gates
 
@@ -32,7 +32,7 @@ The parser defaults to a 1,048,576 UTF-16 code-unit source limit, 250,000 non-EO
 
 ## Remaining limits
 
-- The 413 applicable cases cover four pinned GraphQL.js language test files, not the entire GraphQL.js test suite. The listed 30 excluded cases cover parser helper options and block-string serializer utilities.
+- The 413 applicable corpus cases cover four pinned GraphQL.js language test files, not the entire GraphQL.js test suite. Thirty helper cases remain outside that corpus and are covered by dedicated API tests; the full inventory still includes unimplemented and out-of-scope cases.
 - Parsing is syntactic. Schema-dependent validation, operation validation, value coercion, and execution are outside this library's scope.
 - The benchmark corpus is small and fixed, and its local throughput values are sensitive to machine load. They are comparative measurements, not performance guarantees.
 - `SourceText` and source-backed AST values retain caller-owned memory. Callers must keep that backing storage alive and must not mutate it while the AST is in use.
