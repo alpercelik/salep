@@ -9,7 +9,7 @@
 
 This is the initial baseline for implementation. The specification edition is fixed for the first release. Supporting a later edition requires an explicit coverage review and updated fixtures, not an implicit claim that the parser supports “current GraphQL.”
 
-The matrix follows the specification's Language sections 2.1–2.14, Type System sections 3.1–3.13, and Appendix C grammar summary. The prose requirements in those sections are authoritative when shorthand grammar notation needs interpretation. The public parser also provides strict schema-coordinate parsing, opt-in parser helper options, and block-string normalization/printing utilities; these are API utilities rather than document grammar productions.
+The matrix follows the specification's Language sections 2.1–2.14, Type System sections 3.1–3.13, and Appendix C grammar summary. The prose requirements in those sections are authoritative when shorthand grammar notation needs interpretation. The public parser also provides strict schema-coordinate parsing, opt-in parser helper options, block-string and quoted-string formatting, source-location excerpts, AST predicates, printing, and ordered read-only traversal; these are language utilities rather than document grammar productions.
 
 ## Lexical grammar
 

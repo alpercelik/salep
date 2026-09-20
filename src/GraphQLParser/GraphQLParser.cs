@@ -14,6 +14,7 @@ public sealed class GraphQLParser
 
     private readonly SourceText _source;
     private readonly GraphQLParserOptions _options;
+    private Source? _sourceInfo;
     private readonly List<Token> _tokens = [];
     private int _index;
     private int _braceDepth;
@@ -27,6 +28,13 @@ public sealed class GraphQLParser
     public GraphQLParser(SourceText source)
         : this(source, GraphQLParserOptions.Default)
     {
+    }
+
+    /// <summary>Creates a parser over a named source body.</summary>
+    public GraphQLParser(Source source)
+        : this(new SourceText((source ?? throw new ArgumentNullException(nameof(source))).Body.AsMemory()))
+    {
+        _sourceInfo = source;
     }
 
     /// <summary>Creates a parser with explicit input and work limits.</summary>
@@ -86,8 +94,21 @@ public sealed class GraphQLParser
         }
     }
 
+    /// <summary>Creates a parser over a named source body with explicit options.</summary>
+    public GraphQLParser(Source source, GraphQLParserOptions options)
+        : this(new SourceText((source ?? throw new ArgumentNullException(nameof(source))).Body.AsMemory()), options)
+    {
+        _sourceInfo = source;
+    }
+
     /// <summary>Parses one non-empty GraphQL document.</summary>
     public static DocumentNode Parse(SourceText source) => Parse(source, GraphQLParserOptions.Default);
+
+    /// <summary>Parses one non-empty document from a named source.</summary>
+    public static DocumentNode Parse(Source source) => Parse(source, GraphQLParserOptions.Default);
+
+    /// <summary>Parses one non-empty document from a named source with explicit options.</summary>
+    public static DocumentNode Parse(Source source, GraphQLParserOptions options) => new GraphQLParser(source, options).ParseDocument();
 
     /// <summary>Parses one non-empty GraphQL document with explicit resource limits.</summary>
     public static DocumentNode Parse(SourceText source, GraphQLParserOptions options) => new GraphQLParser(source, options).ParseDocument();
@@ -95,11 +116,24 @@ public sealed class GraphQLParser
     /// <summary>Parses a document while collecting diagnostics and recovering at later definitions.</summary>
     public static GraphQLParseResult ParseWithDiagnostics(SourceText source) => ParseWithDiagnostics(source, GraphQLParserOptions.Default);
 
+    /// <summary>Parses a named source while collecting diagnostics.</summary>
+    public static GraphQLParseResult ParseWithDiagnostics(Source source) => ParseWithDiagnostics(source, GraphQLParserOptions.Default);
+
+    /// <summary>Parses a named source with explicit options and diagnostic recovery.</summary>
+    public static GraphQLParseResult ParseWithDiagnostics(Source source, GraphQLParserOptions options) => new GraphQLParser(source, options).ParseDocumentWithDiagnostics();
+
     /// <summary>Parses a document with explicit resource limits and diagnostic recovery.</summary>
     public static GraphQLParseResult ParseWithDiagnostics(SourceText source, GraphQLParserOptions options) => new GraphQLParser(source, options).ParseDocumentWithDiagnostics();
 
     /// <summary>Parses one strict GraphQL schema coordinate.</summary>
     public static SchemaCoordinateNode ParseSchemaCoordinate(SourceText source) => new SchemaCoordinateParser(source).Parse();
+
+    /// <summary>Parses one strict GraphQL schema coordinate from a named source body.</summary>
+    public static SchemaCoordinateNode ParseSchemaCoordinate(Source source)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        return ParseSchemaCoordinate(new SourceText(source.Body.AsMemory()));
+    }
 
     /// <summary>Parses one strict GraphQL schema coordinate from a string.</summary>
     public static SchemaCoordinateNode ParseSchemaCoordinate(string source)
@@ -127,7 +161,7 @@ public sealed class GraphQLParser
 
         if (_lexicalError is not null) throw _lexicalError;
 
-        return new DocumentNode(_source, definitions, AstLocation(0, _source.Length));
+        return new DocumentNode(_source, definitions, AstLocation(0, _source.Length), _sourceInfo);
     }
 
     /// <summary>Parses a document, returning valid definitions and source-ordered diagnostics.</summary>
@@ -180,7 +214,7 @@ public sealed class GraphQLParser
             }
         }
 
-        DocumentNode? document = definitions.Count == 0 ? null : new DocumentNode(_source, definitions, AstLocation(0, _source.Length));
+        DocumentNode? document = definitions.Count == 0 ? null : new DocumentNode(_source, definitions, AstLocation(0, _source.Length), _sourceInfo);
         _activeDiagnostics = null;
         return new GraphQLParseResult(document, diagnostics, _diagnosticsTruncated);
     }

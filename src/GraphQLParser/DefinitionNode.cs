@@ -14,7 +14,7 @@ public abstract class DefinitionNode : AstNode
 public sealed class DocumentNode : AstNode
 {
     /// <summary>Creates a document and snapshots its definitions in source order.</summary>
-    public DocumentNode(SourceText source, IEnumerable<DefinitionNode> definitions, SourceLocation location)
+    public DocumentNode(SourceText source, IEnumerable<DefinitionNode> definitions, SourceLocation location, Source? sourceInfo = null)
         : base(AstNodeKind.Document, location)
     {
         Definitions = new AstNodeList<DefinitionNode>(definitions);
@@ -43,10 +43,19 @@ public sealed class DocumentNode : AstNode
         }
 
         Source = source;
+        if (sourceInfo is not null && !sourceInfo.Body.AsSpan().SequenceEqual(source.Content.Span))
+        {
+            throw new ArgumentException("The source metadata body must match the document source text.", nameof(sourceInfo));
+        }
+
+        SourceInfo = sourceInfo;
     }
 
     /// <summary>Gets the original source memory used by the document.</summary>
     public SourceText Source { get; }
+
+    /// <summary>Gets optional source name and display-offset metadata.</summary>
+    public Source? SourceInfo { get; }
 
     /// <summary>Gets the document definitions in source order.</summary>
     public AstNodeList<DefinitionNode> Definitions { get; }

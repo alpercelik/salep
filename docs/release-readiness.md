@@ -28,7 +28,7 @@ Verified on 2026-09-20:
 | Repeated/concurrent parsing | 100 sequential and 64 concurrent parses produced identical canonical AST output |
 | Benchmark harness smoke | 50 iterations; lexer, strict executable/SDL parsing, and diagnostic parsing completed |
 
-The parser defaults to a 1,048,576 UTF-16 code-unit source limit, 250,000 non-EOF tokens, combined delimiter nesting depth 128, and 100 diagnostics. Applications can configure these bounds through `GraphQLParserOptions`; exceeding a source, token, or nesting bound throws `GraphQLResourceLimitException` in both strict and diagnostic modes. The current full benchmark comparison and the decision not to keep an unproven pooling or interning change are in [performance baseline](performance-baseline.md).
+The parser defaults to a 1,048,576 UTF-16 code-unit source limit, 250,000 non-EOF tokens, combined delimiter nesting depth 128, and 100 diagnostics. Applications can configure these bounds through `GraphQLParserOptions`; exceeding a source, token, or nesting bound throws `GraphQLResourceLimitException` in both strict and diagnostic modes. The language utility surface includes GraphQL source metadata, source excerpts, quoted and block-string formatters, AST predicates, a deterministic syntax printer, and read-only visitor traversal. Editable visitor rewrites and the namespace-adjusted full public API inventory remain in the public API compatibility milestone. The current full benchmark comparison and the decision not to keep an unproven pooling or interning change are in [performance baseline](performance-baseline.md).
 
 ## Remaining limits
 
