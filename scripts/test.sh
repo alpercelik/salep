@@ -5,4 +5,4 @@ script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 repo_root=$(CDPATH= cd -- "$script_dir/.." && pwd)
 
 cd "$repo_root"
-dotnet test GraphQLParser.sln --configuration Release "$@"
+dotnet test Salep.slnx --configuration Release "$@"

@@ -3,10 +3,10 @@
 A .NET 10 library for lexing and parsing GraphQL executable documents and schema definition language (SDL). It provides syntax-tree traversal, immutable rewrites, source locations, diagnostics, printing, and UTF-8 input helpers.
 
 ```csharp
-using GraphQLParser;
+using Salep.Parser;
 
 var source = new SourceText("query { viewer { id } }".AsMemory());
-DocumentNode document = GraphQLParser.GraphQLParser.Parse(source);
+DocumentNode document = GraphQLParser.Parse(source);
 ```
 
 Parsing checks GraphQL syntax. Schema-dependent validation, value coercion, and execution are not included.

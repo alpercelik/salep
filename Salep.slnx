@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/.SolutionItems/">
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+  </Folder>
+  <Project Path="benchmarks/Salep.Parser.Benchmarks/Salep.Parser.Benchmarks.csproj" />
+  <Project Path="src/Salep.Parser/Salep.Parser.csproj" />
+  <Project Path="tests/Salep.Parser.Tests/Salep.Parser.Tests.csproj" />
+</Solution>

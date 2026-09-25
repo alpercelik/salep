@@ -16,7 +16,7 @@ Regenerate and verify the expanded corpus with `npm run reference:write` and `np
 
 ## Release-candidate gates
 
-Verified on 2026-09-20 from the current checkout:
+Verified on 2026-09-25 from the current checkout:
 
 | Gate | Result |
 | --- | --- |
