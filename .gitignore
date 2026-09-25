@@ -5,6 +5,8 @@
 # .NET Core build folders
 bin/
 obj/
+BenchmarkDotNet.Artifacts/
+benchmarks/Salep.Parser.Benchmarks/.bdn/
 
 # Common node modules locations
 /node_modules

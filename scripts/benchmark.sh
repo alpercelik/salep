@@ -1,9 +1,15 @@
 #!/usr/bin/env sh
 set -eu
+
 repo_root="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
-iterations="${1:-1000}"
-repetitions="${2:-3}"
-output="${3:-benchmarks/results/latest.json}"
+benchmark_tfm="${BENCHMARK_TFM:-net10.0}"
+allocation_iterations="${BENCHMARK_ALLOCATION_ITERATIONS:-1000}"
+allocation_repetitions="${BENCHMARK_ALLOCATION_REPETITIONS:-3}"
+
 cd "$repo_root"
-mkdir -p "$(dirname -- "$output")"
-dotnet run --project benchmarks/Salep.Parser.Benchmarks/Salep.Parser.Benchmarks.csproj --configuration Release -- "$iterations" "$repetitions" "$output"
+project="benchmarks/Salep.Parser.Benchmarks/Salep.Parser.Benchmarks.csproj"
+dotnet build "$project" --configuration Release --framework "$benchmark_tfm" --disable-build-servers
+benchmark_dll="artifacts/bin/Salep.Parser.Benchmarks/release_${benchmark_tfm}/Salep.Parser.Benchmarks.dll"
+dotnet exec "$benchmark_dll" --allocation-gate --iterations "$allocation_iterations" --repetitions "$allocation_repetitions"
+
+dotnet exec "$benchmark_dll" "$@"
