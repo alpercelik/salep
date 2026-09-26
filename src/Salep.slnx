@@ -1,0 +1,55 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/.solution-items/">
+    <File Path="../AGENTS.md" />
+    <File Path="../Directory.Build.props" />
+    <File Path="../Directory.Packages.props" />
+    <File Path="../docs/architecture.md" />
+    <File Path="../docs/releases.md" />
+    <File Path="../docs/script-workflows.md" />
+    <File Path="../NuGet.config" />
+    <File Path="../README.md" />
+  </Folder>
+  <Folder Name="/parser/">
+    <File Path="../docs/parser/README.md" />
+    <Project Path="../benchmarks/Salep.GraphQLParser.Benchmarks/Salep.GraphQLParser.Benchmarks.csproj" />
+    <Project Path="Salep.GraphQLParser/Salep.GraphQLParser.csproj" />
+    <Project Path="Salep.GraphQLParser.Tests/Salep.GraphQLParser.Tests.csproj" />
+  </Folder>
+  <Folder Name="/client-generator/">
+    <File Path="../docs/client-generator/README.md" />
+    <Project Path="Salep.ClientGenerator.Cli/Salep.ClientGenerator.Cli.csproj" />
+    <Project Path="Salep.ClientGenerator.MSBuild.Tests/Salep.ClientGenerator.MSBuild.Tests.csproj" />
+    <Project Path="Salep.ClientGenerator.MSBuild/Salep.ClientGenerator.MSBuild.csproj" />
+    <Project Path="Salep.ClientGenerator.Tests/Salep.ClientGenerator.Tests.csproj" />
+    <Project Path="Salep.ClientGenerator/Salep.ClientGenerator.csproj" />
+  </Folder>
+  <Folder Name="/samples/" />
+  <Folder Name="/samples/Salep.Samples.GraphQLServer/">
+    <Project Path="samples/Salep.Samples.GraphQLServer/Salep.Samples.GraphQLServer.csproj" />
+  </Folder>
+  <Folder Name="/samples/Opinionated/">
+    <File Path="samples/Opinionated/Directory.Build.props" />
+    <File Path="samples/Opinionated/Directory.Packages.props" />
+    <File Path="samples/Opinionated/README.md" />
+    <Project Path="samples/Opinionated/Salep.Samples.Opinionated.Module.Tests/Salep.Samples.Opinionated.Module.Tests.csproj" />
+    <Project Path="samples/Opinionated/Salep.Samples.Opinionated.Module/Salep.Samples.Opinionated.Module.csproj" />
+    <Project Path="samples/Opinionated/Salep.Samples.Opinionated.Client.Tests/Salep.Samples.Opinionated.Client.Tests.csproj" />
+    <Project Path="samples/Opinionated/Salep.Samples.Opinionated.IntegrationTests/Salep.Samples.Opinionated.IntegrationTests.csproj" />
+    <Project Path="samples/Opinionated/Salep.Samples.Opinionated.Client/Salep.Samples.Opinionated.Client.csproj" />
+  </Folder>
+  <Folder Name="/samples/MinimalDependencies/">
+    <File Path="samples/MinimalDependencies/Directory.Build.props" />
+    <File Path="samples/MinimalDependencies/Directory.Packages.props" />
+    <File Path="samples/MinimalDependencies/README.md" />
+    <Project Path="samples/MinimalDependencies/Salep.Samples.MinimalDependencies.Client/Salep.Samples.MinimalDependencies.Client.csproj" />
+    <Project Path="samples/MinimalDependencies/Salep.Samples.MinimalDependencies.IntegrationTests/Salep.Samples.MinimalDependencies.IntegrationTests.csproj" />
+    <Project Path="samples/MinimalDependencies/Salep.Samples.MinimalDependencies.Module/Salep.Samples.MinimalDependencies.Module.csproj" />
+    <Project Path="samples/MinimalDependencies/Salep.Samples.MinimalDependencies.Client.Tests/Salep.Samples.MinimalDependencies.Client.Tests.csproj" />
+    <Project Path="samples/MinimalDependencies/Salep.Samples.MinimalDependencies.Module.Tests/Salep.Samples.MinimalDependencies.Module.Tests.csproj" />
+  </Folder>
+</Solution>

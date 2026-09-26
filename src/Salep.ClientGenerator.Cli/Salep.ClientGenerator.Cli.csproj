@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <OutputType>Exe</OutputType>
+    <!-- MSBuild invokes the managed DLL through dotnet exec on every OS. -->
+    <UseAppHost>false</UseAppHost>
+    <NoWarn>CA1305;CA1826,CA1822;CA1859;CA1869;CA1707;CA1861</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Salep.ClientGenerator.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Salep.ClientGenerator\Salep.ClientGenerator.csproj" />
+  </ItemGroup>
+</Project>

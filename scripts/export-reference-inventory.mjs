@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { compareInventory, compareSourcePaths, hasInventoryChanges, stableTestIdentities } from './reference-inventory-core.mjs';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
-const manifestPath = join(root, 'tests', 'Fixtures', 'ReferenceSuite', 'test-inventory.json');
+const manifestPath = join(root, 'src', 'Salep.GraphQLParser.Tests', 'Fixtures', 'ReferenceSuite', 'test-inventory.json');
 const mode = process.argv[2];
 const checkoutValue = process.env.GRAPHQL_JS_CHECKOUT;
 const expectedCommit = '57b385b288150960acd09337adf2fc778abb32ab';
@@ -154,7 +154,7 @@ const manifest = {
 const generated = `${JSON.stringify(manifest, null, 2)}\n`;
 if (mode === '--write') {
   const { mkdir } = await import('node:fs/promises');
-  await mkdir(join(root, 'tests', 'Fixtures', 'ReferenceSuite'), { recursive: true });
+  await mkdir(join(root, 'src', 'Salep.GraphQLParser.Tests', 'Fixtures', 'ReferenceSuite'), { recursive: true });
   await writeFile(manifestPath, generated);
   console.log(`Wrote ${identities.length} classified identities (${report.tests.length} core, ${integrationProjects.length} integration) from ${Object.keys(sourceSha256).length} pinned files.`);
 } else {

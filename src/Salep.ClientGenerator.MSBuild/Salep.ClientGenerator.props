@@ -1,0 +1,16 @@
+<Project>
+  <PropertyGroup>
+    <SalepEnabled Condition="'$(SalepEnabled)' == ''">true</SalepEnabled>
+    <SalepConfigFile Condition="'$(SalepConfigFile)' == ''">salep.json</SalepConfigFile>
+
+    <!-- Path to Salep.ClientGenerator.Cli.dll -->
+    <!-- 1. From NuGet package layout, matching the consumer target framework -->
+    <SalepToolPath Condition="'$(SalepToolPath)' == '' and Exists('$(MSBuildThisFileDirectory)../tools/$(TargetFramework)/any/Salep.ClientGenerator.Cli.dll')">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../tools/$(TargetFramework)/any'))</SalepToolPath>
+
+    <!-- 2. Fallbacks for local repository development/testing -->
+    <SalepToolPath Condition="'$(SalepToolPath)' == '' and '$(Configuration)' != '' and Exists('$(MSBuildThisFileDirectory)../Salep.ClientGenerator.Cli/bin/$(Configuration)/$(TargetFramework)/Salep.ClientGenerator.Cli.dll')">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../Salep.ClientGenerator.Cli/bin/$(Configuration)/$(TargetFramework)'))</SalepToolPath>
+    <SalepToolPath Condition="'$(SalepToolPath)' == '' and Exists('$(MSBuildThisFileDirectory)../Salep.ClientGenerator.Cli/bin/Debug/$(TargetFramework)/Salep.ClientGenerator.Cli.dll')">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../Salep.ClientGenerator.Cli/bin/Debug/$(TargetFramework)'))</SalepToolPath>
+    <SalepToolPath Condition="'$(SalepToolPath)' == '' and Exists('$(MSBuildThisFileDirectory)../Salep.ClientGenerator.Cli/bin/Release/$(TargetFramework)/Salep.ClientGenerator.Cli.dll')">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../Salep.ClientGenerator.Cli/bin/Release/$(TargetFramework)'))</SalepToolPath>
+  </PropertyGroup>
+
+</Project>

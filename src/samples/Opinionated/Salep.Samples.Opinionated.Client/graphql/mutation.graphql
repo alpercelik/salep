@@ -1,0 +1,38 @@
+mutation CreatePostSimple($title: String!) @opTag(name: "create-simple") {
+  createPost(input: { title: $title }) @opTag(name: "create-field") {
+    ...PostCore
+  }
+}
+
+mutation CreatePostWithContent($title: String!, $content: String) {
+  createPost(input: { title: $title, content: $content }) {
+    ...PostCore
+  }
+}
+
+mutation CreatePostAliased {
+  first: createPost(input: { title: "A" }) {
+    id
+    title
+  }
+  second: createPost(input: { title: "B", content: "B body" }) {
+    id
+    title
+    content
+  }
+}
+
+mutation UpdatePostWithDefaults(
+  $id: ID! = "1",
+  $input: CreatePostInput = { title: "t", content: "c", tags: ["x"], meta: { rating: 2, flags: ["f"] } }
+) {
+  updatePost(id: $id, input: $input) @opTag(name: "update") {
+    ...PostCore
+  }
+}
+
+mutation DeletePosts($ids: [ID!] = ["1", "2"]) {
+  deleted: deletePosts(ids: $ids) {
+    ...PostCore
+  }
+}

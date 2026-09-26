@@ -1,0 +1,965 @@
+{
+  "Configuration": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+  "ConfigurationIdentity": "../salep.json",
+  "Dependencies": {},
+  "EmitsSample": false,
+  "Files": {
+    "GraphQLClient.cs": "F75463FD1BAC7EE0BAD2838F87A48C46DABF6B53FC825B8AEB64BEF448285358",
+    "GraphQLSharedTypes.cs": "EF88F80D82551AFBB5985120CCA06742384936AAC1F7253DDB349155FEC1C84C",
+    "Operations.cs": "34E673DAB42689DA4B391ACDA46A6F40690802243F12B9A06FFE2BBD7E3BDC42",
+    "SchemaTypes.cs": "DA9A87BE061ABB2BEEAC2ED11FD7F5422D6573D126AE97DB826B6B272A0E3D88",
+    "UnionJsonConverters.cs": "4FBF12A944965B8E2B6F5D41E13A8B8D725F288ED0911D19627ECAE6EC62F8A3",
+    "agents.md": "5AAB5F17A4AB90C284AEC9509BCAFC93EAD2036BB470F1C0B2485DEFE8721618"
+  },
+  "Fingerprint": "186656BAEBA90B84FEB6E80EA1EAADE87F4D2A011A6D13412BBC9C52FD4BC524",
+  "Inputs": {
+    "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/base.config.json": "6170C4CF36A2C1322CB255A8DE6676BE8D4722AFE676B3EEBE84BD7273DD9DB8",
+    "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql/fragments.graphql": "61AAD03FB0EAE221D190D92E938B67232EF9025B7BFE5F90CC6B8B856E747548",
+    "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql/mutation.graphql": "F9EAA69D5C44EAA8C3A71F48DF06EE52BE155AC2377FCE20954CA115CB98D8F1",
+    "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql/query.graphql": "C5A4A6CD93AB4EC4F7E8E01B2957E04B7953CF03362D1E07608715095D49A105",
+    "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql/subscription.graphql": "C4F671A4B23E1E74D310F867B608DF032286F92F0C83C3EF925A2DD5173AD89E",
+    "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json": "38B3027EFCFA9AC504AA3A43EA0D15AD5713AE4117349EF3BED78557E7E6DA01",
+    "/Users/alper/projects/graphql-parser/src/samples/Salep.Samples.GraphQLServer/Generated/schema.graphql": "4B83A6BDC0EE40FFF070CEEF2AB50715C7107CD96EE6850B121AD1C1A7828ACC"
+  },
+  "Kind": "client",
+  "Output": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/Generated",
+  "Producer": "0.1.0.0",
+  "RequiredFramework": "net10.0",
+  "RequiredLanguage": "14",
+  "Settings": {
+    "ClientClassName": "GraphQLClient",
+    "ConverterRegistries": [
+      "global::GraphQL.Sharp.Generated.UnionJsonConverters"
+    ],
+    "EnableBatching": true,
+    "GeneratedNamespace": "GraphQL.Sharp.Generated",
+    "IndentSize": 4,
+    "InlineDefaultVariables": false,
+    "MaxGetUrlLength": 2048,
+    "OmitUnusedVariables": true,
+    "ScalarValueTypes": {
+      "Boolean": true,
+      "DateTime": true,
+      "Decimal": true,
+      "Float": true,
+      "ID": false,
+      "Instant": true,
+      "Int": true,
+      "Long": true,
+      "String": false,
+      "URL": false,
+      "UUID": true
+    },
+    "Scalars": {
+      "Boolean": {
+        "IsValueType": true,
+        "SampleExpression": "true",
+        "SampleJson": "true",
+        "Type": "bool"
+      },
+      "DateTime": {
+        "IsValueType": true,
+        "SampleExpression": "NodaTime.Instant.FromUtc(2020, 1, 1, 0, 0)",
+        "SampleJson": "\u00222020-01-01T00:00:00Z\u0022",
+        "Type": "NodaTime.Instant"
+      },
+      "Decimal": {
+        "IsValueType": true,
+        "SampleExpression": "12.34m",
+        "SampleJson": "12.34",
+        "Type": "decimal"
+      },
+      "Float": {
+        "IsValueType": true,
+        "SampleExpression": "12.34",
+        "SampleJson": "12.34",
+        "Type": "double"
+      },
+      "ID": {
+        "IsValueType": false,
+        "SampleExpression": "\u0022sample\u0022",
+        "SampleJson": "\u0022sample\u0022",
+        "Type": "string"
+      },
+      "Instant": {
+        "IsValueType": true,
+        "SampleExpression": "NodaTime.Instant.FromUtc(2020, 1, 1, 0, 0)",
+        "SampleJson": "\u00222020-01-01T00:00:00Z\u0022",
+        "Type": "NodaTime.Instant"
+      },
+      "Int": {
+        "IsValueType": true,
+        "SampleExpression": "123",
+        "SampleJson": "123",
+        "Type": "int"
+      },
+      "Long": {
+        "IsValueType": true,
+        "SampleExpression": "123L",
+        "SampleJson": "123",
+        "Type": "long"
+      },
+      "String": {
+        "IsValueType": false,
+        "SampleExpression": "\u0022sample\u0022",
+        "SampleJson": "\u0022sample\u0022",
+        "Type": "string"
+      },
+      "URL": {
+        "IsValueType": false,
+        "SampleExpression": "\u0022https://example.com\u0022",
+        "SampleJson": "\u0022https://example.com\u0022",
+        "Type": "string"
+      },
+      "UUID": {
+        "IsValueType": true,
+        "SampleExpression": "Guid.Empty",
+        "SampleJson": "\u002200000000-0000-0000-0000-000000000000\u0022",
+        "Type": "Guid"
+      }
+    },
+    "SharedNamespace": "GraphQL.Sharp.Generated",
+    "TestsNamespace": "Salep.Generated.Tests",
+    "TypeOwners": {},
+    "UnionRepresentation": "dunet",
+    "UseHttpGet": true,
+    "UseNativeUnions": false,
+    "UseRawStrings": true
+  },
+  "Symbols": {
+    "operation:CommentAdded": {
+      "Kind": "operation",
+      "Name": "CommentAdded",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "B031FE69F2AD79C8C5AF92EF9CBD7A399201ED77950480FABA61CB4AC54F16C6"
+    },
+    "operation:CreatePostAliased": {
+      "Kind": "operation",
+      "Name": "CreatePostAliased",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "F6AB4B1D6B373CEF3A59259BDD9140556298BA05BEBB223B5EA424A266594468"
+    },
+    "operation:CreatePostSimple": {
+      "Kind": "operation",
+      "Name": "CreatePostSimple",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "C0B5A8AE265376B2A47F3CAB3AACEC04EACA1B0E5E33FF8133BCE92401562819"
+    },
+    "operation:CreatePostWithContent": {
+      "Kind": "operation",
+      "Name": "CreatePostWithContent",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "1FCF62F6F693225C300534116840F6B4D90E1D9F7F817973346A9614553C1B2C"
+    },
+    "operation:DeletePosts": {
+      "Kind": "operation",
+      "Name": "DeletePosts",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "6E3CC5C63B5FFAB1071E7BF74A5B954039107B95ED16561B173868565CEFEB42"
+    },
+    "operation:EchoList": {
+      "Kind": "operation",
+      "Name": "EchoList",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "602E9C8FBC1417722056F9BA00624CF290C424D435D0FD73A3F1BFD6B6E62736"
+    },
+    "operation:NodeById": {
+      "Kind": "operation",
+      "Name": "NodeById",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "987852A94BFB3965EBFD3989901D9DF0D7880A134DFDB5832CF863D69D24BC57"
+    },
+    "operation:PostCreatedFull": {
+      "Kind": "operation",
+      "Name": "PostCreatedFull",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "E59A049E9ADD5E8374D26F90953EB563F2CB9EF487CC9CAA8DB765192A025CCD"
+    },
+    "operation:PostCreatedMinimal": {
+      "Kind": "operation",
+      "Name": "PostCreatedMinimal",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "2E4F06DC112DD7A4412B2FBEFEE45119BD421383817092930A62910ABD0390CF"
+    },
+    "operation:PostsByIds": {
+      "Kind": "operation",
+      "Name": "PostsByIds",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "A9C831DD6166C326E1CA6BCED65E125CD9CAC4B6D2CE6E3992985EF863A4B479"
+    },
+    "operation:SearchUsersAndPosts": {
+      "Kind": "operation",
+      "Name": "SearchUsersAndPosts",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "14195F2DF2AEDD7AB7F6E3C007E19134EBA2DFED2D586EC3D11BB5E86F6A4CDF"
+    },
+    "operation:SearchWithMultipleInlineFragments": {
+      "Kind": "operation",
+      "Name": "SearchWithMultipleInlineFragments",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "DBA466605EE55DA2B154C8DDAA1E855A8B33754970D93C0DC4AAB75EE16158BD"
+    },
+    "operation:UnusedVar": {
+      "Kind": "operation",
+      "Name": "UnusedVar",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "3099FCDBD7611A1F82ADE392EC5D629FBE55FA8B87A0D173FD2F5D062F620254"
+    },
+    "operation:UpdatePostWithDefaults": {
+      "Kind": "operation",
+      "Name": "UpdatePostWithDefaults",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "70C3F28C4AE9B59A746D67F16BC8FA1D810F126FAC2B7B86DF688885B073CE0D"
+    },
+    "operation:UsersByRole": {
+      "Kind": "operation",
+      "Name": "UsersByRole",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "2B158D5A03342FAEA349FAE043FA36696DC2EC9011ADA3754E3E59CDDC23B6B3"
+    },
+    "operation:UsersDefaultRole": {
+      "Kind": "operation",
+      "Name": "UsersDefaultRole",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "318518FE8852D966B9250B62CBE61F8E7585F723A40287887E28072D8F1D4DAA"
+    },
+    "schema:Account": {
+      "Kind": "InterfaceTypeDefinition",
+      "Name": "Account",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "2890AECDC20BC8BDD0585E8A88E1472EF49E4852A4148584EFFA4350236DA589"
+    },
+    "schema:Comment": {
+      "Kind": "ObjectTypeDefinition",
+      "Name": "Comment",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "23B50D92AE5782F96D454AB6E18A61CF9A8BA0EA9A3C01D4149BDC90790A3D1F"
+    },
+    "schema:CreatePostInput": {
+      "Kind": "InputObjectTypeDefinition",
+      "Name": "CreatePostInput",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "6C68F761B66452E1B04D019D0777107BC70972BD0DA3008998DA85C44D5B3C33"
+    },
+    "schema:MetadataInput": {
+      "Kind": "InputObjectTypeDefinition",
+      "Name": "MetadataInput",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "C1CF0150C7CDEC87C02A89736EE68CB971045B6E30C2DB9C49F0514C3D655077"
+    },
+    "schema:Mutation": {
+      "Kind": "ObjectTypeDefinition",
+      "Name": "Mutation",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "DAB8E638E8358D6653AC0C17768FCF58E5DC8B435C8A252E4D9720B007382DD2"
+    },
+    "schema:Named": {
+      "Kind": "InterfaceTypeDefinition",
+      "Name": "Named",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "D1B5757DA10AFAE4A8FFC40047F0470FE6A996D4616EFA9505BE8903A20F808F"
+    },
+    "schema:Node": {
+      "Kind": "InterfaceTypeDefinition",
+      "Name": "Node",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "68E1CFBB4958D2BF718BA26F6E9760AD2913A226A50DA3D6C60D15DE0BA44136"
+    },
+    "schema:Post": {
+      "Kind": "ObjectTypeDefinition",
+      "Name": "Post",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "80EECE9D00479220924A84262B3FA579F720DB8C587A4427876E76A9AA69EE8E"
+    },
+    "schema:Query": {
+      "Kind": "ObjectTypeDefinition",
+      "Name": "Query",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "84F7DC46FF715926473CC741740FB5EA4BC0AEEA3C61540A5D16F646D26114C6"
+    },
+    "schema:Role": {
+      "Kind": "EnumTypeDefinition",
+      "Name": "Role",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "59D017A82B952FC4EA63EEE958BA263EDE0CB7420E61031EDAE51832B12DCCD2"
+    },
+    "schema:SearchInput": {
+      "Kind": "InputObjectTypeDefinition",
+      "Name": "SearchInput",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "476D513D30B6BC0D9736516D3EC8107F49C6ADD84773C89AA0DF1AEF8BB88F12"
+    },
+    "schema:SearchResult": {
+      "Kind": "UnionTypeDefinition",
+      "Name": "SearchResult",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "1628F953451B0990350981D728AE09C2C082381F1F493A7D0CC01C0CFA4E5E32"
+    },
+    "schema:Subscription": {
+      "Kind": "ObjectTypeDefinition",
+      "Name": "Subscription",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "213E6CD3750E1E7D058461BE129D743BDBB669E7AD770204C08D5244D592A887"
+    },
+    "schema:Timestamped": {
+      "Kind": "InterfaceTypeDefinition",
+      "Name": "Timestamped",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "C7EADD99FF4E9F221125340D6E8C2DD81D0FF07B5949BCFE80202C38D6A296FB"
+    },
+    "schema:User": {
+      "Kind": "ObjectTypeDefinition",
+      "Name": "User",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "AA61B6E04EA759521141696CF692CCECB48F29054E6554E41170B9394D528FF6"
+    },
+    "schema:UserFilter": {
+      "Kind": "InputObjectTypeDefinition",
+      "Name": "UserFilter",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "B2B41217ADB0FAE2F81C759742503D69D3EBEA886C1C760A84F9FE93305591BA"
+    },
+    "shared:GraphQLError": {
+      "Kind": "shared",
+      "Name": "GraphQLError",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "v1"
+    },
+    "shared:GraphQLErrorLocation": {
+      "Kind": "shared",
+      "Name": "GraphQLErrorLocation",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "v1"
+    },
+    "shared:GraphQLRequest": {
+      "Kind": "shared",
+      "Name": "GraphQLRequest",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "v1"
+    },
+    "shared:GraphQLResponse": {
+      "Kind": "shared",
+      "Name": "GraphQLResponse",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "v1"
+    },
+    "shared:IGraphQLOperation": {
+      "Kind": "shared",
+      "Name": "IGraphQLOperation",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "v1"
+    },
+    "symbol:GraphQL.Sharp.Generated.AccountResult": {
+      "Kind": "CSharp",
+      "Name": "AccountResult",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "75EF47637AD282A1809A7FF5694B067D81768C483A0B4B13FF14141FFFA08141"
+    },
+    "symbol:GraphQL.Sharp.Generated.AccountResultJsonConverter": {
+      "Kind": "CSharp",
+      "Name": "AccountResultJsonConverter",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "E83E263CC15FD20CE8E2634042724413C44F7081A7CA389494C618AC01633E6D"
+    },
+    "symbol:GraphQL.Sharp.Generated.Comment": {
+      "Kind": "CSharp",
+      "Name": "Comment",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "5116B3D17BD53C3F076A2B4579C811A925B98CABB1DB56498660FC1B4ECBAD93"
+    },
+    "symbol:GraphQL.Sharp.Generated.CommentAddedOperation": {
+      "Kind": "CSharp",
+      "Name": "CommentAddedOperation",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "293C66DD57FADE297F28ECF19C82B65EEFCC1D11B6F793873E558D65BAC75698"
+    },
+    "symbol:GraphQL.Sharp.Generated.CommentAddedResponse": {
+      "Kind": "CSharp",
+      "Name": "CommentAddedResponse",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "453C22017144258A8D3ED31E9A6DE715037B37D3E302547FA45105982A4A78A3"
+    },
+    "symbol:GraphQL.Sharp.Generated.CommentAddedVariables": {
+      "Kind": "CSharp",
+      "Name": "CommentAddedVariables",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "505BF7BB71D2D377051A0F04257007CA0CAC2A6D74AADCA4C27962A85E641C34"
+    },
+    "symbol:GraphQL.Sharp.Generated.CreatePostAliasedOperation": {
+      "Kind": "CSharp",
+      "Name": "CreatePostAliasedOperation",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "9A5C36E1A54E20C829A6D30DE6A2BF1B5477B7183EB4C4630F0D0CEFCAB641AC"
+    },
+    "symbol:GraphQL.Sharp.Generated.CreatePostAliasedResponse": {
+      "Kind": "CSharp",
+      "Name": "CreatePostAliasedResponse",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "9E889DB57D656D8F3CF7D00EBCFBA9E52E02467939DC346E64F332633F6FFE30"
+    },
+    "symbol:GraphQL.Sharp.Generated.CreatePostAliasedVariables": {
+      "Kind": "CSharp",
+      "Name": "CreatePostAliasedVariables",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "D580A6F8F5EC7D5B2E28BBD8E690AC81D30814097D1C2B5B1DB016CB61B8E670"
+    },
+    "symbol:GraphQL.Sharp.Generated.CreatePostInput": {
+      "Kind": "CSharp",
+      "Name": "CreatePostInput",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "E4820C18210DB3BAFDEBF1F39C0895871DDD710B801B7BF7537FF5DDFFB48199"
+    },
+    "symbol:GraphQL.Sharp.Generated.CreatePostSimpleOperation": {
+      "Kind": "CSharp",
+      "Name": "CreatePostSimpleOperation",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "0C66765D4BC2482E4052E34B8B4AD64B0A81EFF997FE1574DD960317C0F9E45B"
+    },
+    "symbol:GraphQL.Sharp.Generated.CreatePostSimpleResponse": {
+      "Kind": "CSharp",
+      "Name": "CreatePostSimpleResponse",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "90D334088F57E6B5A1C85B0E35C4F86B803B17208F73B23050D46D28E9AFC57E"
+    },
+    "symbol:GraphQL.Sharp.Generated.CreatePostSimpleVariables": {
+      "Kind": "CSharp",
+      "Name": "CreatePostSimpleVariables",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "3425651B356D659882E73B58A85A1FBC70695BB81ED2CD5D52B7998004A789FD"
+    },
+    "symbol:GraphQL.Sharp.Generated.CreatePostWithContentOperation": {
+      "Kind": "CSharp",
+      "Name": "CreatePostWithContentOperation",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "4773C20F1325196567FA24771D25D4B69EF66ED7295EB0F64D1017F57EA4DAAC"
+    },
+    "symbol:GraphQL.Sharp.Generated.CreatePostWithContentResponse": {
+      "Kind": "CSharp",
+      "Name": "CreatePostWithContentResponse",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "7CBD2D7729E858BBEBB7541E1A3F1AFF807EC6D12D4337375CC07C3180DFD8B4"
+    },
+    "symbol:GraphQL.Sharp.Generated.CreatePostWithContentVariables": {
+      "Kind": "CSharp",
+      "Name": "CreatePostWithContentVariables",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "BB3FC724B463FE3A5C64A7A4DA353A4F3AA816337B06B2D2B837803579459A01"
+    },
+    "symbol:GraphQL.Sharp.Generated.DeletePostsOperation": {
+      "Kind": "CSharp",
+      "Name": "DeletePostsOperation",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "B294F289F2686A8BBCC4F12CB96790BD8378E66CFD243BFEFAB74A168E7D162A"
+    },
+    "symbol:GraphQL.Sharp.Generated.DeletePostsResponse": {
+      "Kind": "CSharp",
+      "Name": "DeletePostsResponse",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "433EB9B2829CF481EFCD21BCF2EEE39A070DEB25EBA564A455E78B6C7D633E24"
+    },
+    "symbol:GraphQL.Sharp.Generated.DeletePostsVariables": {
+      "Kind": "CSharp",
+      "Name": "DeletePostsVariables",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "6D01A33E4E6362DE0B008F2AA364A564346822B43D8586804503D479D0392773"
+    },
+    "symbol:GraphQL.Sharp.Generated.EchoListOperation": {
+      "Kind": "CSharp",
+      "Name": "EchoListOperation",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "D9B024173F8A9B30D587673CE7DF95DBA8F76CF3EA61FF955D12FBB855CC80DA"
+    },
+    "symbol:GraphQL.Sharp.Generated.EchoListResponse": {
+      "Kind": "CSharp",
+      "Name": "EchoListResponse",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "ACF427716D55AD4C53707E81069F03F3C1DBF2E6E4C44DA1D5E516AAA214BD89"
+    },
+    "symbol:GraphQL.Sharp.Generated.EchoListVariables": {
+      "Kind": "CSharp",
+      "Name": "EchoListVariables",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "3A2F047991DD425DFD1952D9A8EB1BE79045A43ABE9C50945CE26CAF6E2EDCC0"
+    },
+    "symbol:GraphQL.Sharp.Generated.GraphQLClient": {
+      "Kind": "CSharp",
+      "Name": "GraphQLClient",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "D52CA165330209FDF94186B2F161B22A9C9CAF6FA01550ABC3AA093E8763E5FD"
+    },
+    "symbol:GraphQL.Sharp.Generated.GraphQLError": {
+      "Kind": "CSharp",
+      "Name": "GraphQLError",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "4BC7FE65E62FED1A0C8666273B36E11CD7F58E44AFF98864E7D8D3536767EF2D"
+    },
+    "symbol:GraphQL.Sharp.Generated.GraphQLErrorLocation": {
+      "Kind": "CSharp",
+      "Name": "GraphQLErrorLocation",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "48292525AC7F8BC787D691113E7B258EA371F1748D75BD4F73EB3A6D1C1A0366"
+    },
+    "symbol:GraphQL.Sharp.Generated.GraphQLOperations": {
+      "Kind": "CSharp",
+      "Name": "GraphQLOperations",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "FE79FE0F3EFAD87A7336E9A7F6439D0BEE216F2B500E112094BF43D5B20C0B44"
+    },
+    "symbol:GraphQL.Sharp.Generated.GraphQLRequest": {
+      "Kind": "CSharp",
+      "Name": "GraphQLRequest",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "A195F440B4D5819882E3C79098FF8DE85E1BD48E23C3F7C9EE7D59817D27D76A"
+    },
+    "symbol:GraphQL.Sharp.Generated.GraphQLResponse": {
+      "Kind": "CSharp",
+      "Name": "GraphQLResponse",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "C8E267F7BEB145FE9D662306A78D692F79E023C0FB19247C69AB759BE68C1F6E"
+    },
+    "symbol:GraphQL.Sharp.Generated.IAccount": {
+      "Kind": "CSharp",
+      "Name": "IAccount",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "66AE968C0C5648C82804966D03D47F05506B63EC592D73C4C6C895F19B0436CE"
+    },
+    "symbol:GraphQL.Sharp.Generated.IGraphQLOperation": {
+      "Kind": "CSharp",
+      "Name": "IGraphQLOperation",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "CD26232189A450E7665AD3FCD7A172A278F87E2C332D899A120A859AC476CC09"
+    },
+    "symbol:GraphQL.Sharp.Generated.IGraphQLOperations": {
+      "Kind": "CSharp",
+      "Name": "IGraphQLOperations",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "3A3FF5526BA3F136C3F9432B8A6A099A2C734B6870DC48DF5EDA6BC290BA33E4"
+    },
+    "symbol:GraphQL.Sharp.Generated.INamed": {
+      "Kind": "CSharp",
+      "Name": "INamed",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "35162D213C53445DF079727F14E49EEF1D0FC515DB5CB23F62C77905D14B2E97"
+    },
+    "symbol:GraphQL.Sharp.Generated.INode": {
+      "Kind": "CSharp",
+      "Name": "INode",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "A15A222ACDBE0581D45CDA70C69C5F8E3B548F18C3C75B8E706C123D319A1C30"
+    },
+    "symbol:GraphQL.Sharp.Generated.ITimestamped": {
+      "Kind": "CSharp",
+      "Name": "ITimestamped",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "857F4451F2FE67D062B3386003E9C8691A4429969515254FB474FFC131AFFAB5"
+    },
+    "symbol:GraphQL.Sharp.Generated.MetadataInput": {
+      "Kind": "CSharp",
+      "Name": "MetadataInput",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "BF42FEB110273D2D58EE036BB4BBA6C9A97706DF142DF96735F494B22DF72F42"
+    },
+    "symbol:GraphQL.Sharp.Generated.Mutation": {
+      "Kind": "CSharp",
+      "Name": "Mutation",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "C7A18F6084D6728CDDFA2B1F78968A9D0AC1B9AC0E808600FFF3F0C67F325B7C"
+    },
+    "symbol:GraphQL.Sharp.Generated.NamedResult": {
+      "Kind": "CSharp",
+      "Name": "NamedResult",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "AE2214875C0CAA83BA29D8241E133C98DEA8B9BE61BE3A188B05A4762B727827"
+    },
+    "symbol:GraphQL.Sharp.Generated.NamedResultJsonConverter": {
+      "Kind": "CSharp",
+      "Name": "NamedResultJsonConverter",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "47E5AF424B7D3463D58F6EA432B51349E2B030B4D8E8E508421DC23EC90C71E4"
+    },
+    "symbol:GraphQL.Sharp.Generated.NodeByIdOperation": {
+      "Kind": "CSharp",
+      "Name": "NodeByIdOperation",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "4CC5E97895D03EEE0D013F243519C79CD9B9F5B11B9C95D20E5D13DC72DC35A6"
+    },
+    "symbol:GraphQL.Sharp.Generated.NodeByIdResponse": {
+      "Kind": "CSharp",
+      "Name": "NodeByIdResponse",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "92E8F74EC2F3535DC28A1375FCCE2279E9C563960C52DDED08723547BEDC5E71"
+    },
+    "symbol:GraphQL.Sharp.Generated.NodeByIdVariables": {
+      "Kind": "CSharp",
+      "Name": "NodeByIdVariables",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "36E652DC0B448CE631F8FF7BA7A879188C54B7DC5D3F91C75B6E49DB121AA5DD"
+    },
+    "symbol:GraphQL.Sharp.Generated.NodeResult": {
+      "Kind": "CSharp",
+      "Name": "NodeResult",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "B6AD3CDAAB9FD1202F1689F14B1FB40ED8A7DD0D37CD3B90ED9AD5378D5D9E01"
+    },
+    "symbol:GraphQL.Sharp.Generated.NodeResultJsonConverter": {
+      "Kind": "CSharp",
+      "Name": "NodeResultJsonConverter",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "CFD2BD6EB561D9B82E98638CD430CAD6296F13051C77B3C6FA08F2A7A570E3FD"
+    },
+    "symbol:GraphQL.Sharp.Generated.Post": {
+      "Kind": "CSharp",
+      "Name": "Post",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "5215E60B6EF40473E7D84AF7A5933537DF29046292A3B580529BAD2B2BD82557"
+    },
+    "symbol:GraphQL.Sharp.Generated.PostCreatedFullOperation": {
+      "Kind": "CSharp",
+      "Name": "PostCreatedFullOperation",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "25F0E1BDED5FC0E6D52360522ADA25CF83551BD04718B7121235181040A92B41"
+    },
+    "symbol:GraphQL.Sharp.Generated.PostCreatedFullResponse": {
+      "Kind": "CSharp",
+      "Name": "PostCreatedFullResponse",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "346510BF200DBF70772CC3F55BA86A91CF6B481B9E5E3325E8428CE61628BB29"
+    },
+    "symbol:GraphQL.Sharp.Generated.PostCreatedFullVariables": {
+      "Kind": "CSharp",
+      "Name": "PostCreatedFullVariables",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "26E18B698A03F42EC705289156B4C26A815B44B7CB5A35A8E184C925219F115F"
+    },
+    "symbol:GraphQL.Sharp.Generated.PostCreatedMinimalOperation": {
+      "Kind": "CSharp",
+      "Name": "PostCreatedMinimalOperation",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "7BD68FF7E644147C2D74111A41AEA7E78F3176C6AAD81823A30D7A0DE6F80956"
+    },
+    "symbol:GraphQL.Sharp.Generated.PostCreatedMinimalResponse": {
+      "Kind": "CSharp",
+      "Name": "PostCreatedMinimalResponse",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "F574C14AAB171AA04FF8B8D6EEAF70BE38ED22AD7216EA1BCBAD8875A6C41FC1"
+    },
+    "symbol:GraphQL.Sharp.Generated.PostCreatedMinimalVariables": {
+      "Kind": "CSharp",
+      "Name": "PostCreatedMinimalVariables",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "1596AF710DD806A1E2B6DF4265731A82848E8746A548728DB56825A29FB4C2F5"
+    },
+    "symbol:GraphQL.Sharp.Generated.PostsByIdsOperation": {
+      "Kind": "CSharp",
+      "Name": "PostsByIdsOperation",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "B37941530B8D46CA972681E29C5D88E1EA58D1E558AD552FB62D5F9B867FAF38"
+    },
+    "symbol:GraphQL.Sharp.Generated.PostsByIdsResponse": {
+      "Kind": "CSharp",
+      "Name": "PostsByIdsResponse",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "9274C7D883FCEE7B0727E0B954324F676659C4D8D5E36A8BAF7A5C89E128DF58"
+    },
+    "symbol:GraphQL.Sharp.Generated.PostsByIdsVariables": {
+      "Kind": "CSharp",
+      "Name": "PostsByIdsVariables",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "E8ECCECBF123F93DD3E683E00F1490F5080AAE912D405E2F8EAEA45327230FB8"
+    },
+    "symbol:GraphQL.Sharp.Generated.Query": {
+      "Kind": "CSharp",
+      "Name": "Query",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "7C339F55310F931ABD9B88B132DF61227102F5A36096AB6C563B7EDF9ABA2ECE"
+    },
+    "symbol:GraphQL.Sharp.Generated.Role": {
+      "Kind": "CSharp",
+      "Name": "Role",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "97A4C182E5FB9679413F9D387CF86EB177FD84CDD68DA8A062DBCD9A03D0CE8E"
+    },
+    "symbol:GraphQL.Sharp.Generated.SearchInput": {
+      "Kind": "CSharp",
+      "Name": "SearchInput",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "DA92AA8CAF4C08D6C37CDB6604F1B9CF5BA77F17500B3C62773A324EE411B1E4"
+    },
+    "symbol:GraphQL.Sharp.Generated.SearchResult": {
+      "Kind": "CSharp",
+      "Name": "SearchResult",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "A8CC906E0DA6A31C6D2F95896358BB6C09F0EF23835159AE47654C11BCC5692E"
+    },
+    "symbol:GraphQL.Sharp.Generated.SearchResultJsonConverter": {
+      "Kind": "CSharp",
+      "Name": "SearchResultJsonConverter",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "F69943A004C0907E3B35740DB9E2EC0F6510ECFC8658D412D302E821152F2B05"
+    },
+    "symbol:GraphQL.Sharp.Generated.SearchUsersAndPostsOperation": {
+      "Kind": "CSharp",
+      "Name": "SearchUsersAndPostsOperation",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "BFCEC5179125B82A70DC2A081B32F837E7BCA98966CDDBA653B36D23B8C73B2D"
+    },
+    "symbol:GraphQL.Sharp.Generated.SearchUsersAndPostsResponse": {
+      "Kind": "CSharp",
+      "Name": "SearchUsersAndPostsResponse",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "46326E005BA773B8C70AC40537A14066BBC7DC575DFBFB36B128D3B4514D804D"
+    },
+    "symbol:GraphQL.Sharp.Generated.SearchUsersAndPostsVariables": {
+      "Kind": "CSharp",
+      "Name": "SearchUsersAndPostsVariables",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "13EF025CEB8E159A848906A19162D56E9BFC1AE948626CF9BEC10DD71664FE24"
+    },
+    "symbol:GraphQL.Sharp.Generated.SearchWithMultipleInlineFragmentsOperation": {
+      "Kind": "CSharp",
+      "Name": "SearchWithMultipleInlineFragmentsOperation",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "B5B2352C1E0D3F23632F618D6CBA2E8C0CCF0CE3DB6ECDCD50459C8C79443730"
+    },
+    "symbol:GraphQL.Sharp.Generated.SearchWithMultipleInlineFragmentsResponse": {
+      "Kind": "CSharp",
+      "Name": "SearchWithMultipleInlineFragmentsResponse",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "F4267095DC7A76F40612AFDCCCCABCFB3D303D50F267E9C6AAC55637CFE83755"
+    },
+    "symbol:GraphQL.Sharp.Generated.SearchWithMultipleInlineFragmentsVariables": {
+      "Kind": "CSharp",
+      "Name": "SearchWithMultipleInlineFragmentsVariables",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "E64CBE0861D964577C3163398E5DE8BBC138A4A45C38F155245BC26744E4E5DF"
+    },
+    "symbol:GraphQL.Sharp.Generated.Subscription": {
+      "Kind": "CSharp",
+      "Name": "Subscription",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "95BD871AEC6B75BA9386274DDDEFAF3E2532E9A893A3991A1BC129EF8ADD93EA"
+    },
+    "symbol:GraphQL.Sharp.Generated.TimestampedResult": {
+      "Kind": "CSharp",
+      "Name": "TimestampedResult",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "E10447EA62166D1AEFABDD06C5DB84870335C4ABE416081C9118EF4910EEA975"
+    },
+    "symbol:GraphQL.Sharp.Generated.TimestampedResultJsonConverter": {
+      "Kind": "CSharp",
+      "Name": "TimestampedResultJsonConverter",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "82F1A2C18C80CCE4BACE2912207CFFB7AFC5328440CB207BB4D60A07A814D0DC"
+    },
+    "symbol:GraphQL.Sharp.Generated.UnionJsonConverters": {
+      "Kind": "CSharp",
+      "Name": "UnionJsonConverters",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "3A527A567DDEA391C17BF203F24CEA0788D171B73BC34A618D6208393D4E618E"
+    },
+    "symbol:GraphQL.Sharp.Generated.UnusedVarOperation": {
+      "Kind": "CSharp",
+      "Name": "UnusedVarOperation",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "607851A15233E79D915D35305956E9D109742C6FDAE030F37E6C4E9ED751978D"
+    },
+    "symbol:GraphQL.Sharp.Generated.UnusedVarResponse": {
+      "Kind": "CSharp",
+      "Name": "UnusedVarResponse",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "EA1B7462DBC109DAD44C5774C0760485EF07245C7AA4DDCC2500E308017911FD"
+    },
+    "symbol:GraphQL.Sharp.Generated.UnusedVarVariables": {
+      "Kind": "CSharp",
+      "Name": "UnusedVarVariables",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "937814DD1E9D858E76983ED6971EF8446E9A07B0E28622277EFFE8E10B06F32E"
+    },
+    "symbol:GraphQL.Sharp.Generated.UpdatePostWithDefaultsOperation": {
+      "Kind": "CSharp",
+      "Name": "UpdatePostWithDefaultsOperation",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "D30EA5E68827A43F615AF6C624C2B599523DE0576884D19BB293A8F480675201"
+    },
+    "symbol:GraphQL.Sharp.Generated.UpdatePostWithDefaultsResponse": {
+      "Kind": "CSharp",
+      "Name": "UpdatePostWithDefaultsResponse",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "CDF59F4C41C19B5AD66A3A171B0E1CBBE7493EF408EBB27D1DEDDF65EEB65DE2"
+    },
+    "symbol:GraphQL.Sharp.Generated.UpdatePostWithDefaultsVariables": {
+      "Kind": "CSharp",
+      "Name": "UpdatePostWithDefaultsVariables",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "04EB6C2BD55436111A7D6ED6D256BBBF91D5836F327917AB966376081B70BD16"
+    },
+    "symbol:GraphQL.Sharp.Generated.User": {
+      "Kind": "CSharp",
+      "Name": "User",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "A51ECCAEB6C243F49104C6ECD06BDCD1A5C0E5A0F103F8AD17A74EF5CF8105AE"
+    },
+    "symbol:GraphQL.Sharp.Generated.UserFilter": {
+      "Kind": "CSharp",
+      "Name": "UserFilter",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "FC38811E33AD759B1C92E94B4101F94E005FED4D99E34BA75E90FC0E1AD027F4"
+    },
+    "symbol:GraphQL.Sharp.Generated.UsersByRoleOperation": {
+      "Kind": "CSharp",
+      "Name": "UsersByRoleOperation",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "A07F2405F59DC44F61F00AAED09C165DF5E713B07D197A3D9120A984D7EB585A"
+    },
+    "symbol:GraphQL.Sharp.Generated.UsersByRoleResponse": {
+      "Kind": "CSharp",
+      "Name": "UsersByRoleResponse",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "57D8EDC65196EC8CEACE4501F2CF41F222498F448C15F66A0B9DD4DECD547E0D"
+    },
+    "symbol:GraphQL.Sharp.Generated.UsersByRoleVariables": {
+      "Kind": "CSharp",
+      "Name": "UsersByRoleVariables",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "1327505A125E173624468EBBF4AF7A62F5291E11C53F580225075DBCDBF627EE"
+    },
+    "symbol:GraphQL.Sharp.Generated.UsersDefaultRoleOperation": {
+      "Kind": "CSharp",
+      "Name": "UsersDefaultRoleOperation",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "9157CA3CE7ACDEF655801032B85422A6CBB7A0E73D62A8044605DF5E9857241B"
+    },
+    "symbol:GraphQL.Sharp.Generated.UsersDefaultRoleResponse": {
+      "Kind": "CSharp",
+      "Name": "UsersDefaultRoleResponse",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "C11A8FD81791AAAFD28A530C87EF2CD4A7484BF417E75F57C2DA3A50AC4DA6F4"
+    },
+    "symbol:GraphQL.Sharp.Generated.UsersDefaultRoleVariables": {
+      "Kind": "CSharp",
+      "Name": "UsersDefaultRoleVariables",
+      "Namespace": "GraphQL.Sharp.Generated",
+      "Owner": "/Users/alper/projects/graphql-parser/src/samples/Opinionated/Salep.Samples.Opinionated.Client/salep.json",
+      "Signature": "E19244B7E6272F5BECE45F26AC3882C99059373976FECA612BA4BAD3BFCB11F7"
+    }
+  },
+  "Version": 1
+}

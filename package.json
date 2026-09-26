@@ -9,7 +9,9 @@
     "reference:check": "node scripts/export-reference-suite.mjs --check",
     "reference:inventory:write": "node scripts/export-reference-inventory.mjs --write",
     "reference:inventory:check": "node scripts/export-reference-inventory.mjs --check",
-    "reference:inventory:test": "node --test scripts/reference-inventory-core.test.mjs"
+    "reference:inventory:test": "node --test scripts/reference-inventory-core.test.mjs",
+    "scripts:check": "node scripts/check-script-parity.mjs",
+    "packages:verify": "node scripts/verify-release-consumers.mjs"
   },
   "devDependencies": {
     "graphql": "16.14.0"

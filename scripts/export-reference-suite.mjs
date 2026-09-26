@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const captureHook = join(root, 'scripts', 'graphql-js-test-capture.cjs');
-const corpusPath = join(root, 'tests', 'Fixtures', 'ReferenceSuite', 'corpus.json');
+const corpusPath = join(root, 'src', 'Salep.GraphQLParser.Tests', 'Fixtures', 'ReferenceSuite', 'corpus.json');
 const mode = process.argv[2];
 const checkout = resolve(process.env.GRAPHQL_JS_CHECKOUT ?? process.argv[3] ?? '');
 const expectedCommit = '57b385b288150960acd09337adf2fc778abb32ab';
@@ -273,7 +273,7 @@ const generated = `${JSON.stringify(corpus, null, 2)}\n`;
 
 if (mode === '--write') {
   const { mkdir } = await import('node:fs/promises');
-  await mkdir(join(root, 'tests', 'Fixtures', 'ReferenceSuite'), { recursive: true });
+  await mkdir(join(root, 'src', 'Salep.GraphQLParser.Tests', 'Fixtures', 'ReferenceSuite'), { recursive: true });
   await writeFile(corpusPath, generated);
   console.log(`Wrote ${cases.length} cases from ${testCount} upstream tests to ${corpusPath}`);
 } else {

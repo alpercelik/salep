@@ -5,4 +5,4 @@ script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 repo_root=$(CDPATH= cd -- "$script_dir/.." && pwd)
 
 cd "$repo_root"
-dotnet test Salep.slnx --configuration Release "$@"
+dotnet test --solution "$repo_root/src/Salep.Core.slnf" --configuration Release "$@"

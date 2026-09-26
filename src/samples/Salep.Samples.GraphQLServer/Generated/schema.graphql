@@ -1,0 +1,175 @@
+schema @schemaTag(name: "base") @schemaTag(name: "extended") {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
+
+type Query {
+  users(role: Role! = USER, filter: UserFilter): [User!]! @tag(name: "users")
+  node(id: ID!): Node
+  search(text: String!, options: SearchInput): [SearchResult!]!
+  posts(ids: [ID!]!, allowMissing: Boolean! = false): [Post]!
+  echoList(values: [String!]): [String!]!
+}
+
+type Mutation {
+  createPost(input: CreatePostInput!): Post!
+    @auth(role: ADMIN)
+    @cost(weight: "10")
+  updatePost(id: ID!, input: CreatePostInput!): Post
+  deletePosts(ids: [ID!]!): [Post!]!
+}
+
+type Subscription {
+  postCreated(role: Role! = USER): Post!
+  commentAdded: Comment!
+}
+
+type Comment implements Node & Timestamped {
+  id: ID!
+  body: String!
+  createdAt: DateTime!
+  author: User!
+}
+
+type Post implements Node & Timestamped {
+  id: ID!
+  title: String!
+  content: String
+  tags: [String]
+  createdAt: DateTime!
+  author: User!
+}
+
+type User implements Node & Named & Account & Timestamped
+  @tag(name: "user")
+  @auth(role: ADMIN) {
+  name: String! @upper
+  email: String! @auth(role: ADMIN)
+  id: ID!
+  role: Role!
+  createdAt: DateTime!
+  legacyName: String
+  nickname: String
+  oldField: String @deprecated(reason: "legacy")
+  posts: [Post!]!
+}
+
+interface Account implements Node & Named {
+  email: String!
+  id: ID!
+  name: String!
+  legacyName: String @deprecated(reason: "Use name")
+}
+
+interface Named {
+  name: String!
+  legacyName: String @deprecated(reason: "Use name")
+}
+
+interface Node {
+  id: ID!
+}
+
+interface Timestamped implements Node {
+  createdAt: DateTime!
+  id: ID!
+}
+
+union SearchResult = User | Post | Comment
+
+input CreatePostInput {
+  title: String!
+  content: String
+  tags: [String]
+  meta: MetadataInput
+  notify: Boolean
+}
+
+input MetadataInput @tag(name: "inputObj") {
+  rating: Int!
+  flags: [String!]!
+}
+
+input SearchInput {
+  text: String!
+  tags: [String!]!
+  meta: MetadataInput
+}
+
+input UserFilter {
+  roles: [Role!]!
+  ids: [ID!]!
+}
+
+enum Role @tag(name: "enum") {
+  GUEST @deprecated(reason: "Use USER")
+  SUPERADMIN @tag(name: "enumValue")
+  ADMIN
+  USER
+}
+
+"An arbitrary precision integer."
+scalar BigInt
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/any.html")
+
+"The `DateTime` scalar type represents a date and time with time zone offset information."
+scalar DateTime
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/date-time.html")
+
+"A JSON value."
+scalar Json
+  @specifiedBy(url: "https://scalars.graphql.org/chillicream/any.html")
+
+directive @auth(role: Role = USER) on OBJECT | FIELD_DEFINITION
+
+"The purpose of the `cost` directive is to define a `weight` for GraphQL types, fields, and arguments. Static analysis can use these weights when calculating the overall cost of a query or response."
+directive @cost(
+  "The `weight` argument defines what value to add to the overall cost for every appearance, or possible appearance, of a type, field, argument, etc."
+  weight: String!
+) on
+  | SCALAR
+  | OBJECT
+  | FIELD_DEFINITION
+  | ARGUMENT_DEFINITION
+  | ENUM
+  | INPUT_FIELD_DEFINITION
+
+directive @opTag(name: String = "op") repeatable on
+  | QUERY
+  | MUTATION
+  | SUBSCRIPTION
+  | FIELD
+  | FRAGMENT_DEFINITION
+  | FRAGMENT_SPREAD
+  | INLINE_FRAGMENT
+
+directive @schemaTag(name: String!) repeatable on SCHEMA
+
+"""
+The @tag directive is used to apply arbitrary string
+metadata to a schema location. Custom tooling can use
+this metadata during any step of the schema delivery flow,
+including composition, static analysis, and documentation.
+
+interface Book {
+  id: ID! @tag(name: "your-value")
+  title: String!
+  author: String!
+}
+"""
+directive @tag("The name of the tag." name: String!) repeatable on
+  | SCHEMA
+  | SCALAR
+  | OBJECT
+  | FIELD_DEFINITION
+  | ARGUMENT_DEFINITION
+  | INTERFACE
+  | UNION
+  | ENUM
+  | ENUM_VALUE
+  | INPUT_OBJECT
+  | INPUT_FIELD_DEFINITION
+
+
+directive @upper on FIELD_DEFINITION

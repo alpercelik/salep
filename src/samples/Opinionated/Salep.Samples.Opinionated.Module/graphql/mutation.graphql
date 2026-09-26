@@ -1,0 +1,6 @@
+mutation ModuleCreatePost {
+  createPost(input: { title: "Sample from module" }) {
+    id
+    title
+  }
+}

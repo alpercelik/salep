@@ -98,7 +98,7 @@
       ]
     }
   ],
-  "Samples": [
+  "samples": [
     {
       "CaseId": "small-executable",
       "Operation": "lexer",

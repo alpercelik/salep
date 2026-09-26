@@ -1,0 +1,159 @@
+schema @schemaTag(name: "base") {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
+
+extend schema @schemaTag(name: "extended")
+
+directive @schemaTag(name: String!) repeatable on SCHEMA
+directive @tag(name: String!) repeatable on SCHEMA | SCALAR | OBJECT | INTERFACE | UNION | ENUM | ENUM_VALUE | FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_OBJECT | INPUT_FIELD_DEFINITION
+directive @upper on FIELD_DEFINITION
+directive @auth(role: Role = USER) on OBJECT | FIELD_DEFINITION
+directive @opTag(name: String = "op") repeatable on QUERY | MUTATION | SUBSCRIPTION | FIELD | FRAGMENT_DEFINITION | FRAGMENT_SPREAD | INLINE_FRAGMENT
+directive @specifiedBy(url: String!) on SCALAR
+directive @deprecated(reason: String = "No longer supported") on FIELD_DEFINITION | ENUM_VALUE
+
+scalar DateTime @specifiedBy(url: "https://example.com/datetime") @tag(name: "scalar")
+scalar Json @specifiedBy(url: "https://example.com/json")
+scalar BigInt @specifiedBy(url: "https://example.com/bigint")
+extend scalar BigInt @tag(name: "extendedScalar")
+
+enum Role @tag(name: "enum") {
+  ADMIN
+  USER
+  GUEST @deprecated(reason: "Use USER")
+}
+
+extend enum Role {
+  SUPERADMIN @tag(name: "enumValue")
+}
+
+interface Node {
+  id: ID!
+}
+
+interface Named {
+  name: String!
+}
+
+interface Timestamped implements Node {
+  id: ID!
+  createdAt: DateTime!
+}
+
+interface Account implements Node & Named {
+  id: ID!
+  name: String!
+  email: String!
+}
+
+extend interface Named {
+  legacyName: String @deprecated(reason: "Use name")
+}
+
+union SearchResult = User | Post
+extend union SearchResult = Comment
+
+input MetadataInput @tag(name: "inputObj") {
+  rating: Int = 5
+  flags: [String!] = ["x", "y"]
+}
+
+input CreatePostInput {
+  title: String!
+  content: String = "default"
+  tags: [String!] = ["a", "b"]
+  meta: MetadataInput = { rating: 4, flags: ["m"] }
+}
+
+extend input CreatePostInput {
+  notify: Boolean = true
+}
+
+input SearchInput {
+  text: String!
+  tags: [String!] = ["x"]
+  meta: MetadataInput = { rating: 3, flags: ["z"] }
+}
+
+input UserFilter {
+  roles: [Role!] = [USER]
+  ids: [ID!] = ["1", "2"]
+}
+
+type User implements Node & Named & Timestamped @tag(name: "user") @auth(role: ADMIN) {
+  id: ID!
+  name: String! @upper
+  role: Role!
+  posts: [Post!]!
+  createdAt: DateTime!
+  metadata: Json
+  oldField: String @deprecated(reason: "legacy")
+}
+
+extend type User {
+  nickname: String
+  email: String @auth(role: ADMIN)
+}
+
+type Post implements Node & Timestamped {
+  id: ID!
+  title: String!
+  content: String
+  author: User!
+  tags: [String]
+  createdAt: DateTime!
+}
+
+extend type Post {
+  metadata: Json
+}
+
+type Comment implements Node & Timestamped {
+  id: ID!
+  body: String!
+  author: User!
+  createdAt: DateTime!
+}
+
+type Query {
+  node(id: ID!): Node
+  users(role: Role = USER, filter: UserFilter = { roles: [USER] }): [User!]! @tag(name: "users")
+  search(text: String!, options: SearchInput = { text: "x", tags: ["a"] }): [SearchResult!]!
+  posts(ids: [ID!]!, allowMissing: Boolean = false): [Post]!
+  echoList(values: [String!]! = ["a", "b"]): [String!]!
+}
+
+type Mutation {
+  createPost(input: CreatePostInput!): Post! @auth(role: ADMIN)
+  updatePost(id: ID!, input: CreatePostInput! = { title: "t", content: "c", tags: ["x"] }): Post!
+  deletePosts(ids: [ID!]! = ["1"]): [Post]!
+}
+
+type Subscription {
+  postCreated(role: Role = USER): Post!
+  commentAdded: Comment!
+}
+
+query UsersDefaultRole @opTag(name: "users-default") {
+  users @opTag(name: "users-field") {
+    ...UserCore @opTag(name: "spread-user")
+  }
+}
+
+query UsersByRole(
+  $role: Role = ADMIN,
+  $ids: [ID!] = ["1"],
+  $filter: UserFilter = { roles: [USER], ids: ["1"] }
+) @opTag(name: "users-by-role") {
+  admins: users(role: $role, filter: $filter) {
+    ...UserCore
+    posts {
+      ...PostCore
+    }
+  }
+  guests: users(role: GUEST) @skip(if: false) {
+    ...UserCore
+  }
+}

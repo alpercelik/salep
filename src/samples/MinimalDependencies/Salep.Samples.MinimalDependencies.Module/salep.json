@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "kind": "client",
+  "profile": "../Salep.Samples.MinimalDependencies.Client/base.config.json",
+  "namespace": "GraphQL.Sharp.Generated.Module.MinimalDependencies",
+  "clientName": "GeneratedModuleClient",
+  "operations": "./graphql",
+  "output": "./Generated",
+  "baseClient": "../Salep.Samples.MinimalDependencies.Client/salep.json"
+}

@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 import { parse, Source, version } from 'graphql';
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
-const corpusDir = join(root, 'tests', 'Fixtures', 'Oracle');
+const corpusDir = join(root, 'src', 'Salep.GraphQLParser.Tests', 'Fixtures', 'Oracle');
 const expectedDir = join(corpusDir, 'expected');
 const mode = process.argv[2];
 if (mode !== '--write' && mode !== '--check') {

@@ -1,0 +1,6 @@
+subscription ModulePostCreated {
+  postCreated {
+    id
+    title
+  }
+}

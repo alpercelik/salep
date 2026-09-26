@@ -1,51 +1,67 @@
-# GraphQL C# Parser
+# Salep
 
-A GraphQL lexer and parser targeting .NET 10 and .NET 11 and the September 2025 GraphQL specification. The repository currently pins the .NET 11 RC SDK to build both targets; update `global.json` to the supported .NET 11 SDK when it is released. The conformance scope and parser-versus-validation boundary are recorded in [docs/spec-coverage.md](docs/spec-coverage.md).
-The AST location, immutability, and source-memory rules are recorded in [docs/ast-model.md](docs/ast-model.md).
+Salep provides GraphQL tooling for .NET: a standalone lexer and parser, and a schema-driven C# client generator with MSBuild integration.
 
-## Build and test
+| Component | Purpose | NuGet package | Documentation |
+| --- | --- | --- | --- |
+| **Salep GraphQL Parser** | Lexing, parsing, syntax trees, diagnostics, traversal, rewriting, and printing | `Salep.GraphQLParser` | [Parser guide](docs/parser/README.md) |
+| **Salep C# Client Generator** | Generate typed C# clients from GraphQL schemas and operations during builds | `Salep.ClientGenerator` | [Client generator guide](docs/client-generator/README.md) |
 
-Run the complete suite from the repository root:
+The parser can be used independently. The client generator references the parser directly; generated applications have no runtime dependency on either implementation assembly. See [architecture and naming](docs/architecture.md) for component ownership and package mapping.
 
-```sh
-./scripts/test.sh
+## Solution and projects
+
+Open `src/Salep.slnx` for the complete solution, including samples. `src/Salep.Core.slnf` selects the eight core projects without samples. The package-only `Salep.GraphQLParser.PublicApiConsumer` fixture stays outside both solution build lists; run it through `scripts/verify-package-compatibility.sh` or `scripts/verify-package-compatibility.ps1`, which pack the parser before restoring the consumer.
+
+```text
+src/
+  Salep.slnx
+  Salep.Core.slnf
+  Salep.GraphQLParser/
+  Salep.ClientGenerator/
+  Salep.ClientGenerator.Cli/
+  Salep.ClientGenerator.MSBuild/
+  Salep.GraphQLParser.Tests/
+    Fixtures/                         # Oracle and reference-suite data
+  Salep.GraphQLParser.PublicApiConsumer/
+  Salep.ClientGenerator.Tests/
+  Salep.ClientGenerator.MSBuild.Tests/
+  samples/
+    Opinionated/
+    MinimalDependencies/
+    Salep.Samples.GraphQLServer/
+benchmarks/
+  Salep.GraphQLParser.Benchmarks/
 ```
 
-The script forwards arguments to `dotnet test`, so focused tests can use normal test-runner filters, for example:
+## Build and verify
 
 ```sh
-./scripts/test.sh --filter FullyQualifiedName~SourceTextTests
+dotnet build src/Salep.Core.slnf
+dotnet test --solution src/Salep.Core.slnf --configuration Release
 ```
 
-Build and verify the NuGet package and package-only consumer on both target frameworks with:
+| Workflow | Bash | PowerShell |
+| --- | --- | --- |
+| Core tests | `./scripts/test.sh` | `pwsh ./scripts/test.ps1` |
+| Parser package verification | `./scripts/verify-package-compatibility.sh` | `pwsh ./scripts/verify-package-compatibility.ps1` |
+| Generator package and sample dogfooding | `./build-salep.sh` | `pwsh ./build-salep.ps1` |
 
-```sh
-./scripts/verify-package-compatibility.sh
-```
+See [script workflows](docs/script-workflows.md) for all paired commands, defaults, and environment overrides. Run `npm run scripts:check` after script changes and verify behavior in both shells.
 
-The package is retained at `artifacts/packages/GraphQLParser.0.0.0-verify.1.nupkg`.
+## NuGet packages
 
-Tests live in `tests/GraphQLParser.Tests`. GraphQL inputs are stored under its `Fixtures` directory and copied to the test output directory. Keep minimized defect reproductions there as regression fixtures. The test project can add differential oracle tests as parser coverage grows.
+See [packaging and releases](docs/releases.md) to prepare `Salep.GraphQLParser` and `Salep.ClientGenerator`, including parser symbols, for publication.
 
-## graphql-js oracle
+## Contributor documentation
 
-The reference corpus is pinned to `graphql` 16.14.0 in `package.json` and `package-lock.json`, matching the September 2025 grammar target while using the mature 16.x parser line. Fixtures are owned by this repository; `tests/Fixtures/Oracle/expected/provenance.json` records the oracle package integrity and each source fixture's SHA-256. The generator uses graphql-js as a black box and contains no copied parser implementation.
+- [Repository agent guidance](AGENTS.md)
+- [Parser scope and milestones](docs/parser/next-milestones.md)
+- [Parser syntax coverage](docs/parser/spec-coverage.md)
+- [Client generator contributor guide](docs/client-generator/developer-contributor-guide.md)
+- [Client generator agent guide](docs/client-generator/agent-contributor-guide.md)
+- [Client generator feature coverage](docs/client-generator/spec-coverage.md)
 
-Install Node dependencies and regenerate the canonical AST or parse-error snapshots with:
+## License
 
-```sh
-npm ci
-npm run oracle:write
-```
-
-Check that committed snapshots match the pinned parser and source fixtures with:
-
-```sh
-npm run oracle:check
-```
-
-The oracle check names each fixture when a snapshot differs. Review regenerated output before committing it. The .NET test suite also checks that each manifest entry has a source and a version-matched expected result.
-
-## Source input ownership
-
-Default document, diagnostic, and schema-coordinate parsing snapshots `SourceText` into immutable storage. Callers may release or mutate their input after parsing. The explicitly named `ParseBorrowed`, `ParseWithDiagnosticsBorrowed`, and `ParseSchemaCoordinateBorrowed` entry points retain caller-owned memory; callers must keep that memory alive and unchanged while returned nodes are in use. Direct lexer use also borrows its `SourceText`. Source offsets are measured in UTF-16 code units.
+See [LICENSE](LICENSE).

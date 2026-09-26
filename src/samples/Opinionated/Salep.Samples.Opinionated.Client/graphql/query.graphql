@@ -1,0 +1,99 @@
+query UsersDefaultRole @opTag(name: "users-default") {
+  users @opTag(name: "users-field") {
+    ...UserCore @opTag(name: "spread-user")
+  }
+}
+
+query UsersByRole(
+  $role: Role = ADMIN,
+  $ids: [ID!] = ["1"],
+  $filter: UserFilter = { roles: [USER], ids: ["1"] }
+) @opTag(name: "users-by-role") {
+  admins: users(role: $role, filter: $filter) {
+    ...UserCore
+    posts {
+      ...PostCore
+    }
+  }
+  guests: users(role: GUEST) @skip(if: false) {
+    ...UserCore
+  }
+}
+
+query SearchUsersAndPosts($text: String!) @opTag(name: "search") {
+  search(text: $text, options: { text: "x", tags: ["a"] }) {
+    __typename
+    ... on User @opTag(name: "user-frag") {
+      ...UserCore
+    }
+    ... on Post @opTag(name: "post-frag") {
+      ...PostCore
+    }
+    ... on Comment {
+      ...CommentCore
+    }
+  }
+}
+
+query NodeById($id: ID! = "1") {
+  byId: node(id: $id) {
+    __typename
+    ... on User @include(if: true) {
+      ...UserCore
+    }
+    ... on Post {
+      ...PostCore
+    }
+    ... on Comment {
+      ...CommentCore
+    }
+  }
+}
+
+query SearchWithMultipleInlineFragments($text: String!) {
+  results: search(text: $text) {
+    __typename
+    ... on User {
+      ...UserCore
+    }
+    ... on User @opTag(name: "user-posts") {
+      posts {
+        ...PostCore
+      }
+    }
+    ... on Post {
+      ...PostCore
+    }
+    ... on Post @opTag(name: "post-author") {
+      author {
+        ...UserCore
+      }
+    }
+    ... on Comment {
+      ...CommentCore
+    }
+  }
+}
+
+query EchoList(
+  $values: [String!]! = ["a", "b"],
+  $single: [String!] = ["one"],
+  $options: SearchInput = { text: "hello", tags: ["t"] }
+) {
+  echoed: echoList(values: $values) @opTag(name: "echoed")
+}
+
+query PostsByIds(
+  $ids: [ID!]! = ["1", "2"],
+  $allowMissing: Boolean = false
+) {
+  posts(ids: $ids, allowMissing: $allowMissing) {
+    ...PostCore
+  }
+}
+
+query UnusedVar($unused: String = "x") {
+  users {
+    id
+  }
+}

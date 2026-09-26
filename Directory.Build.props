@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
     <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <Deterministic>true</Deterministic>
@@ -10,5 +11,28 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
     <UseArtifactsOutput>true</UseArtifactsOutput>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>Recommended</AnalysisMode>
+    <Version Condition="'$(Version)' == ''">0.1.0</Version>
+    <!-- Only the two public distribution projects opt in to packing. -->
+    <IsPackable>false</IsPackable>
+    <Authors>Alper Çelik</Authors>
+    <Copyright>Copyright (c) 2026 Alper Çelik</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/alpercelik/salep</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/alpercelik/salep</PackageProjectUrl>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <DebugType>portable</DebugType>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Salep.ClientGenerator' or '$(MSBuildProjectName)' == 'Salep.ClientGenerator.Cli' or '$(MSBuildProjectName)' == 'Salep.ClientGenerator.Tests' or '$(MSBuildProjectName)' == 'Salep.ClientGenerator.MSBuild' or '$(MSBuildProjectName)' == 'Salep.ClientGenerator.MSBuild.Tests'">
+    <NoWarn>CA1305;CA1826,CA1822;CA1859;CA1869;CA1707;CA1861</NoWarn>
+    <ThisAssemblyNamespace>$(MSBuildProjectName)</ThisAssemblyNamespace>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'Salep.ClientGenerator' or '$(MSBuildProjectName)' == 'Salep.ClientGenerator.Cli' or '$(MSBuildProjectName)' == 'Salep.ClientGenerator.Tests' or '$(MSBuildProjectName)' == 'Salep.ClientGenerator.MSBuild' or '$(MSBuildProjectName)' == 'Salep.ClientGenerator.MSBuild.Tests'">
+    <RuntimeHostConfigurationOption Include="System.Text.Json.Serialization.RespectRequiredConstructorParametersDefault" Value="true" />
+    <RuntimeHostConfigurationOption Include="System.Text.Json.Serialization.RespectNullableAnnotationsDefault" Value="true" />
+  </ItemGroup>
 </Project>

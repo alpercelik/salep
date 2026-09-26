@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <LangVersion>preview</LangVersion>
+    <AssemblyName>Salep.Samples.GraphQLServer</AssemblyName>
+    <RootNamespace>Salep.Samples.GraphQLServer</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="HotChocolate.AspNetCore" />
+    <PackageReference Include="HotChocolate.Subscriptions.InMemory" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Generated\" />
+  </ItemGroup>
+  <Target Name="ExportGraphQLSchema" AfterTargets="Build" Condition="'$(IsCrossTargetingBuild)' != 'true' and '$(DesignTimeBuild)' != 'true'">
+    <Exec Command="dotnet &quot;$(TargetPath)&quot; --export-schema &quot;$(MSBuildProjectDirectory)/Generated/schema.graphql&quot;" />
+  </Target>
+</Project>

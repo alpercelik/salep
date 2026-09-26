@@ -1,0 +1,18 @@
+subscription PostCreatedFull @opTag(name: "post-full") {
+  postCreated(role: USER) {
+    ...PostCore
+  }
+}
+
+subscription PostCreatedMinimal {
+  postCreated {
+    id
+    title
+  }
+}
+
+subscription CommentAdded {
+  commentAdded {
+    ...CommentCore
+  }
+}

@@ -1,0 +1,23 @@
+fragment UserCore on User @opTag(name: "frag-user") {
+  id
+  name
+  role
+  createdAt
+}
+
+fragment PostCore on Post @opTag(name: "frag-post") {
+  id
+  title
+  content
+  author {
+    ...UserCore @opTag(name: "spread-user")
+  }
+}
+
+fragment CommentCore on Comment {
+  id
+  body
+  author {
+    ...UserCore
+  }
+}
