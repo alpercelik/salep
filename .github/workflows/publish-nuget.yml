@@ -1,0 +1,101 @@
+name: Publish NuGet packages
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nuget-release-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Verify and publish packages
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Check out release source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up .NET SDKs
+        uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+          dotnet-version: 10.0.x
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Read and validate release version
+        id: release
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF_NAME" != v* ]]; then
+            echo "Release tag must start with v (for example v0.1.0)." >&2
+            exit 1
+          fi
+          version="${GITHUB_REF_NAME#v}"
+          if [[ ! "$version" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]; then
+            echo "Release tag must contain a valid package version." >&2
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Install JavaScript dependencies
+        run: npm ci
+
+      - name: Test core projects
+        run: ./scripts/test.sh --max-parallel-test-modules 1
+
+      - name: Verify packed parser package
+        run: ./scripts/verify-package-compatibility.sh
+
+      - name: Build and test generator samples
+        run: ./build-salep.sh
+
+      - name: Pack release packages
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+        run: ./scripts/pack-release.sh "$VERSION"
+
+      - name: Verify release packages with fresh consumers
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+        run: npm run packages:verify -- "$VERSION"
+
+      - name: Get temporary NuGet publishing key
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: Publish parser package and symbols
+        env:
+          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
+          VERSION: ${{ steps.release.outputs.version }}
+        run: >-
+          dotnet nuget push
+          "artifacts/release/${VERSION}/Salep.GraphQLParser.${VERSION}.nupkg"
+          --source https://api.nuget.org/v3/index.json
+          --api-key "$NUGET_API_KEY"
+
+      - name: Publish client generator package
+        env:
+          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
+          VERSION: ${{ steps.release.outputs.version }}
+        run: >-
+          dotnet nuget push
+          "artifacts/release/${VERSION}/Salep.ClientGenerator.${VERSION}.nupkg"
+          --source https://api.nuget.org/v3/index.json
+          --api-key "$NUGET_API_KEY"
