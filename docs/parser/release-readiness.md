@@ -16,11 +16,11 @@ Regenerate and verify the expanded corpus with `npm run reference:write` and `np
 
 ## Release-candidate gates
 
-Verified on 2026-09-25 from the current checkout:
+The Release rebuild was verified on 2026-09-25 from the then-current checkout. Test totals below reflect the current Rider session:
 
 | Gate | Result |
 | --- | --- |
-| Clean Release rebuild and test harness | Single-node `Rebuild` succeeded with 0 warnings and 0 errors; net10.0 and net11.0 each passed 1,559 tests, 0 failed, 0 skipped |
+| Clean Release rebuild and test harness | Single-node `Rebuild` succeeded with 0 warnings and 0 errors; 3,118 tests per target framework, for 6,236 total executions across `net10.0` and `net11.0` |
 | Pinned oracle fixtures | 23 passed (7 valid, 16 invalid) |
 | GraphQL.js reference language corpus | 1,227 focused checks passed (1,226 cases plus provenance); 220 upstream tests passed |
 | Reference corpus freshness | Passed at pinned source commit; 1,226 cases from 220 upstream tests; 9 explicitly excluded assertions |
