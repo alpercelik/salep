@@ -1,0 +1,25 @@
+using Xunit;
+{{~ for import_item in settings.additional_imports # begin for import_item ~}}
+using {{ import_item }};
+{{~ end # end for import_item ~}}
+using {{ target.default_namespace }};
+
+namespace {{ settings.test_namespace }};
+
+public sealed class OperationsMetadataTests
+{
+    {{~ for operation in csharp_operations # begin for operation ~}}
+{{ include "tests.operation-metadata-case" ~}}
+        {{~ if operation.removed_variables.size > 0 # begin if operation_removed_variables_size ~}}
+    [Fact]
+    public void {{ operation.test_name }}_Omits_Variable_Definition()
+    {
+        var operation = new {{ operation.type_name }}(null);
+            {{~ for variable in operation.removed_variables # begin for variable ~}}
+        Assert.DoesNotMatch({{ target.string_literal ("\\$" + variable + "(?![_0-9A-Za-z])") }}, operation.Query);
+            {{~ end # end for variable ~}}
+    }
+
+        {{~ end # end if operation_removed_variables_size ~}}
+    {{~ end # end for operation ~}}
+}

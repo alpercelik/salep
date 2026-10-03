@@ -1,19 +1,19 @@
 # NuGet packaging and releases
 
-Salep has two public packages. All other projects are non-packable by default.
+Salep publishes two packages: `Salep.GraphQLParser` and `Salep.ClientGenerator`. The generator package contains Scriban. Scriban is the sole stable generator.
 
 | Package | Packing project | Contents |
 | --- | --- | --- |
 | `Salep.GraphQLParser` | `src/Salep.GraphQLParser/Salep.GraphQLParser.csproj` | Standalone `net10.0` and `net11.0` libraries, XML API documentation, README and MIT license |
-| `Salep.ClientGenerator` | `src/Salep.ClientGenerator.MSBuild/Salep.ClientGenerator.MSBuild.csproj` | MSBuild assets, portable managed CLI hosts and private dependencies for both frameworks, README, license and dependency notices |
+| `Salep.ClientGenerator` | `src/Salep.ClientGenerator.MSBuild/Salep.ClientGenerator.MSBuild.csproj` | Default Scriban MSBuild assets, managed CLI hosts with embedded defaults, README, license and dependency notices |
 
-`Salep.GraphQLParser` also produces a portable-PDB `.snupkg` containing Source Link metadata. `Salep.ClientGenerator` deliberately exposes no runtime library assets or NuGet dependencies: its generator, parser and Roslyn binaries are private build tools. Use `PrivateAssets="all"` on a consumer's `Salep.ClientGenerator` reference. The managed CLI requires the matching .NET runtime; .NET 11 consumers currently need the preview/RC toolchain.
+`Salep.GraphQLParser` also produces a portable-PDB `.snupkg` containing Source Link metadata. The generator package exposes no runtime library assets or NuGet dependencies: its generator, parser and Scriban binaries are private build tools. Use `PrivateAssets="all"` on a consumer's generator package reference. The managed CLIs require the matching .NET runtime; .NET 11 consumers currently need the preview/RC toolchain.
 
 ## Version and repository metadata
 
 `Directory.Build.props` defines the default development version (`0.1.0`) and shared author, MIT license, repository URL, and source-debugging properties. The package projects define descriptions, tags, and READMEs. The canonical repository is `https://github.com/alpercelik/salep`; package metadata, README links, and Source Link mappings use this location.
 
-The release scripts require an explicit version and apply it to both packages and their assemblies. Accepted versions are `major.minor.patch` with an optional SemVer prerelease suffix; build metadata and leading zeros in numeric identifiers are rejected. The first planned public version is `0.1.0`. Future prerelease versions can use a suffix such as `-preview.1`.
+The release scripts require an explicit version and apply it to all packages and their assemblies. Accepted versions are `major.minor.patch` with an optional SemVer prerelease suffix; build metadata and leading zeros in numeric identifiers are rejected. The first planned public version is `0.1.0`. Future prerelease versions can use a suffix such as `-preview.1`.
 
 ## Verify and pack
 
@@ -28,7 +28,7 @@ Install the SDK pinned in `global.json` and both supported runtimes. Run core te
 
 After packing, run `npm run packages:verify -- 0.1.0` (same command in both shells). This restores each package from the release directory into a fresh temporary cache outside the repository, compiles and runs consumers on both frameworks, verifies the parser API contract, and checks that generated applications have no runtime tool dependencies. Salep package IDs are mapped exclusively to the local release feed; NuGet.org is available only for SDK framework packs that are not installed locally. Pass a second package-directory argument when using a custom output directory.
 
-The packing scripts restore and pack only the two public projects in Release. They work from any current directory, stop on failures, and require all three expected output files. An optional second argument selects an output directory; relative output paths are relative to the repository root. They do not change sample package pins, push packages, or create tags/releases.
+The packing scripts restore and pack the two public projects in Release. They work from any current directory, stop on failures, and require all three expected output files. An optional second argument selects an output directory; relative output paths are relative to the repository root. They do not change sample package pins, push packages, or create tags/releases.
 
 Default outputs:
 
@@ -39,17 +39,17 @@ artifacts/release/0.1.0/
   Salep.ClientGenerator.0.1.0.nupkg
 ```
 
-`PackageLayoutTests` checks both archives' metadata and layout, portable parser symbols with Source Link mappings, and the generator's managed-only CLI distribution. The package-only parser consumer checks the public API contract and behavior. Generator dogfooding restores `Salep.ClientGenerator` packages into the samples rather than substituting project references. Release output is ignored by Git; repository-local verification packages under `artifacts/packages/` remain a separate workflow.
+`PackageLayoutTests` checks generator metadata, private CLI layout, isolated concurrent packing and parser portable symbols/Source Link. The package-only parser consumer checks public API behavior and framework assemblies. Release consumer verification asserts the generator contains Scriban without compiler tooling, installs it with a fresh cache, runs .NET 10/11 consumers and verifies incremental regeneration, owned-file cleanup, template export/composition/invalidation and runtime customization. Generator dogfooding restores the exact invocation package version and runs both Scriban sample profiles against the shared server. See [generator contracts](client-generator/generator-parity.md). Release output is ignored by Git.
 
-For a final release, rebuild from the clean, committed release source so the repository commit recorded in the package and symbols identifies that source. Preserve these verified artifacts for upload. Confirm that your NuGet account owns or can register both package IDs and that the chosen version has not already been published.
+For a final release, rebuild from the clean, committed release source so the repository commit recorded in the package and symbols identifies that source. Preserve these verified artifacts for upload. Confirm that your NuGet account owns or can register both public package IDs and that the chosen version has not already been published.
 
 ## Publish through GitHub Trusted Publishing
 
-The `.github/workflows/publish-nuget.yml` workflow runs when a GitHub Release is published. It installs the pinned .NET 11 RC SDK and .NET 10 SDK, runs the core tests, parser package compatibility gate, generator sample dogfooding, release packing, and fresh-consumer verification. Only after those checks pass does it request a short-lived NuGet publishing key through GitHub OIDC and publish both packages. The parser `.snupkg` is kept beside its `.nupkg` and is pushed with it. No long-lived NuGet API key is stored in GitHub.
+The `.github/workflows/publish-nuget.yml` workflow runs when a GitHub Release is published. It installs the pinned .NET 11 RC SDK and .NET 10 SDK, runs the core tests, parser package compatibility gate, generator sample dogfooding, release packing, and fresh-consumer verification. Only after those checks pass does it request a short-lived NuGet publishing key through GitHub OIDC and publish both public packages. The parser `.snupkg` is kept beside its `.nupkg` and is pushed with it. No long-lived NuGet API key is stored in GitHub.
 
 Before the first release, configure the trust once:
 
-1. Sign in to NuGet.org with the account that should own both package IDs. Confirm `Salep.GraphQLParser` and `Salep.ClientGenerator` are available to that account.
+1. Sign in to NuGet.org with the account that should own all package IDs. Confirm `Salep.GraphQLParser` and `Salep.ClientGenerator` are available to that account. The old `Salep.ClientGenerator.Scriban` ID is no longer produced; `Salep.ClientGenerator.Roslyn` is never published.
 2. In NuGet.org account settings, open **Trusted Publishing** and create a GitHub Actions policy with repository owner `alpercelik`, repository `salep`, workflow file `publish-nuget.yml`, and environment `release`. Enter the workflow filename only; do not include `.github/workflows/`. Scope it to push new packages and versions for `Salep.GraphQLParser` and `Salep.ClientGenerator`.
 3. In GitHub repository settings, create the `release` environment. Require a reviewer and restrict deployment to release tags if those controls are available for your repository.
 4. Add a GitHub Actions secret named `NUGET_USER` containing the NuGet.org profile username (not the email address).

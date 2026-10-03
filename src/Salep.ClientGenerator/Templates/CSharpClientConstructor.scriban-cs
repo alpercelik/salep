@@ -1,0 +1,21 @@
+    public {{ settings.client_name }}(HttpClient httpClient, Uri endpoint)
+    {
+        _httpClient = httpClient;
+        _endpoint = endpoint;
+        _jsonOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+        _jsonOptions.Converters.Add(new JsonStringEnumConverter());
+        {{~ for statement in settings.serializer_configuration_statements # begin for statement ~}}
+        {{ statement ~}}
+        {{~ end # end for statement ~}}
+        {{~ if settings.register_union_converters # begin if settings_register_union_converters ~}}
+            {{~ for registry in settings.converter_registries # begin for registry ~}}
+        {{ registry }}.Register(_jsonOptions);
+            {{~ end # end for registry ~}}
+        {{~ end # end if settings_register_union_converters ~}}
+{{ include "client.constructor-body" ~}}
+    }

@@ -1,0 +1,28 @@
+using System.Net.Http;
+using System.Threading.Tasks;
+{{~ for import_item in target.imports # begin for import_item ~}}
+using {{ import_item }};
+{{~ end # end for import_item ~}}
+namespace {{ target.default_namespace }};
+
+public static class OperationsSample
+{
+    public static async Task RunAsync(HttpClient httpClient, Uri endpoint)
+    {
+        var client = new {{ settings.client_name }}(httpClient, endpoint);
+        var api = new {{ settings.operations_class }}(client);
+        {{~ for operation in csharp_operations # begin for operation ~}}
+            {{~ if operation.has_variables # begin if ~}}
+        var {{ operation.local_name }} = new {{ operation.variables_type ~}}
+        {
+                {{~ for variable in operation.variables # begin for variable ~}}
+            {{ variable.property_name }} = {{ variable.sample_expression }}{{ if !for.last # begin if }},{{ end # end if ~}}
+                {{~ end # end for variable ~}}
+        };
+        _ = await api.{{ operation.method_name }}({{ operation.local_name }}).ConfigureAwait(false);
+            {{~ else # else ~}}
+        _ = await api.{{ operation.method_name }}().ConfigureAwait(false);
+            {{~ end # end if ~}}
+        {{~ end # end for operation ~}}
+    }
+}

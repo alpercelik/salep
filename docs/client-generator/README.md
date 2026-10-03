@@ -10,15 +10,18 @@ Salep provides tailored documentation for both human developers and AI agents:
 | Guide | Audience & Scope | Description |
 | :--- | :--- | :--- |
 | **[Design Principles & Architecture](design-principles-and-architecture.md)** | All Audiences | Core design principles, architectural choices, and technical rationale. |
+| **[Template Customization](template-customization.md)** | Consuming Developers | Hooks, fragment and whole-file overrides, profile/test inheritance, raw queries, executable examples and the complete template catalog. |
 | **[Consumer Guide (.NET Developers)](consumer-guide.md)** | Consuming Developers | Complete guide to integrating the `Salep.ClientGenerator` package, configuration, and using generated clients. |
 | **[AI Agent Consumer Guide](agent-consumer-guide.md)** | Consuming AI Agents | High-signal, prompt-ready integration recipes and diagnostics for AI agents consuming Salep. |
 | **[Developer Contributor Guide](developer-contributor-guide.md)** | Contributing Developers | Codebase layout, generator pipeline internals, test suites, and how to add new features. |
 | **[AI Agent Contributor Guide](agent-contributor-guide.md)** | Contributing AI Agents | Agent operational invariants, diagnostic decision trees, and validation rules for repo contributors. |
 | **[Config Inheritance & Dedup](config-inheritance-dedup.md)** | Enterprise / Multi-Project | Profiles for defaults and verified `baseClient` contracts for ownership. |
-| **[Opinionated Sample Showcase & Architecture](../../src/samples/Opinionated/README.md)** | Developers & Contributors | Reference multi-tier client implementation, schema coverage, and dogfooding testbed. |
+| **[Opinionated Sample Showcase & Architecture](../../src/samples/Scriban/Opinionated/README.md)** | Developers & Contributors | Reference multi-tier client implementation, schema coverage, and dogfooding testbed. |
 | **[GraphQL Spec Coverage](spec-coverage.md)** | Spec Compliance | Living checklist mapping GraphQL spec features to schema and test evidence. |
 
 ---
+
+The default implementation uses Scriban templates. Scriban is the sole stable generator; fixed reviewed contracts and runtime/package tests protect its output.
 
 ## Core Design Principles & Choices
 
@@ -27,7 +30,7 @@ Salep provides tailored documentation for both human developers and AI agents:
 2. **Zero Runtime Lock-In**:
    Emitted C# code references only standard runtime packages (such as `Dunet` for the default discriminated-union mode and `System.Text.Json`). Native-union mode does not require Dunet. Consuming applications never reference `Salep.ClientGenerator.dll`, Roslyn, or HotChocolate at runtime.
 3. **Out-of-Process Execution via `dotnet exec`**:
-   Build-time code generation runs out-of-process, isolating MSBuild from Roslyn/parser assembly conflicts and ensuring deterministic process execution.
+   Build-time code generation runs out-of-process, isolating MSBuild from generator/parser assembly conflicts and ensuring deterministic process execution.
 4. **First-Class Discriminated Unions**:
    GraphQL unions and interfaces map to type-safe C# discriminated unions with compile-time exhaustive pattern matching.
 5. **Deterministic Monorepo Dogfooding**:
@@ -56,13 +59,10 @@ Salep provides tailored documentation for both human developers and AI agents:
 src/
   Salep.GraphQLParser/                         # Standalone GraphQL language library
   Salep.ClientGenerator/                # C# generation engine
-    Config/                            # Configuration loading and inheritance
-    Diagnostics/                       # Schema and operation diagnostics
-    Emission/                          # C# emitters
+    Targets/                           # C# policies and template models
+    Templates/                         # Scriban whole-output templates and fragments
     Generation/                        # Orchestration and manifests
     Model/                             # Schema model
-    Operations/                        # Operation loading
-    Utilities/                         # C# naming and formatting
   Salep.ClientGenerator.Cli/            # Out-of-process executable host
   Salep.ClientGenerator.MSBuild/        # Produces the Salep.ClientGenerator NuGet package
   Salep.ClientGenerator.Tests/          # Generator and CLI tests
@@ -71,8 +71,9 @@ src/
     Fixtures/                         # Oracle and reference-suite data
   Salep.GraphQLParser.PublicApiConsumer/       # Packed parser verification
   samples/
-    Opinionated/
-    MinimalDependencies/
+    Scriban/
+      Opinionated/
+      MinimalDependencies/
     Salep.Samples.GraphQLServer/
 benchmarks/
   Salep.GraphQLParser.Benchmarks/
@@ -190,12 +191,11 @@ See [spec-coverage.md](spec-coverage.md) for the full checklist.
 2. The task loads the JSON config (resolving `extends` chains)
 3. The GraphQL schema is parsed with **Salep.GraphQLParser**
 4. Operation `.graphql` files are loaded and parsed
-5. **SchemaTypesEmitter** generates C# records/enums for schema types
-6. **UnionJsonConvertersEmitter** generates JSON converters for unions
-7. **OperationsEmitter** generates request/response types per operation
-8. **GraphQLClientEmitter** generates the typed client class
-9. **TestsEmitter** generates xUnit tests with a deterministic HTTP handler
-10. Generated `.cs` files are injected into the compilation via MSBuild items
+5. **GraphQlModelFactory** creates neutral schema and operation models
+6. **CSharpCodeGenerationTarget** and template model factories project C# policies
+7. **ScribanCSharpTemplateGenerator** composes embedded defaults and consumer overrides for models, operations, converters, transport and tests
+8. Verified `.salep.manifest.json` records relative input paths and owned output hashes
+9. Generated `.cs` files are included in consumer compilation through MSBuild items
 
 ## Building the Project
 
@@ -207,20 +207,20 @@ See [spec-coverage.md](spec-coverage.md) for the full checklist.
 ### Build
 
 ```bash
-dotnet build
+dotnet build src/Salep.Core.slnf
 ```
 
 ### Run tests
 
 ```bash
-dotnet test
+dotnet test --solution src/Salep.Core.slnf
 ```
 
 ### Run the generator standalone
 
 ```bash
 dotnet run --project src/Salep.ClientGenerator.Cli/Salep.ClientGenerator.Cli.csproj --framework net10.0 -- \
-  --config path/to/salep.json
+  generate --config path/to/salep.json
 ```
 
 ### Local package packing and dogfooding bootstrap
@@ -242,7 +242,7 @@ powershell -ExecutionPolicy Bypass -File .\build-salep.ps1
 ## Development Workflow
 
 - The **generator** is the source of truth; fix issues in the generator, then regenerate outputs
-- Never manually edit generated files in `src/samples/Opinionated/Salep.Samples.Opinionated.Client` or `src/samples/Opinionated/Salep.Samples.Opinionated.Client.Tests`
+- Never manually edit generated files in `src/samples/Scriban/Opinionated/Client` or `src/samples/Scriban/Opinionated/Client.Tests`
 - All behavior is driven by the schema and operation inputs
 - If generated code fails to compile: fix the generator, regenerate
 - If tests fail: determine if the generator or test generation is wrong, fix the generator, regenerate
@@ -253,7 +253,7 @@ powershell -ExecutionPolicy Bypass -File .\build-salep.ps1
 | Package | Purpose |
 |---------|---------|
 | `HotChocolate.Language` | GraphQL SDL parsing |
-| `Microsoft.CodeAnalysis.CSharp` | Roslyn-based C# code emission |
+| `Scriban` | Configurable C# templates with composable fragments |
 | `Dunet` | Discriminated union support in generated code (default mode only) |
 | `Microsoft.Extensions.FileSystemGlobbing` | Config file glob resolution |
 | `Microsoft.Build.Utilities.Core` | MSBuild task infrastructure |
@@ -262,3 +262,5 @@ powershell -ExecutionPolicy Bypass -File .\build-salep.ps1
 ## License
 
 This project is licensed under the MIT License — see the [LICENSE](../../LICENSE) file for details.
+
+See [consumer template customization](template-customization.md) for smaller fragment overrides, extension hooks, default composition and the complete key/model contract.

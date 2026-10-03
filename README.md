@@ -18,17 +18,18 @@ src/
   Salep.slnx
   Salep.Core.slnf
   Salep.GraphQLParser/
-  Salep.ClientGenerator/
+  Salep.ClientGenerator/               # Default Scriban backend
   Salep.ClientGenerator.Cli/
   Salep.ClientGenerator.MSBuild/
+  Salep.ClientGenerator.Tests/
+  Salep.ClientGenerator.MSBuild.Tests/
   Salep.GraphQLParser.Tests/
     Fixtures/                         # Oracle and reference-suite data
   Salep.GraphQLParser.PublicApiConsumer/
-  Salep.ClientGenerator.Tests/
-  Salep.ClientGenerator.MSBuild.Tests/
   samples/
-    Opinionated/
-    MinimalDependencies/
+    Scriban/
+      Opinionated/
+      MinimalDependencies/
     Salep.Samples.GraphQLServer/
 benchmarks/
   Salep.GraphQLParser.Benchmarks/
@@ -51,7 +52,7 @@ See [script workflows](docs/script-workflows.md) for all paired commands, defaul
 
 ## NuGet packages
 
-See [packaging and releases](docs/releases.md) to prepare `Salep.GraphQLParser` and `Salep.ClientGenerator`, including parser symbols, for publication.
+See [packaging and releases](docs/releases.md) to prepare `Salep.GraphQLParser` and default Scriban `Salep.ClientGenerator`, including parser symbols, for publication.
 
 ## Contributor documentation
 

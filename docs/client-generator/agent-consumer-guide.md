@@ -190,3 +190,14 @@ When exploring or modifying a codebase consuming Salep:
 | `CS0433: The type 'X' exists in both ProjectA and ProjectB` | Type duplication in layered projects | In child `salep.json`, add `"baseClient": "../ProjectA/salep.json"`. |
 | `No operations found matching path` | Invalid `operations` in `salep.json` | Verify directory exists and contains `.graphql` files. |
 | `NullReferenceException` on `response.Data.Field` | GraphQL execution returned errors | Always check `if (response.Errors is { Count: > 0 })` before accessing `response.Data`. |
+
+
+## Consumer template overrides
+
+Use `Salep.ClientGenerator` with version-1 `salep.json`. The current package catalog has 73 embedded templates; prefer empty member/annotation/transport hooks or one declaration/method/property fragment before replacing a whole file. Map registered keys to files relative to the JSON declaring them; profiles and referenced-client test mappings inherit, and local matching keys replace inherited entries. Includes use registered keys, with `default:<key>` delegating to one embedded default. Arbitrary filesystem includes are unsupported.
+
+Export and validate with the package's framework-matched `Salep.ClientGenerator.Cli.dll` through `dotnet exec`; locate it with `SalepToolPath` on the restored project. Do not assume a globally installed `salep` tool or the former Scriban package ID. See [the customization tutorial](template-customization.md) and its [executable examples](examples/template-customization/README.md) for tested snippets, model scopes and rebuild checks.
+
+Generated operation queries are formatted multiline raw strings. `operation.query` retains plain GraphQL text; `operation.query_literal` is the fully indented raw literal projection. Interpolate that projection at column zero to avoid Scriban adding another indentation prefix. Validate overridden C# by building the consumer and exercising the changed transport/serialization path. Template validation alone does not prove compilation or runtime behavior.
+
+Manifests record input paths relative to their own directory. Scriban sample operation inputs are project-local; shared schemas and base-client/test dependencies can legitimately traverse multiple parent directories. Regenerate through the generator rather than editing manifests or generated source.

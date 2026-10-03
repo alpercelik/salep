@@ -90,7 +90,7 @@ jobs:
           --source https://api.nuget.org/v3/index.json
           --api-key "$NUGET_API_KEY"
 
-      - name: Publish client generator package
+      - name: Publish default Scriban client generator package
         env:
           NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
           VERSION: ${{ steps.release.outputs.version }}

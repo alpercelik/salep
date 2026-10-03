@@ -2,24 +2,18 @@
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
-    <IsPackable>false</IsPackable>
+    <NoWarn>CA1305;CA1826,CA1822;CA1859;CA1869;CA1707;CA1861</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="coverlet.collector">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Shouldly" />
-    <PackageReference Include="xunit.runner.visualstudio">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
+    <PackageReference Include="xunit.runner.visualstudio"><PrivateAssets>all</PrivateAssets><IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets></PackageReference>
     <PackageReference Include="xunit.v3.mtp-v2" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Salep.ClientGenerator.MSBuild\Salep.ClientGenerator.MSBuild.csproj" />
     <ProjectReference Include="..\Salep.ClientGenerator.Cli\Salep.ClientGenerator.Cli.csproj" />
-    <ProjectReference Include="..\Salep.ClientGenerator\Salep.ClientGenerator.csproj" />
+    <ProjectReference Include="..\Salep.ClientGenerator.MSBuild\Salep.ClientGenerator.MSBuild.csproj" ReferenceOutputAssembly="false" />
+    <None Include="..\Salep.ClientGenerator.MSBuild\Salep.ClientGenerator.props" Link="Salep.ClientGenerator.props" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\Salep.ClientGenerator.MSBuild\Salep.ClientGenerator.targets" Link="Salep.ClientGenerator.targets" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

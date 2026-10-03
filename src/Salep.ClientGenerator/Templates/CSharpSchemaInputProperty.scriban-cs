@@ -1,0 +1,2 @@
+    [JsonPropertyName({{ target.string_literal field.name }})]
+    public {{ if field.type.is_non_null && !target.is_value_type field.type # begin if }}required {{ end # end if }}{{ target.type field.type }} {{ target.property_name field.name }} { get; set; }

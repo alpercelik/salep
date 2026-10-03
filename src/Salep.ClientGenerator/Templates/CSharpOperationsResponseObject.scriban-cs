@@ -1,0 +1,8 @@
+{{ include "operations.response-object-annotations" ~}}
+public sealed record {{ type.name }}{{ if type.base_type # begin if }} : {{ type.base_type }}{{ end # end if }}
+{
+    {{~ for field in type.fields # begin for field ~}}
+{{ include "operations.response-object-property" ~}}
+    {{~ end # end for field ~}}
+{{ include "operations.response-object-members" ~}}
+}

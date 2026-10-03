@@ -2,8 +2,8 @@
   <PropertyGroup>
     <PackageId>Salep.ClientGenerator</PackageId>
     <Title>Salep C# Client Generator</Title>
-    <Description>Build-time C# GraphQL client generation from schemas and operations, with MSBuild integration and no Salep runtime dependency in generated clients.</Description>
-    <PackageTags>graphql;client;code-generation;csharp;msbuild;dotnet</PackageTags>
+    <Description>Build-time GraphQL C# client generation with consumer-overridable Scriban templates.</Description>
+    <PackageTags>graphql;client;code-generation;csharp;scriban;msbuild;dotnet</PackageTags>
     <PackageReadmeFile>package-readme.md</PackageReadmeFile>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
@@ -12,43 +12,31 @@
     <IsPackable>true</IsPackable>
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_SalepPackCliTools</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\Salep.ClientGenerator.Cli\Salep.ClientGenerator.Cli.csproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-      <PrivateAssets>all</PrivateAssets>
-    </ProjectReference>
-    <ProjectReference Include="..\Salep.ClientGenerator\Salep.ClientGenerator.csproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-      <PrivateAssets>all</PrivateAssets>
-    </ProjectReference>
+    <ProjectReference Include="..\Salep.ClientGenerator.Cli\Salep.ClientGenerator.Cli.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="Salep.ClientGenerator.props" Pack="true" PackagePath="build" />
+    <None Include="Salep.ClientGenerator.targets" Pack="true" PackagePath="build" />
     <None Include="../../docs/client-generator/config.schema.json" Pack="true" PackagePath="/" />
     <None Include="../../LICENSE" Pack="true" PackagePath="/" />
     <None Include="../../docs/client-generator/package-readme.md" Pack="true" PackagePath="/" />
     <None Include="../../docs/client-generator/third-party-notices.md" Pack="true" PackagePath="/" />
-    <None Include="../../docs/client-generator/licenses/*" Pack="true" PackagePath="licenses/" />
-    <None Include="Salep.ClientGenerator.props" Pack="true" PackagePath="build" />
-    <None Include="Salep.ClientGenerator.targets" Pack="true" PackagePath="build" />
+    <None Include="../../docs/client-generator/licenses/runtime-THIRD-PARTY-NOTICES.txt" Pack="true" PackagePath="licenses/" />
   </ItemGroup>
 
   <Target Name="_SalepPackCliTools">
-    <!-- Honor isolated artifacts roots used by concurrent test/pack invocations. -->
     <PropertyGroup>
-      <_CliPublishDir>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)cli_publish/', '$(MSBuildProjectDirectory)'))</_CliPublishDir>
+      <_ScribanCliPublishDir>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)scriban_cli_publish/', '$(MSBuildProjectDirectory)'))</_ScribanCliPublishDir>
     </PropertyGroup>
-    <!-- A publish directory from an older dependency graph must never leak into a release. -->
-    <RemoveDir Directories="$(_CliPublishDir)" />
+    <RemoveDir Directories="$(_ScribanCliPublishDir)" />
     <MSBuild Projects="..\Salep.ClientGenerator.Cli\Salep.ClientGenerator.Cli.csproj"
              Targets="Publish"
-             Properties="Configuration=$(Configuration);TargetFramework=$(TargetFramework);PublishDir=$(_CliPublishDir)" />
+             Properties="Configuration=$(Configuration);TargetFramework=$(TargetFramework);PublishDir=$(_ScribanCliPublishDir)" />
     <ItemGroup>
-      <_CliPublishFiles Include="$(_CliPublishDir)**/*" />
-      <TfmSpecificPackageFile Include="@(_CliPublishFiles)">
+      <_ScribanCliPublishFiles Include="$(_ScribanCliPublishDir)**/*" />
+      <TfmSpecificPackageFile Include="@(_ScribanCliPublishFiles)">
         <PackagePath>tools/$(TargetFramework)/any/%(RecursiveDir)%(FileName)%(Extension)</PackagePath>
       </TfmSpecificPackageFile>
     </ItemGroup>

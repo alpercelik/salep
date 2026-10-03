@@ -1,0 +1,1 @@
+[global::System.Diagnostics.DebuggerDisplay({{ target.string_literal type.name }})]

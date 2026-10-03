@@ -1,0 +1,13 @@
+    private async Task<GraphQLResponse<TResponse>> ExecutePostAsync<TResponse, TVariables>(
+        {{ settings.operation_interface }}<TResponse, TVariables> operation,
+        CancellationToken cancellationToken)
+    {
+        var request = new GraphQLRequest<TVariables>(operation.Query, operation.OperationName, operation.Variables);
+        var payload = JsonSerializer.Serialize(request, _jsonOptions);
+
+        using var content = new StringContent(payload, Encoding.UTF8, "application/json");
+{{ include "client.before-send" ~}}
+        using var response = await _httpClient.PostAsync(_endpoint, content, cancellationToken);
+
+        return await ReadResponseAsync<TResponse>(response, cancellationToken);
+    }

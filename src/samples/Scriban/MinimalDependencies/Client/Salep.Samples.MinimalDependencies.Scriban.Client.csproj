@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <SalepConfigFile>salep.json</SalepConfigFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Salep.ClientGenerator" PrivateAssets="all" />
+  </ItemGroup>
+</Project>

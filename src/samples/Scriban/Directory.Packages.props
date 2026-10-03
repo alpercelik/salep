@@ -1,0 +1,12 @@
+<Project>
+  <Import Project="../../../Directory.Packages.props" />
+  <PropertyGroup>
+    <CentralPackageFloatingVersionsEnabled>true</CentralPackageFloatingVersionsEnabled>
+    <SalepVersion Condition="'$(SalepVersion)' == ''">0.1.0-dev.*</SalepVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="Alba" Version="8.5.3" />
+    <PackageVersion Include="Salep.ClientGenerator" Version="$(SalepVersion)" />
+    <PackageVersion Include="Dunet" Version="1.16.2" />
+  </ItemGroup>
+</Project>

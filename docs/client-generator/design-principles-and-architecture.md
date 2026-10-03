@@ -1,6 +1,6 @@
 # Salep C# Client Generator — Design Principles, Architecture, and Choices
 
-This document articulates the design principles, architectural choices, and technical rationale underlying **Salep**, a schema-driven GraphQL client generator and MSBuild build tool for .NET.
+The sole generator uses Scriban. This document articulates the design principles, architectural choices, and technical rationale underlying **Salep**, a schema-driven GraphQL client generator and MSBuild build tool for .NET.
 
 ---
 
@@ -63,9 +63,9 @@ Salep is structured into three internal tiers, exposed to consumers as a single 
 │                                                  ▼                                               │
 │   ┌──────────────────────────────────────────────────────────────────────────────────────────┐   │
 │   │ tools/{net10.0,net11.0}/any/Salep.ClientGenerator.dll (Core Generator Engine)                            │   │
-│   │  • Schema Parsing (HotChocolate.Language)                                                │   │
+│   │  • Schema Parsing (Salep.GraphQLParser)                                                │   │
 │   │  • Semantic Modeling & Type Graph Resolution                                             │   │
-│   │  • C# Code Emission (Schema Types, Operations, Union Converters, Client, xUnit Tests)    │   │
+│   │  • Scriban Template Rendering (Types, Operations, Converters, Client, xUnit Tests)    │   │
 │   │  • Manifest Ownership & Transitive Dedup (.salep.manifest.json)                          │   │
 │   └──────────────────────────────────────────────────────────────────────────────────────────┘   │
 └──────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -79,7 +79,7 @@ Salep is structured into three internal tiers, exposed to consumers as a single 
 - **Decision**: Publish a single NuGet package `Salep.ClientGenerator` containing MSBuild targets under `build/` and target-matched binaries under `tools/net10.0/any/` and `tools/net11.0/any/`. The engine project is private; the MSBuild packaging project owns this package ID. Do not publish separate CLI or MSBuild packages.
 - **Rationale**:
   - **Consumer Simplicity**: Consumers only need a single `<PackageReference Include="Salep.ClientGenerator" PrivateAssets="all" />`.
-  - **Encapsulation**: Internal architectural layers (CLI, Roslyn emitters, parser dependencies) remain internal implementation details without creating package dependency webs.
+  - **Encapsulation**: Internal architectural layers (CLI, Scriban templates, parser dependencies) remain internal implementation details without creating package dependency webs.
   - **Versioning Alignment**: Ensures targets, CLI, and generator engines are always perfectly version-aligned without package diamond dependency conflicts.
 
 ### Choice 2: Out-of-Process CLI Execution (`dotnet exec`) vs. In-Process MSBuild Task
@@ -103,7 +103,7 @@ Salep is structured into three internal tiers, exposed to consumers as a single 
   - **Compatibility**: Avoids framework-level version mismatches across heterogeneous microservices.
 
 ### Choice 5: Monorepo Dogfooding via CPM & Local Package Feed vs. `ProjectReference` Switching
-- **Decision**: Dogfood the package inside the repository using a local NuGet feed (`artifacts/packages/`), scoped Central Package Management (`Directory.Packages.props` for core tools and `src/samples/Opinionated/Directory.Packages.props` for sample apps), Opinionated-scoped build properties (`src/samples/Opinionated/Directory.Build.props` allowing `NU1603` under `WarningsNotAsErrors` for IDE development), and deterministic bootstrap scripts (`build-salep.sh` and `build-salep.ps1`).
+- **Decision**: Dogfood `Salep.ClientGenerator` with a local NuGet feed (`artifacts/packages/`), root Central Package Management and paired `build-salep.sh` / `build-salep.ps1` workflows that restore samples against the exact invocation version.
 - **Rationale**:
   - **True Consumer Fidelity**: `ProjectReference` bypasses MSBuild package props/targets resolution, meaning local tests would not test what external consumers actually experience.
   - **Cache Poisoning Prevention**: Fixed versions (like `1.0.0-local`) cause NuGet global package cache poisoning and restore race conditions. Salep uses unique build versions (`-p:SalepVersion=...`) ensuring atomic restores.
@@ -134,7 +134,7 @@ The MSBuild build-time execution lifecycle proceeds as follows:
      │ Invokes: dotnet exec Salep.ClientGenerator.Cli.dll --config salep.json
      │
 [4. Semantic Loading & Inheritance Resolution]
-     │ Parses GraphQL SDL schema (HotChocolate.Language)
+     │ Parses GraphQL SDL schema (Salep.GraphQLParser)
      │ Resolves profiles and verifies referenced client contracts (.salep.manifest.json)
      │
 [5. Code Emission]

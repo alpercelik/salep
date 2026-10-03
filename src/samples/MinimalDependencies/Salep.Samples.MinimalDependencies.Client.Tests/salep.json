@@ -1,8 +1,0 @@
-{
-  "version": 1,
-  "kind": "tests",
-  "client": "../Salep.Samples.MinimalDependencies.Client/salep.json",
-  "output": "./GeneratedTests",
-  "namespace": "Salep.Samples.MinimalDependencies.Client.Tests",
-  "rawJsonLiterals": true
-}

@@ -5,13 +5,9 @@
     <NoWarn>CA1305;CA1826,CA1822;CA1859;CA1869;CA1707;CA1861</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="coverlet.collector">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="NodaTime.Serialization.SystemTextJson" />
-    <PackageReference Include="NSubstitute" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
     <PackageReference Include="Shouldly" />
+    <PackageReference Include="NSubstitute" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit.runner.visualstudio">
       <PrivateAssets>all</PrivateAssets>
@@ -20,7 +16,9 @@
     <PackageReference Include="xunit.v3.mtp-v2" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Salep.ClientGenerator\Salep.ClientGenerator.csproj" />
-    <ProjectReference Include="..\Salep.ClientGenerator.Cli\Salep.ClientGenerator.Cli.csproj" />
+    <ProjectReference Include="../Salep.ClientGenerator/Salep.ClientGenerator.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Fixtures/**/*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

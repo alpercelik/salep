@@ -1,0 +1,1 @@
+        _httpClient.DefaultRequestHeaders.Add("X-Application", "my-app");

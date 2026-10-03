@@ -1,0 +1,9 @@
+    private async Task<GraphQLResponse<TResponse>> ReadResponseAsync<TResponse>(HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+{{ include "client.after-response" ~}}
+        response.EnsureSuccessStatusCode();
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+
+        return await JsonSerializer.DeserializeAsync<GraphQLResponse<TResponse>>(stream, _jsonOptions, cancellationToken)
+            ?? new GraphQLResponse<TResponse>();
+    }

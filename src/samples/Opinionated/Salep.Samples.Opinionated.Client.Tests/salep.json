@@ -1,8 +1,0 @@
-{
-  "version": 1,
-  "kind": "tests",
-  "client": "../Salep.Samples.Opinionated.Client/salep.json",
-  "output": "./GeneratedTests",
-  "namespace": "Salep.Samples.Opinionated.Client.Tests",
-  "rawJsonLiterals": true
-}

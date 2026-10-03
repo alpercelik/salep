@@ -1,0 +1,17 @@
+    public async Task<GraphQLResponse<TResponse>> ExecuteAsync<TResponse, TVariables>(
+        {{ settings.operation_interface }}<TResponse, TVariables> operation,
+        CancellationToken cancellationToken = default)
+    {
+        if (UseHttpGet && IsQueryOperation(operation.Query))
+        {
+            var getUri = BuildGetUri(operation);
+            if (getUri is not null)
+            {
+{{ include "client.before-send" ~}}
+                using var getResponse = await _httpClient.GetAsync(getUri, cancellationToken);
+                return await ReadResponseAsync<TResponse>(getResponse, cancellationToken);
+            }
+        }
+
+        return await ExecutePostAsync<TResponse, TVariables>(operation, cancellationToken);
+    }

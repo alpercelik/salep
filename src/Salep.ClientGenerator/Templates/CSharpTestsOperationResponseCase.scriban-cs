@@ -1,0 +1,11 @@
+    [Fact]
+    public async Task {{ operation.test_name }}_Deserializes_Response()
+    {
+        using var handler = new TestHttpMessageHandler(_ => TestHttpMessageHandler.JsonResponse({{ operation.response_json_literal }}));
+        using var httpClient = new HttpClient(handler);
+        var client = new {{ settings.client_name }}(httpClient, new Uri("https://example.test/graphql"));
+        var api = new {{ operations_class }}(client);
+        var response = await api.{{ operation.method_name }}({{ if operation.variables.size > 0 # begin if }}new {{ operation.variables_type }}(), {{ end # end if }}TestContext.Current.CancellationToken);
+        Assert.NotNull(response);
+        Assert.NotNull(response.Data);
+    }

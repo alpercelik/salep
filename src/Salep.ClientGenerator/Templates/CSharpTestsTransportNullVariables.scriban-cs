@@ -1,0 +1,10 @@
+    [Fact]
+    public async Task ExecuteAsync_Omits_Null_Variables()
+    {
+        using var handler = new TestHttpMessageHandler(_ => TestHttpMessageHandler.JsonResponse({{ settings.transport_response_literal }}));
+        using var httpClient = new HttpClient(handler);
+        var client = new {{ settings.client_name }}(httpClient, new Uri("https://example.test/graphql"));
+        _ = await client.ExecuteAsync(new DummyOperation(false, null), TestContext.Current.CancellationToken);
+        using var document = JsonDocument.Parse(handler.ContentText!);
+        Assert.False(document.RootElement.TryGetProperty("variables", out _));
+    }

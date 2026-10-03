@@ -1,0 +1,8 @@
+{{ include "schema.interface-annotations" ~}}
+public interface {{ target.interface_name type.name }}{{ if type.interfaces.size > 0 # begin if }} : {{ type.csharp_interfaces }}{{ end # end if }}
+{
+    {{~ for field in type.fields # begin for field ~}}
+    {{ if field.is_inherited # begin if inherited }}new {{ end # end if inherited }}{{ target.type field.type }} {{ target.property_name field.name }} { get; set; }
+    {{~ end # end for field ~}}
+{{ include "schema.interface-members" ~}}
+}

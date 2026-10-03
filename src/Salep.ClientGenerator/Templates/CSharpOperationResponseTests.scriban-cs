@@ -1,0 +1,16 @@
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Xunit;
+{{~ for import_item in settings.additional_imports # begin for import_item ~}}
+using {{ import_item }};
+{{~ end # end for import_item ~}}
+using {{ target.default_namespace }};
+namespace {{ settings.test_namespace }};
+
+public sealed class OperationsResponseTests
+{
+    {{~ for operation in csharp_operations # begin for operation ~}}
+{{ include "tests.operation-response-case" ~}}
+    {{~ end # end for operation ~}}
+}

@@ -1,0 +1,2 @@
+    [JsonPropertyName({{ field.json_name }})]
+    public {{ field.type }} {{ field.property_name }} { get; init; } = default!;

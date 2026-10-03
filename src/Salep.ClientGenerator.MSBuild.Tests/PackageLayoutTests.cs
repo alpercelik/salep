@@ -11,7 +11,7 @@ namespace Salep.ClientGenerator.MSBuild.Tests;
 public class PackageLayoutTests
 {
     [Fact]
-    public async Task SalepPackageContainsBuildAssetsAndPrivateCliTools()
+    public async Task GeneratorPackageContainsBuildAssetsAndPrivateCliTools()
     {
         var repoRoot = FindRepoRoot();
         var msbuildProject = Path.Combine(repoRoot, "src", "Salep.ClientGenerator.MSBuild", "Salep.ClientGenerator.MSBuild.csproj");
@@ -28,7 +28,7 @@ public class PackageLayoutTests
 
             foreach (var outputRoot in new[] { tempOutDir, concurrentOutput })
             {
-                var publishDirectories = Directory.GetDirectories(Path.Combine(outputRoot, "artifacts"), "cli_publish", SearchOption.AllDirectories);
+                var publishDirectories = Directory.GetDirectories(Path.Combine(outputRoot, "artifacts"), "scriban_cli_publish", SearchOption.AllDirectories);
                 publishDirectories.Length.ShouldBe(2, "Each pack must stage both CLI frameworks inside its own artifacts root");
                 foreach (var publishDirectory in publishDirectories)
                     File.Exists(Path.Combine(publishDirectory, "Salep.ClientGenerator.Cli.dll")).ShouldBeTrue();
@@ -57,10 +57,7 @@ public class PackageLayoutTests
             entryNames.ShouldContain("package-readme.md");
             entryNames.ShouldContain("LICENSE");
             entryNames.ShouldContain("third-party-notices.md");
-            entryNames.ShouldContain("licenses/roslyn-ThirdPartyNotices.rtf");
             entryNames.ShouldContain("licenses/runtime-THIRD-PARTY-NOTICES.txt");
-            entryNames.ShouldContain("licenses/humanizer-LICENSE.txt");
-            entryNames.ShouldContain("licenses/composition-THIRD-PARTY-NOTICES.txt");
             entryNames.ShouldNotContain(e => e.StartsWith("lib/", StringComparison.Ordinal));
             // The archive must be portable: MSBuild uses the managed CLI, never a host-specific apphost.
             entryNames.ShouldNotContain(e => e.EndsWith("/Salep.ClientGenerator.Cli", StringComparison.Ordinal)
@@ -77,10 +74,8 @@ public class PackageLayoutTests
                 entryNames.ShouldContain($"tools/{framework}/any/Salep.ClientGenerator.Cli.runtimeconfig.json");
                 entryNames.ShouldContain($"tools/{framework}/any/Salep.ClientGenerator.Cli.deps.json");
                 entryNames.ShouldContain($"tools/{framework}/any/Salep.GraphQLParser.dll");
-                entryNames.ShouldContain($"tools/{framework}/any/Microsoft.CodeAnalysis.CSharp.dll");
-                foreach (var dependency in new[] { "Microsoft.CodeAnalysis.Workspaces", "Microsoft.CodeAnalysis.CSharp.Workspaces",
-                    "Humanizer", "System.Composition.AttributedModel", "System.Composition.Convention", "System.Composition.Hosting",
-                    "System.Composition.Runtime", "System.Composition.TypedParts" })
+                entryNames.ShouldNotContain(name => name.StartsWith($"tools/{framework}/any/Microsoft.CodeAnalysis", StringComparison.Ordinal));
+                foreach (var dependency in new[] { "Scriban", "Microsoft.Extensions.FileSystemGlobbing" })
                     entryNames.ShouldContain($"tools/{framework}/any/{dependency}.dll");
             }
 

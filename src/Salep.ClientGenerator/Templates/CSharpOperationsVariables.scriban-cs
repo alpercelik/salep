@@ -1,0 +1,8 @@
+{{ include "operations.variables-annotations" ~}}
+public sealed record {{ operation.variables_type }}
+{
+    {{~ for variable in operation.variables # begin for variable ~}}
+{{ include "operations.variables-property" ~}}
+    {{~ end # end for variable ~}}
+{{ include "operations.variables-members" ~}}
+}

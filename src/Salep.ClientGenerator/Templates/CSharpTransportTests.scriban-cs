@@ -1,0 +1,47 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
+using Xunit;
+{{~ for import_item in settings.additional_imports # begin for import_item ~}}
+using {{ import_item }};
+{{~ end # end for import_item ~}}
+using {{ target.default_namespace }};
+
+namespace {{ settings.test_namespace }};
+
+internal sealed record DummyResponse;
+internal sealed record DummyVariables(string Value);
+internal sealed record DummyUser;
+internal sealed record DummyUsersResponse(DummyUser[]? Users);
+internal sealed record DummyListResponse(List<string?>? Posts);
+
+internal sealed record DummyOperation(bool IsQuery, DummyVariables? Variables) : {{ settings.operation_interface }}<DummyResponse, DummyVariables>
+{
+    public string OperationName => "TestOp";
+    public string Query => IsQuery ? "query TestOp { __typename }" : "mutation TestOp { __typename }";
+}
+
+public sealed class GraphQLClientPayloadTests
+{
+{{ include "tests.transport-post" ~}}
+{{ include "tests.transport-null-variables" ~}}
+    {{~ if settings.use_http_get # begin if settings_use_http_get ~}}
+{{ include "tests.transport-get" ~}}
+    {{~ end # end if settings_use_http_get ~}}
+
+    {{~ if settings.enable_batching # begin if settings_enable_batching ~}}
+{{ include "tests.transport-batch" ~}}
+    {{~ end # end if settings_enable_batching ~}}
+
+{{ include "tests.transport-incremental" ~}}
+{{ include "tests.transport-errors" ~}}
+{{ include "tests.transport-error-details" ~}}
+{{ include "tests.transport-null-responses" ~}}
+    private static GraphQLResponse<T> ReadResponse<T>(string json)
+        => JsonSerializer.Deserialize<GraphQLResponse<T>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+}

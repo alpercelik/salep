@@ -1,0 +1,6 @@
+public interface {{ settings.operation_interface }}<TResponse, TVariables>
+{
+    string OperationName { get; }
+    string Query { get; }
+    TVariables? Variables { get; }
+}

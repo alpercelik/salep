@@ -21,7 +21,7 @@ This guide provides a comprehensive tutorial for developers consuming the **Sale
 
 ### Native C# 15 union output
 
-To use compiler-native unions instead of Dunet, set `"unionRepresentation": "native"` in `salep.json`, target `net11.0`, set `<LangVersion>preview</LangVersion>`, and build with the .NET 11 SDK. This option applies to GraphQL unions and generated interface-result unions. See [MinimalDependencies](../../src/samples/MinimalDependencies/README.md) for a sample that reuses the main schema and operations without Dunet or NodaTime.
+To use compiler-native unions instead of Dunet, set `"unionRepresentation": "native"` in `salep.json`, target `net11.0`, set `<LangVersion>preview</LangVersion>`, and build with the .NET 11 SDK. This option applies to GraphQL unions and generated interface-result unions. See [MinimalDependencies](../../src/samples/Scriban/MinimalDependencies/README.md) for a sample that reuses the main schema and operations without Dunet or NodaTime.
 
 ### 2.1. Add Package References to `.csproj`
 
@@ -182,9 +182,9 @@ Every configuration requires `version: 1` and an explicit `kind`. Unknown proper
 
 | Role | Properties |
 | --- | --- |
-| `profile` | Optional `extends` profile, `schema`, shared settings below. No output, namespace, client name, or operations. |
-| `client` | Optional `profile`, `baseClient`; `schema` locally or from a profile; `operations` (default `./graphql`), `namespace` (default `Salep.Generated`), `clientName` (default `GraphQLClient`), `output` (default `./Generated`), `emitSample` (default false), shared settings. |
-| `tests` | Required `client`; `output` (default `./GeneratedTests`), `namespace` (default client namespace plus `.Tests`), `indentSize`, `rawJsonLiterals` (default true), `suites`. Client settings are forbidden. |
+| `profile` | Optional `extends` profile, `schema`, `templates`, shared settings below. No output, namespace, client name, or operations. |
+| `client` | Optional `profile`, `baseClient`; `schema` locally or from a profile; `operations` (default `./graphql`), `namespace` (default `Salep.Generated`), `clientName` (default `GraphQLClient`), `output` (default `./Generated`), `emitSample` (default false), `templates`, shared settings. |
+| `tests` | Required `client`; `output` (default `./GeneratedTests`), `namespace` (default client namespace plus `.Tests`), `indentSize`, `rawJsonLiterals` (default true), `suites`, `templates`. Client settings are forbidden. |
 
 Client and tests roles also accept `emitAgentInstructions` (default true). All relative paths resolve from the file declaring them. A `baseClient` establishes ownership only; consume the same `profile` explicitly to share settings.
 
@@ -351,8 +351,26 @@ For a used custom scalar, provide a complete entry in `scalars` with `type`, `is
 
 ### Generated C# validation
 
-Salep validates every emitted C# file with Roslyn before returning it to the output writer. Malformed syntax fails generation with compiler diagnostic IDs and source locations. Check custom namespace/client names, scalar type mappings, and scalar sample expressions when a diagnostic points to configured code. Roslyn runs only in the build tool; generated applications do not gain a Roslyn dependency. Normal consumer compilation still checks type references and required packages.
+The default generator renders C# through Scriban templates. Consumer compilation checks syntax, type references and required packages. Check custom namespace/client names, scalar type mappings, scalar sample expressions and template overrides when compilation reports errors. The published generator tool contains no Roslyn compiler assemblies.
 
 ## Dependency ownership
 
 Salep generation writes generated artifacts only; it never installs packages or edits project files or `Directory.Packages.props`. Developers own runtime and test package references and their versions. When enabling `scalarPreset: "nodatime"` or custom `NodaTime.*` scalar mappings, add `NodaTime` and `NodaTime.Serialization.SystemTextJson` to each consuming project that needs them. With Central Package Management, declare versionless `PackageReference` items in the project and versions in `Directory.Packages.props`, as shown above.
+
+## Customize generated code
+
+The default `Salep.ClientGenerator` package uses Scriban. Add a `templates` object to your existing `salep.json` to replace selected fragments or add members through empty hooks:
+
+```json
+"templates": {
+  "client.members": "templates/client-members.scriban-cs",
+  "client.constructor-body": "templates/client-constructor-body.scriban-cs",
+  "operations.contract-members": "templates/contract-members.scriban-cs"
+}
+```
+
+For example, `client-members.scriban-cs` can contain `public string ConsumerName => {{ target.string_literal settings.client_name }};`. Paths resolve from the configuration declaring them and participate in MSBuild input tracking. Profiles can share mappings; client/tests configurations override matching keys locally. Unspecified fragments keep their embedded defaults. A `default:` include decorates the selected default without copying it or recursively selecting the same override.
+
+See [the customization tutorial](template-customization.md) for the 73-key catalog, model scopes, export and validation commands, raw/escaped query options, transport/model/test examples and [runnable fixtures](examples/template-customization/README.md). The default operation `Query` uses a formatted multiline raw string; JSON serialization and URL encoding preserve the query value. These customization features require a package revision that includes the composable templates.
+
+Manifest inputs are relative to `.salep.manifest.json` itself. A local `graphql/query.graphql` under a project with output `Generated` appears as `../graphql/query.graphql`; shared schemas and referenced client inputs legitimately need more directory traversal. The sample clients and modules own their local operation documents.

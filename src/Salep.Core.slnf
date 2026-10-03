@@ -2,11 +2,11 @@
   "solution": {
     "path": "Salep.slnx",
     "projects": [
-      "Salep.ClientGenerator.Cli/Salep.ClientGenerator.Cli.csproj",
-      "Salep.ClientGenerator.MSBuild.Tests/Salep.ClientGenerator.MSBuild.Tests.csproj",
-      "Salep.ClientGenerator.MSBuild/Salep.ClientGenerator.MSBuild.csproj",
-      "Salep.ClientGenerator.Tests/Salep.ClientGenerator.Tests.csproj",
       "Salep.ClientGenerator/Salep.ClientGenerator.csproj",
+      "Salep.ClientGenerator.Tests/Salep.ClientGenerator.Tests.csproj",
+      "Salep.ClientGenerator.Cli/Salep.ClientGenerator.Cli.csproj",
+      "Salep.ClientGenerator.MSBuild/Salep.ClientGenerator.MSBuild.csproj",
+      "Salep.ClientGenerator.MSBuild.Tests/Salep.ClientGenerator.MSBuild.Tests.csproj",
       "../benchmarks/Salep.GraphQLParser.Benchmarks/Salep.GraphQLParser.Benchmarks.csproj",
       "Salep.GraphQLParser/Salep.GraphQLParser.csproj",
       "Salep.GraphQLParser.Tests/Salep.GraphQLParser.Tests.csproj"

@@ -10,14 +10,15 @@ Salep contains two components: Salep GraphQL Parser and Salep C# Client Generato
 
 ## Salep C# Client Generator
 
-- The generator in `src/Salep.ClientGenerator/` is the source of truth for generated sample code. Do not hand-edit generated outputs.
+- The default Scriban generator in `src/Salep.ClientGenerator/` is the source of truth for generated sample code. Do not hand-edit generated outputs.
 - `Salep.ClientGenerator` must reference `src/Salep.GraphQLParser/Salep.GraphQLParser.csproj` directly.
 - Follow `docs/client-generator/agent-contributor-guide.md` and `docs/client-generator/developer-contributor-guide.md` for Salep workflows. Its GraphQL spec checklist is `docs/client-generator/spec-coverage.md`.
+- **Scriban template authoring is mandatory style:** In every template under `src/Salep.ClientGenerator/Templates/` (including templates that emit Markdown), put each block-level `for`, `if`, `else`, and `end` tag on its own line. Indent the outer tag to the generated code or Markdown location it controls (for example, 8 spaces inside a method body), then indent each nested control tag one level deeper than its parent. Do not leave tags flush-left just because whitespace control removes their indentation from output. Use `{{~ ... ~}}` on tag-only lines so directive lines do not leak into generated output. Add `# begin <kind> <label>` to each block opener and the matching `# end <kind> <label>` to its `end`. Keep emitted code or Markdown on separate lines, aligned to the generated output. Inline only short conditional substitutions that are part of one output statement or sentence; do not inline loops. If a loop builds a single declaration, compute that projection in the C# template model. Verify rendered output through the Scriban tests.
 - Run `./build-salep.sh` or `pwsh ./build-salep.ps1` for the full Salep package and sample dogfooding workflow when validating Salep changes.
 
 ## Public NuGet packages
 
-- Only `Salep.GraphQLParser` and `Salep.ClientGenerator.MSBuild` are packable; their package IDs remain `Salep.GraphQLParser` and `Salep.ClientGenerator`.
+- Only `Salep.GraphQLParser` and `Salep.ClientGenerator.MSBuild` are public packable projects; their package IDs are `Salep.GraphQLParser` and `Salep.ClientGenerator`. The latter contains Scriban. Scriban is the sole generator implementation. Preserve the reviewed API/query/inventory fixtures and compiled runtime regressions in `Salep.ClientGenerator.Tests`.
 - Follow `docs/releases.md` for release metadata, package-only verification, and paired release packing commands. Keep private tooling portable and dependency notices synchronized with bundled versions.
 
 ## Cross-platform script parity

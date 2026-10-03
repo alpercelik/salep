@@ -1,0 +1,11 @@
+public static class UnionJsonConverters
+{
+    public static void Register(JsonSerializerOptions options)
+    {
+        {{~ for type in schema_types # begin for type ~}}
+            {{~ if (type.kind == "union" || type.kind == "interface_result") && type.members.size > 0 # begin if type_kind_union_type ~}}
+        options.Converters.Add(new {{ if type.kind == "interface_result" # begin if }}{{ target.type_name type.name }}Result{{ else # else }}{{ target.type_name type.name }}{{ end # end if }}JsonConverter());
+            {{~ end # end if type_kind_union_type ~}}
+        {{~ end # end for type ~}}
+    }
+}

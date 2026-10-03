@@ -1,0 +1,24 @@
+    [Fact]
+    public void GraphQLResponse_Allows_Null_List_Items()
+    {
+        var response = ReadResponse<DummyListResponse>({{ settings.null_list_item_literal }});
+        Assert.Single(response.Data!.Posts!);
+        Assert.Null(response.Data!.Posts![0]);
+    }
+
+    [Fact]
+    public void GraphQLResponse_Allows_Null_For_NonNull_Field_With_Errors()
+    {
+        var response = ReadResponse<DummyUsersResponse>({{ settings.null_field_errors_literal }});
+        Assert.NotEmpty(response.Errors!);
+        Assert.NotNull(response.Data);
+        Assert.Null(response.Data.Users);
+    }
+
+    [Fact]
+    public void GraphQLResponse_Allows_Null_Data_With_Errors()
+    {
+        var response = ReadResponse<DummyUsersResponse>({{ settings.null_data_errors_literal }});
+        Assert.NotEmpty(response.Errors!);
+        Assert.Null(response.Data);
+    }

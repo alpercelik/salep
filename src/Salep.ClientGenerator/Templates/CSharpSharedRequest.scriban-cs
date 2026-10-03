@@ -1,0 +1,1 @@
+public sealed record GraphQLRequest<TVariables>(string Query, string OperationName, TVariables? Variables);

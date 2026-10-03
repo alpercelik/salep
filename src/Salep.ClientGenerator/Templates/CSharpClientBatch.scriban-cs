@@ -1,0 +1,19 @@
+    public async Task<GraphQLResponse<TResponse>[]> ExecuteBatchAsync<TResponse, TVariables>(
+        IReadOnlyList<{{ settings.operation_interface }}<TResponse, TVariables>> operations,
+        CancellationToken cancellationToken = default)
+    {
+        if (!EnableBatching) throw new InvalidOperationException("Batching is disabled.");
+
+        var requests = operations.Select(operation => new GraphQLRequest<TVariables>(operation.Query, operation.OperationName, operation.Variables)).ToArray();
+        var payload = JsonSerializer.Serialize(requests, _jsonOptions);
+
+        using var content = new StringContent(payload, Encoding.UTF8, "application/json");
+{{ include "client.before-send" ~}}
+        using var response = await _httpClient.PostAsync(_endpoint, content, cancellationToken);
+{{ include "client.after-response" ~}}
+        response.EnsureSuccessStatusCode();
+
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        return await JsonSerializer.DeserializeAsync<GraphQLResponse<TResponse>[]>(stream, _jsonOptions, cancellationToken)
+            ?? Array.Empty<GraphQLResponse<TResponse>>();
+    }

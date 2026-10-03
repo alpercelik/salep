@@ -1,60 +1,48 @@
-# Salep C# Client Generator
+# Salep.ClientGenerator
 
-Generate typed C# GraphQL clients from schema and operation files during MSBuild. `Salep.ClientGenerator` is a build-only package: the generated application has no runtime dependency on Salep, its parser, or Roslyn.
+Build-time GraphQL C# client generation using Scriban templates.
 
-## Requirements
-
-Target `net10.0` or `net11.0` and use an SDK/runtime supporting that target. The .NET 11 target currently requires the .NET 11 preview/RC toolchain. The package bundles managed CLI hosts for both targets and works with `dotnet exec` on Windows, Linux, and macOS.
-
-## Install
-
-```sh
-dotnet add package Salep.ClientGenerator --version 0.1.0-preview.1
-```
-
-Keep the reference private in your project:
+Add the package to a project that owns the generated client:
 
 ```xml
-<PackageReference Include="Salep.ClientGenerator" Version="0.1.0-preview.1" PrivateAssets="all" />
+<PackageReference Include="Salep.ClientGenerator" Version="0.1.0" PrivateAssets="all" />
 ```
 
-For Central Package Management, put the version in `Directory.Packages.props` and omit `Version` from the project reference.
+Add a version-1 `salep.json` file with `kind` set to `client` or `tests`. The package imports its MSBuild targets automatically and runs generation before compilation. Generated application output has no Salep or Scriban runtime dependency.
 
-## Generate a client
-
-Create `schema.graphql`:
-
-```graphql
-type Query { greeting: String! }
-```
-
-Create `graphql/Greeting.graphql`:
-
-```graphql
-query Greeting { greeting }
-```
-
-Create `salep.json` alongside your project:
+Consumers can replace selected methods/properties or add members through empty extension hooks, as well as replace whole embedded templates by adding file paths to the `templates` object in the configuration. Paths are relative to that configuration, and omitted entries keep using the package's embedded templates:
 
 ```json
 {
   "version": 1,
   "kind": "client",
-  "schema": "./schema.graphql",
-  "operations": "./graphql",
-  "output": "./Generated",
-  "namespace": "MyApp.GraphQL",
-  "clientName": "ApiClient",
-  "scalarPreset": "builtin"
+  "schema": "schema.graphql",
+  "operations": "graphql",
+  "namespace": "Example.Api",
+  "output": "Generated",
+  "templates": {
+    "client.members": "templates/ClientMembers.scriban-cs",
+    "operations.contract-members": "templates/ContractMembers.scriban-cs"
+  }
 }
 ```
 
-Run `dotnet build`. The package generates and includes C# sources automatically. Update the schema, operations, or configuration to change the output.
+Export the embedded defaults from the CLI bundled in the NuGet package, then edit the files you want to override:
 
-Generation never edits project files or installs packages. Manage runtime dependencies in your project and, if enabled, Central Package Management.
+```bash
+dotnet exec "$HOME/.nuget/packages/salep.clientgenerator/0.1.0/tools/net10.0/any/Salep.ClientGenerator.Cli.dll" \
+  templates --output-directory templates/salep
+```
 
-Schemas with unions or interfaces use Dunet by default; add that runtime dependency when needed. Native C# union output is available with `unionRepresentation: "native"` on .NET 11. NodaTime is optional; disabling it uses built-in date/time types. Generated test projects require their documented test dependencies.
+Use the `net11.0` tool for .NET 11, or query the restored consumer project with `dotnet msbuild MyService.csproj -getProperty:SalepToolPath -p:TargetFramework=net10.0` to locate the actual package cache. Available keys, model scopes, Bash/PowerShell commands and executable examples are in the [consumer customization guide](https://github.com/alpercelik/salep/blob/main/docs/client-generator/template-customization.md). Validate before building by invoking the same DLL with `validate --config salep.json`.
 
-`Salep.GraphQLParser` is a separate package for applications that need GraphQL lexing, parsing, syntax trees, and language utilities directly.
+This is the default Scriban C# generator. Scriban is the sole stable implementation.
 
-See the [consumer guide](https://github.com/alpercelik/salep/blob/main/docs/client-generator/consumer-guide.md) and [samples](https://github.com/alpercelik/salep/tree/main/Samples) for configuration, custom scalars, serialization, and multi-project generation. Private dependency licenses and notices are included in this package.
+## Upgrading from the Roslyn implementation
+
+Keep the `Salep.ClientGenerator` package reference and version-1 `salep.json` configuration. Regenerate base clients before modules and generated-test projects. The default tool verifies the previous Roslyn version-1 ownership manifest and rewrites its owned files with Scriban output; unrelated consumer files remain untouched. Tampered manifests and mismatched owners still fail. Previous Scriban configurations may keep their explicit filenames; set `SalepConfigFile` accordingly. The former `.salep-scriban.manifest.json` is upgraded to `.salep.manifest.json` during generation.
+
+
+For example, `ClientMembers.scriban-cs` can contain `public string ConsumerName => {{ target.string_literal settings.client_name }};`. That adds one member while the default client methods stay intact. The package exports 73 templates. Named includes compose embedded defaults and configured fragments; `include "default:client.read-response"` reuses a default response method without copying it. See [the complete fragment and model contract](https://github.com/alpercelik/salep/blob/main/docs/client-generator/template-customization.md).
+
+Default operation queries are formatted multiline C# raw strings with native generation-host line endings. Constructor, transport, model and operation hooks add source without replacing whole files; profiles can share mappings and tests can specialize inherited mappings. Use a package revision containing the composable template catalog; older packages may support only whole-output overrides.

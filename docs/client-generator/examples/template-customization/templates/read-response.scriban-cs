@@ -1,0 +1,2 @@
+    // Consumer response-reader wrapper
+{{ include "default:client.read-response" }}

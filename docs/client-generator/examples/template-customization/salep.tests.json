@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "kind": "tests",
+  "client": "salep.json",
+  "namespace": "Example.Api.Tests",
+  "output": "GeneratedTests",
+  "templates": {
+    "tests.operation-metadata-case": "templates/metadata-case.scriban-cs"
+  }
+}

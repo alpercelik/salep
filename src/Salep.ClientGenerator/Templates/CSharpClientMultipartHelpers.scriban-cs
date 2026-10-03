@@ -1,0 +1,31 @@
+    private static bool IsMultipart(string? contentType, out string boundary)
+    {
+        boundary = string.Empty;
+        if (string.IsNullOrWhiteSpace(contentType) || !contentType.Contains("multipart/mixed", StringComparison.OrdinalIgnoreCase)) return false;
+
+        var boundaryIndex = contentType.IndexOf("boundary=", StringComparison.OrdinalIgnoreCase);
+
+        if (boundaryIndex < 0) return false;
+
+        boundary = contentType[(boundaryIndex + "boundary=".Length)..].Trim().Trim('"');
+
+        return !string.IsNullOrWhiteSpace(boundary);
+    }
+
+    private static IEnumerable<string> SplitMultipartJson(string body, string boundary)
+    {
+        var delimiter = "--" + boundary;
+
+        foreach (var section in body.Split(new[] { delimiter }, StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (section.StartsWith("--", StringComparison.Ordinal)) continue;
+
+            var headerEnd = section.IndexOf("\r\n\r\n", StringComparison.Ordinal);
+
+            if (headerEnd < 0) continue;
+
+            var json = section[(headerEnd + 4)..].Trim();
+
+            if (json.Length > 0) yield return json;
+        }
+    }

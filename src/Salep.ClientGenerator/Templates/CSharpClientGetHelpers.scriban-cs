@@ -1,0 +1,25 @@
+    private static bool IsQueryOperation(string query)
+        => query.TrimStart().StartsWith("query", StringComparison.OrdinalIgnoreCase);
+
+    private Uri? BuildGetUri<TResponse, TVariables>({{ settings.operation_interface }}<TResponse, TVariables> operation)
+    {
+        var builder = new UriBuilder(_endpoint);
+        var query = new StringBuilder();
+        AppendQueryParam(query, "query", operation.Query);
+        AppendQueryParam(query, "operationName", operation.OperationName);
+        if (operation.Variables is not null)
+        {
+            AppendQueryParam(query, "variables", JsonSerializer.Serialize(operation.Variables, _jsonOptions));
+        }
+
+        builder.Query = query.ToString();
+        var uri = builder.Uri;
+
+        return uri.AbsoluteUri.Length <= MaxGetUrlLength ? uri : null;
+    }
+
+    private static void AppendQueryParam(StringBuilder builder, string name, string value)
+    {
+        if (builder.Length > 0) builder.Append('&');
+        builder.Append(WebUtility.UrlEncode(name)).Append('=').Append(WebUtility.UrlEncode(value));
+    }

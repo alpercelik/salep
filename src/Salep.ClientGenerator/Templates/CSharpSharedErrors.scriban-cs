@@ -1,0 +1,13 @@
+public sealed record GraphQLError
+{
+    public string Message { get; init; } = string.Empty;
+    public GraphQLErrorLocation[]? Locations { get; init; }
+    public JsonElement[]? Path { get; init; }
+    public JsonElement? Extensions { get; init; }
+}
+
+public sealed record GraphQLErrorLocation
+{
+    public int Line { get; init; }
+    public int Column { get; init; }
+}

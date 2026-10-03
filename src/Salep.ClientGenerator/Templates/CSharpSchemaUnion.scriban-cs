@@ -1,0 +1,13 @@
+{{~ if csharp.use_native_unions # begin if csharp_use_native_unions ~}}
+#pragma warning disable RSEXPERIMENTAL006
+public union {{ target.type_name type.name }}{{ if type.kind == "interface_result" # begin if }}Result{{ end # end if }}({{ type.csharp_union_members }});
+#pragma warning restore RSEXPERIMENTAL006
+{{~ else # else if csharp_use_native_unions ~}}
+[Union]
+public partial record {{ target.type_name type.name }}{{ if type.kind == "interface_result" # begin if }}Result{{ end # end if }}
+{
+    {{~ for member in type.members # begin for member ~}}
+    public partial record {{ target.type_name member }}(global::{{ csharp.type_owner member }}.{{ target.type_name member }} Value);
+    {{~ end # end for member ~}}
+}
+{{~ end # end if csharp_use_native_unions ~}}

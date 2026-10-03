@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "kind": "client",
+  "profile": "profile/templates.json",
+  "schema": "schema.graphql",
+  "operations": "graphql",
+  "namespace": "Example.Api",
+  "clientName": "ExampleClient",
+  "output": "Generated",
+  "useHttpGet": true,
+  "enableBatching": true,
+  "templates": {
+    "client.members": "templates/local-client-members.scriban-cs"
+  }
+}

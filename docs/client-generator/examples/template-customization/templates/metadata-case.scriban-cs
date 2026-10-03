@@ -1,0 +1,2 @@
+    // Metadata regression for {{ operation.name }}
+{{ include "default:tests.operation-metadata-case" }}

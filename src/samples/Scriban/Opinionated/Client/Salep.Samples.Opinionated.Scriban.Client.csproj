@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <SalepConfigFile>salep.json</SalepConfigFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Dunet" />
+    <PackageReference Include="NodaTime" />
+    <PackageReference Include="NodaTime.Serialization.SystemTextJson" />
+    <PackageReference Include="Salep.ClientGenerator" PrivateAssets="all" />
+  </ItemGroup>
+</Project>

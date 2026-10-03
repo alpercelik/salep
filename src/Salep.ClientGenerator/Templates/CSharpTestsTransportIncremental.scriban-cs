@@ -1,0 +1,15 @@
+    [Fact]
+    public async Task ExecuteIncrementalAsync_Parses_Multipart_Response()
+    {
+        const string boundary = "boundary123";
+        var body = string.Join("\r\n", "--" + boundary, "Content-Type: application/json", string.Empty, {{ settings.null_data_json_literal }}, "--" + boundary, "Content-Type: application/json", string.Empty, {{ settings.null_data_json_literal }}, "--" + boundary + "--");
+        var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(body, Encoding.UTF8) };
+        response.Content.Headers.ContentType = new MediaTypeHeaderValue("multipart/mixed");
+        response.Content.Headers.ContentType.Parameters.Add(new NameValueHeaderValue("boundary", boundary));
+        using var handler = new TestHttpMessageHandler(_ => response);
+        using var httpClient = new HttpClient(handler);
+        var client = new {{ settings.client_name }}(httpClient, new Uri("https://example.test/graphql"));
+        var results = new List<GraphQLResponse<DummyResponse>>();
+        await foreach (var item in client.ExecuteIncrementalAsync(new DummyOperation(true, null), TestContext.Current.CancellationToken)) results.Add(item);
+        Assert.Equal(2, results.Count);
+    }

@@ -1,0 +1,6 @@
+query CurrentUser {
+  user {
+    id
+    name
+  }
+}

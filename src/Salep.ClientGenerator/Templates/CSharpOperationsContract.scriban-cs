@@ -1,0 +1,10 @@
+{{ include "operations.contract-annotations" ~}}
+public sealed record {{ operation.type_name }} : {{ operation_interface }}<{{ operation.response_type }}, {{ operation.variables_type }}>
+{
+    public string OperationName => {{ target.string_literal operation.name }};
+    public string Query =>
+{{ operation.query_literal }};
+    public {{ operation.variables_type }}? Variables { get; init; }
+    public {{ operation.type_name }}({{ operation.variables_type }}? variables = null) => Variables = variables;
+{{ include "operations.contract-members" ~}}
+}

@@ -1,0 +1,11 @@
+    [Fact]
+    public void {{ operation.test_name }}_Operation_Metadata()
+    {
+        var variables = new {{ operation.variables_type }}();
+        var response = new {{ operation.response_type }}();
+        var operation = new {{ operation.type_name }}(variables);
+        Assert.Equal({{ target.string_literal operation.name }}, operation.OperationName);
+        Assert.Contains({{ target.string_literal operation.name }}, operation.Query);
+        Assert.Same(variables, operation.Variables);
+        Assert.NotNull(response);
+    }

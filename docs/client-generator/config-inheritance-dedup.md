@@ -31,3 +31,12 @@ Shared schema definitions, scalar representations, and union representation must
 Give each client a distinct namespace and a separate output directory. Equal and nested dependency outputs are rejected, and another configuration cannot claim an owned directory. Tests reference the selected concrete client with `client`, never `baseClient`, and retain union coverage for ancestor-owned types.
 
 See [configuration](configuration.md) for every setting and test suite. This is an unpublished breaking change: reset obsolete generated manifests and regenerate in dependency order when migrating the repository. Do not hand-edit generated C#.
+
+
+## Template mapping inheritance
+
+Profiles, clients and tests accept `templates` mappings for the default Scriban generator. A client inherits its selected profile's entries and replaces matching keys locally. A tests config inherits mappings from its referenced client and replaces matching keys locally. A `baseClient` still establishes ownership rather than implicitly importing that client's template policy; select the shared profile explicitly on both clients.
+
+Inherited template paths retain the directory of the JSON declaring them. For example, `profile/templates.json` can map `client.members` to `../templates/client-members.scriban-cs`, while the client replaces only `schema.input-property` using a project-local path. Both resolved files participate in generation/MSBuild tracking. Nested `default:` includes reuse one embedded template while preserving the remaining configured fragment selections.
+
+See [consumer template customization](template-customization.md#share-overrides-through-profiles-and-specialize-tests) and the [executable profile fixture](examples/template-customization/profile/templates.json) for complete examples.

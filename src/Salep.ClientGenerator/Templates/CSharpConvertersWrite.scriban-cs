@@ -1,0 +1,18 @@
+    public override void Write(Utf8JsonWriter writer, {{ if type.kind == "interface_result" # begin if }}{{ target.type_name type.name }}Result{{ else # else }}{{ target.type_name type.name }}{{ end # end if }} value, JsonSerializerOptions options)
+    {
+        {{~ if !csharp.use_native_unions # begin if csharp_use_native_unions ~}}
+        if (value is null) { writer.WriteNullValue(); return; }
+
+        switch (value)
+        {{~ else # else if csharp_use_native_unions ~}}
+        switch (value.Value)
+        {{~ end # end if csharp_use_native_unions ~}}
+        {
+        {{~ for member in type.members # begin for member ~}}
+            case {{ if !csharp.use_native_unions # begin if }}{{ if type.kind == "interface_result" # begin if }}{{ target.type_name type.name }}Result{{ else # else }}{{ target.type_name type.name }}{{ end # end if }}.{{ target.type_name member }}{{ else # else }}global::{{ csharp.type_owner member }}.{{ target.type_name member }}{{ end # end if }} variant:
+                JsonSerializer.Serialize(writer, {{ if !csharp.use_native_unions # begin if }}variant.Value{{ else # else }}variant{{ end # end if }}, options);
+                return;
+        {{~ end # end for member ~}}
+            default: throw new JsonException("Unknown union variant.");
+        }
+    }

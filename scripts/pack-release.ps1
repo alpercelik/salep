@@ -38,7 +38,7 @@ try {
     $OutputDirectory = [System.IO.Path]::GetFullPath($OutputDirectory)
     [void][System.IO.Directory]::CreateDirectory($OutputDirectory)
     foreach ($Project in @('src/Salep.GraphQLParser/Salep.GraphQLParser.csproj', 'src/Salep.ClientGenerator.MSBuild/Salep.ClientGenerator.MSBuild.csproj')) {
-        dotnet pack $Project --configuration Release --output $OutputDirectory "-p:Version=$Version"
+        dotnet pack $Project --configuration Release --disable-build-servers -m:1 --output $OutputDirectory "-p:Version=$Version"
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     }
     foreach ($Package in @("Salep.GraphQLParser.$Version.nupkg", "Salep.GraphQLParser.$Version.snupkg", "Salep.ClientGenerator.$Version.nupkg")) {

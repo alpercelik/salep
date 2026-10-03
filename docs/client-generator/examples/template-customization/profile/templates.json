@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "kind": "profile",
+  "templates": {
+    "client.members": "../templates/client-members.scriban-cs",
+    "client.constructor-body": "../templates/client-constructor-body.scriban-cs",
+    "client.before-send": "../templates/client-before-send.scriban-cs",
+    "client.after-response": "../templates/client-after-response.scriban-cs",
+    "schema.object-annotations": "../templates/object-annotations.scriban-cs",
+    "schema.object-members": "../templates/object-members.scriban-cs",
+    "schema.object-property": "../templates/object-property.scriban-cs",
+    "operations.contract-members": "../templates/contract-members.scriban-cs",
+    "operations.contract": "../templates/contract.scriban-cs"
+  }
+}

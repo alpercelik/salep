@@ -12,26 +12,39 @@ echo "========================================="
 echo "Building Salep (Version: $VERSION)"
 echo "========================================="
 
+run_test_project() {
+    local project_path="$1"
+    local framework="$2"
+    shift 2
+
+    dotnet build "$project_path" --framework "$framework" -m:1 /nodeReuse:false /p:UseSharedCompilation=false "$@"
+    dotnet run --no-build --no-restore --project "$project_path" --framework "$framework" "$@"
+}
+
 # 1. Clean / create package output directory
 mkdir -p artifacts/packages
 
 # 2. Build and test Salep core and MSBuild integration
 for framework in net10.0 net11.0; do
+
     echo "--> Testing Salep.ClientGenerator.Tests ($framework)..."
-    dotnet run --project src/Salep.ClientGenerator.Tests/Salep.ClientGenerator.Tests.csproj --framework "$framework" \
+    run_test_project src/Salep.ClientGenerator.Tests/Salep.ClientGenerator.Tests.csproj "$framework" \
         -p:EnforceCodeStyleInBuild=false \
         -p:TreatWarningsAsErrors=false
 
     echo "--> Testing Salep.ClientGenerator.MSBuild.Tests ($framework)..."
-    dotnet run --project src/Salep.ClientGenerator.MSBuild.Tests/Salep.ClientGenerator.MSBuild.Tests.csproj --framework "$framework" \
+    run_test_project src/Salep.ClientGenerator.MSBuild.Tests/Salep.ClientGenerator.MSBuild.Tests.csproj "$framework" \
         -p:EnforceCodeStyleInBuild=false \
         -p:TreatWarningsAsErrors=false
 done
 
-# 3. Pack Salep NuGet package
+# 3. Pack the public Scriban generator package
 echo "--> Packing Salep package (Version: $VERSION)..."
 dotnet pack src/Salep.ClientGenerator.MSBuild/Salep.ClientGenerator.MSBuild.csproj \
     --no-restore \
+    -m:1 \
+    /nodeReuse:false \
+    /p:UseSharedCompilation=false \
     -c Release \
     -p:Version="$VERSION" \
     -o artifacts/packages \
@@ -40,58 +53,50 @@ dotnet pack src/Salep.ClientGenerator.MSBuild/Salep.ClientGenerator.MSBuild.cspr
 
 # 4. Restore sample projects against local feed
 echo "--> Restoring Sample projects..."
-dotnet restore src/samples/Opinionated/Salep.Samples.Opinionated.Client/Salep.Samples.Opinionated.Client.csproj -p:SalepVersion="$VERSION"
-dotnet restore src/samples/Opinionated/Salep.Samples.Opinionated.Module/Salep.Samples.Opinionated.Module.csproj -p:SalepVersion="$VERSION"
-dotnet restore src/samples/Opinionated/Salep.Samples.Opinionated.Client.Tests/Salep.Samples.Opinionated.Client.Tests.csproj -p:SalepVersion="$VERSION"
-dotnet restore src/samples/Opinionated/Salep.Samples.Opinionated.Module.Tests/Salep.Samples.Opinionated.Module.Tests.csproj -p:SalepVersion="$VERSION"
-dotnet restore src/samples/Opinionated/Salep.Samples.Opinionated.IntegrationTests/Salep.Samples.Opinionated.IntegrationTests.csproj -p:SalepVersion="$VERSION"
-dotnet restore src/samples/MinimalDependencies/Salep.Samples.MinimalDependencies.Client/Salep.Samples.MinimalDependencies.Client.csproj -p:SalepVersion="$VERSION"
-dotnet restore src/samples/MinimalDependencies/Salep.Samples.MinimalDependencies.Module/Salep.Samples.MinimalDependencies.Module.csproj -p:SalepVersion="$VERSION"
-dotnet restore src/samples/MinimalDependencies/Salep.Samples.MinimalDependencies.Client.Tests/Salep.Samples.MinimalDependencies.Client.Tests.csproj -p:SalepVersion="$VERSION"
-dotnet restore src/samples/MinimalDependencies/Salep.Samples.MinimalDependencies.Module.Tests/Salep.Samples.MinimalDependencies.Module.Tests.csproj -p:SalepVersion="$VERSION"
-dotnet restore src/samples/MinimalDependencies/Salep.Samples.MinimalDependencies.IntegrationTests/Salep.Samples.MinimalDependencies.IntegrationTests.csproj -p:SalepVersion="$VERSION"
-dotnet restore src/samples/Salep.Samples.GraphQLServer/Salep.Samples.GraphQLServer.csproj
+dotnet restore src/samples/Salep.Samples.GraphQLServer/Salep.Samples.GraphQLServer.csproj -m:1 /nodeReuse:false --source https://api.nuget.org/v3/index.json
 
 echo "--> Building GraphQL server sample and exporting schema..."
-dotnet build src/samples/Salep.Samples.GraphQLServer/Salep.Samples.GraphQLServer.csproj --framework net11.0 \
+dotnet build src/samples/Salep.Samples.GraphQLServer/Salep.Samples.GraphQLServer.csproj --framework net11.0 -m:1 /nodeReuse:false /p:UseSharedCompilation=false \
     -p:EnforceCodeStyleInBuild=false \
     -p:TreatWarningsAsErrors=false
 
-# 5. Build and test sample projects (code generation occurs automatically via Salep MSBuild targets during build)
-echo "--> Testing Opinionated/Salep.Samples.Opinionated.Client.Tests..."
+# 5. Build and test the Scriban samples. MinimalDependencies uses native unions and therefore targets net11.0 only.
+echo "--> Restoring Scriban sample projects..."
+dotnet restore src/samples/Scriban/Opinionated/Client.Tests/Salep.Samples.Opinionated.Scriban.Client.Tests.csproj -m:1 /nodeReuse:false --source artifacts/packages --source https://api.nuget.org/v3/index.json -p:SalepVersion="$VERSION" -p:NuGetAudit=false
+dotnet restore src/samples/Scriban/Opinionated/Module.Tests/Salep.Samples.Opinionated.Scriban.Module.Tests.csproj -m:1 /nodeReuse:false --source artifacts/packages --source https://api.nuget.org/v3/index.json -p:SalepVersion="$VERSION" -p:NuGetAudit=false
+dotnet restore src/samples/Scriban/MinimalDependencies/Client.Tests/Salep.Samples.MinimalDependencies.Scriban.Client.Tests.csproj -m:1 /nodeReuse:false --source artifacts/packages --source https://api.nuget.org/v3/index.json -p:SalepVersion="$VERSION" -p:NuGetAudit=false
+dotnet restore src/samples/Scriban/MinimalDependencies/Module.Tests/Salep.Samples.MinimalDependencies.Scriban.Module.Tests.csproj -m:1 /nodeReuse:false --source artifacts/packages --source https://api.nuget.org/v3/index.json -p:SalepVersion="$VERSION" -p:NuGetAudit=false
+
+echo "--> Testing Scriban Opinionated sample projects..."
 for framework in net10.0 net11.0; do
-    echo "--> Testing Opinionated/Salep.Samples.Opinionated.Client.Tests ($framework)..."
-    dotnet run --project src/samples/Opinionated/Salep.Samples.Opinionated.Client.Tests/Salep.Samples.Opinionated.Client.Tests.csproj --framework "$framework" \
+    run_test_project src/samples/Scriban/Opinionated/Client.Tests/Salep.Samples.Opinionated.Scriban.Client.Tests.csproj "$framework" \
         -p:SalepVersion="$VERSION" \
         -p:EnforceCodeStyleInBuild=false \
         -p:TreatWarningsAsErrors=false
 
-    echo "--> Testing Opinionated/Salep.Samples.Opinionated.Module.Tests ($framework)..."
-    dotnet run --project src/samples/Opinionated/Salep.Samples.Opinionated.Module.Tests/Salep.Samples.Opinionated.Module.Tests.csproj --framework "$framework" \
+    run_test_project src/samples/Scriban/Opinionated/Module.Tests/Salep.Samples.Opinionated.Scriban.Module.Tests.csproj "$framework" \
         -p:SalepVersion="$VERSION" \
         -p:EnforceCodeStyleInBuild=false \
         -p:TreatWarningsAsErrors=false
 done
 
-echo "--> Testing Opinionated GraphQL integration..."
-dotnet run --project src/samples/Opinionated/Salep.Samples.Opinionated.IntegrationTests/Salep.Samples.Opinionated.IntegrationTests.csproj --framework net11.0 \
+echo "--> Testing Scriban MinimalDependencies sample projects (net11.0)..."
+run_test_project src/samples/Scriban/MinimalDependencies/Client.Tests/Salep.Samples.MinimalDependencies.Scriban.Client.Tests.csproj net11.0 \
+    -p:SalepVersion="$VERSION" \
+    -p:EnforceCodeStyleInBuild=false \
+    -p:TreatWarningsAsErrors=false
+run_test_project src/samples/Scriban/MinimalDependencies/Module.Tests/Salep.Samples.MinimalDependencies.Scriban.Module.Tests.csproj net11.0 \
     -p:SalepVersion="$VERSION" \
     -p:EnforceCodeStyleInBuild=false \
     -p:TreatWarningsAsErrors=false
 
-echo "--> Testing MinimalDependencies sample project set..."
-dotnet run --project src/samples/MinimalDependencies/Salep.Samples.MinimalDependencies.Client.Tests/Salep.Samples.MinimalDependencies.Client.Tests.csproj --framework net11.0 \
-    -p:SalepVersion="$VERSION" \
-    -p:EnforceCodeStyleInBuild=false \
-    -p:TreatWarningsAsErrors=false
-dotnet run --project src/samples/MinimalDependencies/Salep.Samples.MinimalDependencies.Module.Tests/Salep.Samples.MinimalDependencies.Module.Tests.csproj --framework net11.0 \
-    -p:SalepVersion="$VERSION" \
-    -p:EnforceCodeStyleInBuild=false \
-    -p:TreatWarningsAsErrors=false
-dotnet run --project src/samples/MinimalDependencies/Salep.Samples.MinimalDependencies.IntegrationTests/Salep.Samples.MinimalDependencies.IntegrationTests.csproj --framework net11.0 \
-    -p:SalepVersion="$VERSION" \
-    -p:EnforceCodeStyleInBuild=false \
-    -p:TreatWarningsAsErrors=false
+# Run the same server acceptance fixture for both Scriban profiles.
+for profile in Opinionated MinimalDependencies; do
+    project="src/samples/Scriban/$profile/IntegrationTests/Salep.Samples.$profile.Scriban.IntegrationTests.csproj"
+    dotnet restore "$project" -m:1 /nodeReuse:false --source artifacts/packages --source https://api.nuget.org/v3/index.json -p:SalepVersion="$VERSION"
+    run_test_project "$project" net11.0 -p:SalepVersion="$VERSION" \
+        -p:EnforceCodeStyleInBuild=false -p:TreatWarningsAsErrors=false
+done
 
 echo "========================================="
 echo "Salep build and dogfooding verification successful!"

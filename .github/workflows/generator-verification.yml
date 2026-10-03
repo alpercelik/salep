@@ -1,0 +1,62 @@
+name: Generator verification
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: generator-verification-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compatibility:
+    name: Generator verification (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            shell: bash
+            tests: ./scripts/test.sh --max-parallel-test-modules 1
+            dogfood: ./build-salep.sh
+            pack: ./scripts/pack-release.sh
+          - os: windows-latest
+            shell: powershell
+            tests: ./scripts/test.ps1 --max-parallel-test-modules 1
+            dogfood: ./build-salep.ps1
+            pack: ./scripts/pack-release.ps1
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    env:
+      DOTNET_CLI_USE_MSBUILD_SERVER: '0'
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+          dotnet-version: 10.0.x
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Check paired script inventory
+        run: npm run scripts:check
+      - name: Core tests and generator contract matrices
+        run: ${{ matrix.tests }}
+      - name: Pack and execute the generator against samples and GraphQL server
+        run: ${{ matrix.dogfood }}
+      - name: Pack isolated verification version
+        run: ${{ matrix.pack }} 0.0.0-generator.${{ github.run_id }}.${{ github.run_attempt }}
+      - name: Compare packed consumers and verify incremental generation
+        run: node scripts/verify-release-consumers.mjs 0.0.0-generator.${{ github.run_id }}.${{ github.run_attempt }}

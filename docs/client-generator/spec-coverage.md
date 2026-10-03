@@ -4,7 +4,7 @@ This checklist tracks which GraphQL specification features are exercised by the 
 
 Legend:
 
-- [x] Covered by src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql or src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql operations
+- [x] Covered by src/samples/Scriban/Opinionated/Client/schema.coverage.graphql or src/samples/Scriban/Opinionated/Client/graphql operations
 - [ ] Not covered yet or not verified
 
 ## SDL (Schema Definition Language)
@@ -78,59 +78,59 @@ This section links each spec item to concrete evidence in the schema, operations
 
 ### SDL (Schema Definition Language)
 
-- Schema definition and extension: [src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql#L1-L7)
-- Object, input, enum, scalar, union, interface types: [src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql#L17-L118)
-- Interface inheritance: [src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql#L40-L49)
-- Type and interface extensions: [src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql#L51-L111)
-- Union, enum, input, scalar extensions: [src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql#L20-L83)
-- Directive definitions, locations, repeatable: [src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql#L9-L15)
-- Deprecation on fields and enum values: [src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql#L25-L26), [src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql#L51-L53), [src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql#L92-L93)
-- @specifiedBy on scalars: [src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql#L17-L19)
-- Default values on input fields: [src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql#L58-L83)
-- Default values on field arguments: [src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql#L121-L135)
+- Schema definition and extension: [src/samples/Scriban/Opinionated/Client/schema.coverage.graphql](../../src/samples/Scriban/Opinionated/Client/schema.coverage.graphql#L1-L7)
+- Object, input, enum, scalar, union, interface types: [src/samples/Scriban/Opinionated/Client/schema.coverage.graphql](../../src/samples/Scriban/Opinionated/Client/schema.coverage.graphql#L17-L118)
+- Interface inheritance: [src/samples/Scriban/Opinionated/Client/schema.coverage.graphql](../../src/samples/Scriban/Opinionated/Client/schema.coverage.graphql#L40-L49)
+- Type and interface extensions: [src/samples/Scriban/Opinionated/Client/schema.coverage.graphql](../../src/samples/Scriban/Opinionated/Client/schema.coverage.graphql#L51-L111)
+- Union, enum, input, scalar extensions: [src/samples/Scriban/Opinionated/Client/schema.coverage.graphql](../../src/samples/Scriban/Opinionated/Client/schema.coverage.graphql#L20-L83)
+- Directive definitions, locations, repeatable: [src/samples/Scriban/Opinionated/Client/schema.coverage.graphql](../../src/samples/Scriban/Opinionated/Client/schema.coverage.graphql#L9-L15)
+- Deprecation on fields and enum values: [src/samples/Scriban/Opinionated/Client/schema.coverage.graphql](../../src/samples/Scriban/Opinionated/Client/schema.coverage.graphql#L25-L26), [src/samples/Scriban/Opinionated/Client/schema.coverage.graphql](../../src/samples/Scriban/Opinionated/Client/schema.coverage.graphql#L51-L53), [src/samples/Scriban/Opinionated/Client/schema.coverage.graphql](../../src/samples/Scriban/Opinionated/Client/schema.coverage.graphql#L92-L93)
+- @specifiedBy on scalars: [src/samples/Scriban/Opinionated/Client/schema.coverage.graphql](../../src/samples/Scriban/Opinionated/Client/schema.coverage.graphql#L17-L19)
+- Default values on input fields: [src/samples/Scriban/Opinionated/Client/schema.coverage.graphql](../../src/samples/Scriban/Opinionated/Client/schema.coverage.graphql#L58-L83)
+- Default values on field arguments: [src/samples/Scriban/Opinionated/Client/schema.coverage.graphql](../../src/samples/Scriban/Opinionated/Client/schema.coverage.graphql#L121-L135)
 
 ### Executable Document (Operations)
 
-- Queries, operation names, variables, variable defaults: [src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql/query.graphql](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql/query.graphql#L1-L94)
-- Mutations and variable defaults: [src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql/mutation.graphql](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql/mutation.graphql#L1-L39)
-- Subscriptions: [src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql/subscription.graphql](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql/subscription.graphql#L1-L19)
-- Aliases: [src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql/query.graphql](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql/query.graphql#L12-L20), [src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql/mutation.graphql](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql/mutation.graphql#L13-L23)
-- Named fragments and spreads (across files): [src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql/fragments.graphql](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql/fragments.graphql#L1-L23), [src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql/query.graphql](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql/query.graphql#L1-L35)
-- Inline fragments and multiple inline fragments per type: [src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql/query.graphql](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql/query.graphql#L23-L76)
-- Directives on operations/fields/fragments/spreads/inline fragments: [src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql/query.graphql](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql/query.graphql#L1-L76), [src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql/fragments.graphql](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql/fragments.graphql#L1-L15)
+- Queries, operation names, variables, variable defaults: [src/samples/Scriban/Opinionated/Client/graphql/query.graphql](../../src/samples/Scriban/Opinionated/Client/graphql/query.graphql#L1-L94)
+- Mutations and variable defaults: [src/samples/Scriban/Opinionated/Client/graphql/mutation.graphql](../../src/samples/Scriban/Opinionated/Client/graphql/mutation.graphql#L1-L39)
+- Subscriptions: [src/samples/Scriban/Opinionated/Client/graphql/subscription.graphql](../../src/samples/Scriban/Opinionated/Client/graphql/subscription.graphql#L1-L19)
+- Aliases: [src/samples/Scriban/Opinionated/Client/graphql/query.graphql](../../src/samples/Scriban/Opinionated/Client/graphql/query.graphql#L12-L20), [src/samples/Scriban/Opinionated/Client/graphql/mutation.graphql](../../src/samples/Scriban/Opinionated/Client/graphql/mutation.graphql#L13-L23)
+- Named fragments and spreads (across files): [src/samples/Scriban/Opinionated/Client/graphql/fragments.graphql](../../src/samples/Scriban/Opinionated/Client/graphql/fragments.graphql#L1-L23), [src/samples/Scriban/Opinionated/Client/graphql/query.graphql](../../src/samples/Scriban/Opinionated/Client/graphql/query.graphql#L1-L35)
+- Inline fragments and multiple inline fragments per type: [src/samples/Scriban/Opinionated/Client/graphql/query.graphql](../../src/samples/Scriban/Opinionated/Client/graphql/query.graphql#L23-L76)
+- Directives on operations/fields/fragments/spreads/inline fragments: [src/samples/Scriban/Opinionated/Client/graphql/query.graphql](../../src/samples/Scriban/Opinionated/Client/graphql/query.graphql#L1-L76), [src/samples/Scriban/Opinionated/Client/graphql/fragments.graphql](../../src/samples/Scriban/Opinionated/Client/graphql/fragments.graphql#L1-L15)
 
 ### Client Request Construction (JSON)
 
-- Request payload shape (`query`, `operationName`, `variables`): [src/samples/Opinionated/Salep.Samples.Opinionated.Client/Generated/GraphQLClient.cs](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/Generated/GraphQLClient.cs), [src/samples/Opinionated/Salep.Samples.Opinionated.Client.Tests/GeneratedTests/GraphQLClientPayloadTests.cs](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client.Tests/GeneratedTests/GraphQLClientPayloadTests.cs#L18-L37)
+- Request payload shape (`query`, `operationName`, `variables`): [src/samples/Scriban/Opinionated/Client/Generated/GraphQLClient.cs](../../src/samples/Scriban/Opinionated/Client/Generated/GraphQLClient.cs), [src/samples/Scriban/Opinionated/Client.Tests/GeneratedTests/GraphQLClientPayloadTests.cs](../../src/samples/Scriban/Opinionated/Client.Tests/GeneratedTests/GraphQLClientPayloadTests.cs)
 
 ### Response Parsing and Type Behaviors
 
-- Operation response deserialization (queries/mutations/subscriptions): [src/samples/Opinionated/Salep.Samples.Opinionated.Client.Tests/GeneratedTests/OperationsResponseTests.cs](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client.Tests/GeneratedTests/OperationsResponseTests.cs#L16-L333)
-- Union discrimination with `__typename`: [src/samples/Opinionated/Salep.Samples.Opinionated.Client.Tests/GeneratedTests/UnionConverterTests.cs](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client.Tests/GeneratedTests/UnionConverterTests.cs#L18-L87)
-- Enum and scalar JSON handling (string enums, DateTime/Instant JSON): [src/samples/Opinionated/Salep.Samples.Opinionated.Client/Generated/GraphQLClient.cs](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/Generated/GraphQLClient.cs), [src/samples/Opinionated/Salep.Samples.Opinionated.Client.Tests/GeneratedTests/OperationsResponseTests.cs](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client.Tests/GeneratedTests/OperationsResponseTests.cs#L16-L333)
+- Operation response deserialization (queries/mutations/subscriptions): [src/samples/Scriban/Opinionated/Client.Tests/GeneratedTests/OperationsResponseTests.cs](../../src/samples/Scriban/Opinionated/Client.Tests/GeneratedTests/OperationsResponseTests.cs)
+- Union discrimination with `__typename`: [src/samples/Scriban/Opinionated/Client.Tests/GeneratedTests/UnionConverterTests.cs](../../src/samples/Scriban/Opinionated/Client.Tests/GeneratedTests/UnionConverterTests.cs)
+- Enum and scalar JSON handling (string enums, DateTime/Instant JSON): [src/samples/Scriban/Opinionated/Client/Generated/GraphQLClient.cs](../../src/samples/Scriban/Opinionated/Client/Generated/GraphQLClient.cs), [src/samples/Scriban/Opinionated/Client.Tests/GeneratedTests/OperationsResponseTests.cs](../../src/samples/Scriban/Opinionated/Client.Tests/GeneratedTests/OperationsResponseTests.cs)
 
 ### Value Coercion and Input Shapes
 
-- Variable defaults and input object defaults (document-level evidence): [src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql/query.graphql](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql/query.graphql#L7-L82), [src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql/mutation.graphql](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql/mutation.graphql#L25-L35)
-- Nested input objects and lists (schema evidence): [src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql#L58-L83)
-- Client variable serialization (JSON evidence): [src/samples/Opinionated/Salep.Samples.Opinionated.Client.Tests/GeneratedTests/GraphQLClientPayloadTests.cs](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client.Tests/GeneratedTests/GraphQLClientPayloadTests.cs#L18-L37)
-- Default values are emitted only when present in the schema or operation documents; if no defaults exist, the generated `Query` text does not include them. Example with defaults: [src/samples/Opinionated/Salep.Samples.Opinionated.Client/Generated/Operations.cs](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/Generated/Operations.cs)
+- Variable defaults and input object defaults (document-level evidence): [src/samples/Scriban/Opinionated/Client/graphql/query.graphql](../../src/samples/Scriban/Opinionated/Client/graphql/query.graphql#L7-L82), [src/samples/Scriban/Opinionated/Client/graphql/mutation.graphql](../../src/samples/Scriban/Opinionated/Client/graphql/mutation.graphql#L25-L35)
+- Nested input objects and lists (schema evidence): [src/samples/Scriban/Opinionated/Client/schema.coverage.graphql](../../src/samples/Scriban/Opinionated/Client/schema.coverage.graphql#L58-L83)
+- Client variable serialization (JSON evidence): [src/samples/Scriban/Opinionated/Client.Tests/GeneratedTests/GraphQLClientPayloadTests.cs](../../src/samples/Scriban/Opinionated/Client.Tests/GeneratedTests/GraphQLClientPayloadTests.cs)
+- Default values are emitted only when present in the schema or operation documents; if no defaults exist, the generated `Query` text does not include them. Example with defaults: [src/samples/Scriban/Opinionated/Client/Generated/Operations.cs](../../src/samples/Scriban/Opinionated/Client/Generated/Operations.cs)
 
 ### Custom Scalar Serialization
 
-- Scalar definitions with @specifiedBy (schema evidence): [src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql#L17-L19)
-- NodaTime scalar mapping and JSON options (client evidence): [src/samples/Opinionated/Salep.Samples.Opinionated.Client/Generated/GraphQLClient.cs](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/Generated/GraphQLClient.cs), [src/samples/Opinionated/Salep.Samples.Opinionated.Client.Tests/GeneratedTests/UnionConverterTests.cs](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client.Tests/GeneratedTests/UnionConverterTests.cs#L89-L99)
+- Scalar definitions with @specifiedBy (schema evidence): [src/samples/Scriban/Opinionated/Client/schema.coverage.graphql](../../src/samples/Scriban/Opinionated/Client/schema.coverage.graphql#L17-L19)
+- NodaTime scalar mapping and JSON options (client evidence): [src/samples/Scriban/Opinionated/Client/Generated/GraphQLClient.cs](../../src/samples/Scriban/Opinionated/Client/Generated/GraphQLClient.cs), [src/samples/Scriban/Opinionated/Client.Tests/GeneratedTests/UnionConverterTests.cs](../../src/samples/Scriban/Opinionated/Client.Tests/GeneratedTests/UnionConverterTests.cs)
 
 ### Coverage Boundaries (Evidence-Based)
 
-- Directive behavior, validation, and execution semantics are server-side and not asserted by the client; evidence shows directives only appear in SDL/operations, not runtime tests: [src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/schema.coverage.graphql#L9-L15), [src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql/query.graphql](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/graphql/query.graphql#L1-L76)
-- GraphQL error details beyond `message` (e.g., `path`, `locations`, `extensions`) are not modeled in the client response type: [src/samples/Opinionated/Salep.Samples.Opinionated.Client/Generated/GraphQLClient.cs](../../src/samples/Opinionated/Salep.Samples.Opinionated.Client/Generated/GraphQLClient.cs)
+- Directive behavior, validation, and execution semantics are server-side and not asserted by the client; evidence shows directives only appear in SDL/operations, not runtime tests: [src/samples/Scriban/Opinionated/Client/schema.coverage.graphql](../../src/samples/Scriban/Opinionated/Client/schema.coverage.graphql#L9-L15), [src/samples/Scriban/Opinionated/Client/graphql/query.graphql](../../src/samples/Scriban/Opinionated/Client/graphql/query.graphql#L1-L76)
+- GraphQL error details beyond `message` (e.g., `path`, `locations`, `extensions`) are not modeled in the client response type: [src/samples/Scriban/Opinionated/Client/Generated/GraphQLClient.cs](../../src/samples/Scriban/Opinionated/Client/Generated/GraphQLClient.cs)
 
 ## Notes
 
 - This checklist reflects the current coverage schema and operations. If you add new spec features or change coverage scenarios, update this file.
 - The generated tests are schema-driven; ensure the schema and operations intentionally include each feature.
-- Generation now uses per-project salep.json files; the Salep.ClientGenerator.Cli CLI requires `--config`.
+- Generation now uses per-project salep.json files; the default Salep.ClientGenerator.Cli host uses `salep.json` unless `--config` selects another configuration.
 - salep.json supports inheritance through versioned profiles; clients explicitly reference a profile and a separate baseClient contract.
 - Relative paths in inherited config values are resolved from the config file that defines them.
 - Ownership dedup is transitive across inherited configs: descendants suppress artifacts already owned by ancestors (schema types, converters, shared operation contract, duplicate operations).
@@ -139,10 +139,14 @@ This section links each spec item to concrete evidence in the schema, operations
 
 ## Response contract regression coverage
 
-`src/Salep.ClientGenerator.Tests/ResponseContractTests.cs` compiles generated response code and verifies JSON names for variables, input fields, response fields, and enums; root fragment expansion and field merging; nested aliases with nullable lists; aliased union/interface variants and invalid discriminators; fragment `__typename` insertion; and equivalent file/directory/glob operation input.
+`src/Salep.ClientGenerator.Tests/GeneratedClientBehaviorTests.cs` verifies transport, nested input and enum serialization, JSON response materialization and polymorphic discriminators. `GeneratorContractTests` captures nullability, aliases, JSON attributes, schema/converter APIs and operation text from the full spec fixture.
 
 The parser package gate (`scripts/verify-package-compatibility.sh` / `.ps1`) uses an isolated package cache and consumer output directory, and compares the restored parser DLLs with the freshly packed DLLs before compiling the consumer.
 
 ## Diagnostic regression coverage
 
-`src/Salep.ClientGenerator.Tests/DiagnosticsReporterTests.cs` verifies that directive definitions and unused scalar declarations do not warn, while unmapped scalars referenced by object/interface fields, arguments, inputs, and operation variables still warn. Coverage includes nested list/non-null wrappers, explicit mappings, case sensitivity, ordering, and duplicate references. This does not imply client-side execution of schema directives.
+`GeneratorInputValidationTests` verifies malformed documents, configuration policy and parser boundaries. Schema directive syntax is covered by the full spec fixture; this does not imply client-side directive execution.
+
+## Generator regression evidence
+
+Schema and type extensions are merged before Scriban rendering. The [shared compatibility contract](generator-parity.md) links reviewed schema/converter API fixtures, extension/ownership regressions, configuration interactions, runtime observations, packed consumer lifecycle checks and cross-platform CI. Syntax checklist coverage alone is not proof of exhaustive behavior.

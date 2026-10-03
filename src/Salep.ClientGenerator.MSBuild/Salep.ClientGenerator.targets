@@ -1,60 +1,67 @@
 <Project>
-  <Target Name="_SalepResolveSettings">
-    <Error Condition="'$(SalepSchema)@(SalepSchema)$(SalepOperations)@(SalepOperation)$(SalepOutputDirectory)$(SalepTestsOutputDirectory)$(SalepGenerateClient)$(SalepGenerateTests)$(SalepEmitAgentInstructions)' != ''"
-           Text="SALEP3003: Generation overrides are no longer supported. Configure a version 1 client or tests role in salep.json." />
-    <ItemGroup>
-      <_SalepUniqueConfig Remove="@(_SalepUniqueConfig)" />
-      <_SalepUniqueConfig Include="@(SalepConfig->Distinct())" />
-      <_SalepUniqueConfig Include="$(SalepConfig)" Condition="'@(_SalepUniqueConfig)' == '' and '$(SalepConfig)' != ''" />
-      <_SalepUniqueConfig Include="$(MSBuildProjectDirectory)/$(SalepConfigFile)" Condition="'@(_SalepUniqueConfig)' == '' and Exists('$(MSBuildProjectDirectory)/$(SalepConfigFile)')" />
-    </ItemGroup>
-    <Error Condition="'@(_SalepUniqueConfig->Count())' != '1' and '$(SalepEnabled)' == 'true'" Text="SALEP3003: Select exactly one Salep configuration per project." />
-    <PropertyGroup>
-      <_SalepEffectiveConfig Condition="'@(_SalepUniqueConfig)' != ''">@(_SalepUniqueConfig->'%(FullPath)')</_SalepEffectiveConfig>
-      <_SalepCliDll>$(SalepToolPath)/Salep.ClientGenerator.Cli.dll</_SalepCliDll>
-      <_SalepSourcesFile>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)salep.generated-sources.txt', '$(MSBuildProjectDirectory)'))</_SalepSourcesFile>
-    </PropertyGroup>
-  </Target>
-
-  <Target Name="_SalepReferenceContracts">
+  <Target Name="_SalepResolveReferences">
     <MSBuild Projects="@(ProjectReference)" Targets="GetSalepConfiguration" BuildInParallel="false" SkipNonexistentTargets="true"
              Properties="Configuration=$(Configuration);TargetFramework=$(TargetFramework)">
       <Output TaskParameter="TargetOutputs" ItemName="_SalepReferencedConfigs" />
     </MSBuild>
   </Target>
 
-  <Target Name="GetSalepConfiguration" DependsOnTargets="_SalepResolveSettings;_SalepReferenceContracts" Returns="@(_SalepContractConfigs)">
-    <ReadLinesFromFile File="$(_SalepSourcesFile)" Condition="Exists('$(_SalepSourcesFile)')">
-      <Output TaskParameter="Lines" ItemName="_SalepContractSources" />
-    </ReadLinesFromFile>
+  <Target Name="_SalepResolveConfig" DependsOnTargets="_SalepResolveReferences">
     <ItemGroup>
-      <_SalepContractManifest Include="@(_SalepContractSources->'%(RootDir)%(Directory).salep.manifest.json')" />
-      <_SalepContractConfigs Include="$(_SalepEffectiveConfig)" Condition="'$(_SalepEffectiveConfig)' != '' and '$(SalepEnabled)' == 'true'">
-        <Manifest>@(_SalepContractManifest->Distinct())</Manifest>
-      </_SalepContractConfigs>
-      <_SalepContractConfigs Include="@(_SalepReferencedConfigs)" />
+      <_SalepConfig Remove="@(_SalepConfig)" />
+      <_SalepConfig Include="@(SalepConfig->Distinct())" />
+      <_SalepConfig Include="$(SalepConfig)" Condition="'@(_SalepConfig)' == '' and '$(SalepConfig)' != ''" />
+      <_SalepConfig Include="$(MSBuildProjectDirectory)/$(SalepConfigFile)" Condition="'@(_SalepConfig)' == '' and Exists('$(MSBuildProjectDirectory)/$(SalepConfigFile)')" />
+    </ItemGroup>
+    <Error Condition="'$(SalepEnabled)' == 'true' and '@(_SalepConfig->Count())' != '1'" Text="Select exactly one Scriban configuration per project, or set SalepEnabled=false." />
+    <PropertyGroup>
+      <_SalepConfigurationLower>$([System.String]::Copy('$(Configuration)').ToLowerInvariant())</_SalepConfigurationLower>
+      <_SalepResolvedToolPath>$(SalepToolPath)</_SalepResolvedToolPath>
+      <_SalepResolvedToolPath Condition="'$(_SalepResolvedToolPath)' == '' and Exists('$(MSBuildThisFileDirectory)../../artifacts/bin/Salep.ClientGenerator.Cli/$(_SalepConfigurationLower)_$(TargetFramework)/Salep.ClientGenerator.Cli.dll')">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../../artifacts/bin/Salep.ClientGenerator.Cli/$(_SalepConfigurationLower)_$(TargetFramework)'))</_SalepResolvedToolPath>
+      <_SalepResolvedToolPath Condition="'$(_SalepResolvedToolPath)' == '' and Exists('$(MSBuildThisFileDirectory)../tools/$(TargetFramework)/any/Salep.ClientGenerator.Cli.dll')">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../tools/$(TargetFramework)/any'))</_SalepResolvedToolPath>
+      <_SalepEffectiveConfig>@(_SalepConfig->'%(FullPath)')</_SalepEffectiveConfig>
+      <_SalepCliDll>$(_SalepResolvedToolPath)/Salep.ClientGenerator.Cli.dll</_SalepCliDll>
+      <_SalepSourcesFile>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)salep.generated-sources.txt', '$(MSBuildProjectDirectory)'))</_SalepSourcesFile>
+      <_SalepInputsFile>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)salep.inputs.txt', '$(MSBuildProjectDirectory)'))</_SalepInputsFile>
+      <_SalepStampFile>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)salep.generated.stamp', '$(MSBuildProjectDirectory)'))</_SalepStampFile>
+      <_SalepReferenceArgs>@(_SalepReferencedConfigs->'--reference-config &quot;%(Identity)&quot;', ' ')</_SalepReferenceArgs>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="GetSalepConfiguration" DependsOnTargets="_SalepResolveConfig" Returns="@(_SalepContractConfigs)">
+    <ItemGroup>
+      <_SalepContractConfigs Include="@(_SalepReferencedConfigs->'%(FullPath)')" />
+      <_SalepContractConfigs Include="@(_SalepConfig->'%(FullPath)')" Condition="'$(SalepEnabled)' == 'true'" />
     </ItemGroup>
   </Target>
 
-  <Target Name="SalepGenerate" BeforeTargets="CoreCompile" DependsOnTargets="ResolveProjectReferences;_SalepResolveSettings;_SalepReferenceContracts" Condition="'$(SalepEnabled)' == 'true'">
-    <Error Condition="'$(_SalepEffectiveConfig)' != '' and !Exists('$(_SalepCliDll)')" Text="Salep.ClientGenerator.Cli.dll was not found at '$(SalepToolPath)'." />
+  <Target Name="_SalepResolveInputs" DependsOnTargets="_SalepResolveConfig" Condition="'$(SalepEnabled)' == 'true'">
+    <Error Condition="!Exists('$(_SalepCliDll)')" Text="Salep.ClientGenerator.Cli.dll was not found at '$(SalepToolPath)'. Build the Scriban CLI or set SalepToolPath." />
+    <Exec Command="dotnet exec &quot;$(_SalepCliDll)&quot; inputs --config &quot;$(_SalepEffectiveConfig)&quot; --working-directory &quot;$(MSBuildProjectDirectory)&quot; --target-framework &quot;$(TargetFramework)&quot; --language-version &quot;$(LangVersion)&quot; $(_SalepReferenceArgs) --inputs-file &quot;$(_SalepInputsFile)&quot;" WorkingDirectory="$(MSBuildProjectDirectory)" />
+    <ReadLinesFromFile File="$(_SalepInputsFile)" Condition="Exists('$(_SalepInputsFile)')"><Output TaskParameter="Lines" ItemName="_SalepInputFiles" /></ReadLinesFromFile>
+  </Target>
+
+  <Target Name="_SalepRemovePreviouslyOwnedCompileItems" DependsOnTargets="_SalepResolveInputs" Condition="'$(SalepEnabled)' == 'true'">
+    <!-- Another framework can publish the new manifest before this framework reads inputs.
+         Keep this framework's previous inventory until its obsolete compile items are removed. -->
     <ReadLinesFromFile File="$(_SalepSourcesFile)" Condition="Exists('$(_SalepSourcesFile)')">
-      <Output TaskParameter="Lines" ItemName="_SalepPreviousSources" />
+      <Output TaskParameter="Lines" ItemName="_SalepPreviousGeneratedSources" />
     </ReadLinesFromFile>
-    <PropertyGroup>
-      <_SalepReferenceArgs>@(_SalepReferencedConfigs->'--reference-config &quot;%(Identity)&quot;', ' ')</_SalepReferenceArgs>
-    </PropertyGroup>
-    <Exec Condition="'$(_SalepEffectiveConfig)' != ''"
-          Command="dotnet exec &quot;$(_SalepCliDll)&quot; generate --config &quot;$(_SalepEffectiveConfig)&quot; --working-directory &quot;$(MSBuildProjectDirectory)&quot; --target-framework &quot;$(TargetFramework)&quot; --language-version &quot;$(LangVersion)&quot; $(_SalepReferenceArgs) --sources-file &quot;$(_SalepSourcesFile)&quot;"
-          WorkingDirectory="$(MSBuildProjectDirectory)" />
+    <ItemGroup>
+      <Compile Remove="@(_SalepInputFiles);@(_SalepPreviousGeneratedSources)" MatchOnMetadata="FullPath" MatchOnMetadataOptions="PathLike" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="SalepGenerate" BeforeTargets="CoreCompile" DependsOnTargets="_SalepRemovePreviouslyOwnedCompileItems" Inputs="@(_SalepInputFiles);$(_SalepInputsFile)" Outputs="$(_SalepStampFile)" Condition="'$(SalepEnabled)' == 'true'">
+    <Error Condition="'$(_SalepEffectiveConfig)' != '' and !Exists('$(_SalepCliDll)')" Text="Salep.ClientGenerator.Cli.dll was not found at '$(SalepToolPath)'. Build the Scriban CLI or set SalepToolPath." />
+    <Exec Condition="'$(_SalepEffectiveConfig)' != ''" Command="dotnet exec &quot;$(_SalepCliDll)&quot; generate --config &quot;$(_SalepEffectiveConfig)&quot; --working-directory &quot;$(MSBuildProjectDirectory)&quot; --target-framework &quot;$(TargetFramework)&quot; --language-version &quot;$(LangVersion)&quot; $(_SalepReferenceArgs) --sources-file &quot;$(_SalepSourcesFile)&quot; --stamp-file &quot;$(_SalepStampFile)&quot;" WorkingDirectory="$(MSBuildProjectDirectory)" />
   </Target>
 
   <Target Name="_SalepIncludeGeneratedFiles" BeforeTargets="CoreCompile" DependsOnTargets="SalepGenerate" Condition="'$(SalepEnabled)' == 'true' and Exists('$(_SalepSourcesFile)')">
-    <ReadLinesFromFile File="$(_SalepSourcesFile)"><Output TaskParameter="Lines" ItemName="_SalepGeneratedCs" /></ReadLinesFromFile>
+    <ReadLinesFromFile File="$(_SalepSourcesFile)"><Output TaskParameter="Lines" ItemName="_SalepGeneratedSources" /></ReadLinesFromFile>
     <ItemGroup>
-      <_SalepGeneratedCsDistinct Include="@(_SalepGeneratedCs->Distinct())" />
-      <Compile Remove="@(_SalepPreviousSources);@(_SalepGeneratedCsDistinct)" MatchOnMetadata="FullPath" MatchOnMetadataOptions="PathLike" />
-      <Compile Include="@(_SalepGeneratedCsDistinct)" />
+      <Compile Remove="@(_SalepGeneratedSources)" MatchOnMetadata="FullPath" MatchOnMetadataOptions="PathLike" />
+      <Compile Include="@(_SalepGeneratedSources)" />
     </ItemGroup>
   </Target>
 </Project>

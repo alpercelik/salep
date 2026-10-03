@@ -1,0 +1,25 @@
+[JsonConverter(typeof({{ type.name }}JsonConverter))]
+public abstract record {{ type.name }};
+
+public sealed class {{ type.name }}JsonConverter : JsonConverter<{{ type.name }}>
+{
+    public override {{ type.name }} Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        using var document = JsonDocument.ParseValue(ref reader);
+        if (!document.RootElement.TryGetProperty("__typename", out var typeNameElement))
+            throw new JsonException("Missing __typename.");
+        var json = document.RootElement.GetRawText();
+        return typeNameElement.GetString() switch
+        {
+            {{~ for variant in operation.response_types # begin for variant ~}}
+                {{~ if variant.base_type == type.name # begin if variant_base_type_type_name ~}}
+            {{ target.string_literal variant.discriminator }} => JsonSerializer.Deserialize<{{ variant.name }}>(json, options)!,
+                {{~ end # end if variant_base_type_type_name ~}}
+            {{~ end # end for variant ~}}
+            _ => throw new JsonException("Unknown __typename.")
+        };
+    }
+
+    public override void Write(Utf8JsonWriter writer, {{ type.name }} value, JsonSerializerOptions options)
+        => JsonSerializer.Serialize(writer, value, value.GetType(), options);
+}

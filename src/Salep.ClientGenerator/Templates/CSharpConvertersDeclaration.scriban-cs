@@ -1,0 +1,5 @@
+public sealed class {{ if type.kind == "interface_result" # begin if }}{{ target.type_name type.name }}Result{{ else # else }}{{ target.type_name type.name }}{{ end # end if }}JsonConverter : JsonConverter<{{ if type.kind == "interface_result" # begin if }}{{ target.type_name type.name }}Result{{ else # else }}{{ target.type_name type.name }}{{ end # end if }}>
+{
+{{ include "converters.read" ~}}
+{{ include "converters.write" ~}}
+}

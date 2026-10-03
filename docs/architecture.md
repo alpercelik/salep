@@ -1,28 +1,20 @@
-# Salep architecture and naming
+# Architecture and public packages
 
-**Salep** is the overall product and solution. Its two components are **Salep GraphQL Parser** and **Salep C# Client Generator**. Use these names in human and agent documentation; use exact project or package identifiers in commands.
+Salep contains the independent GraphQL language library and the Scriban C# client generator.
 
-| Project | Role | Distribution |
+| Projects | Responsibility | Public package |
 | --- | --- | --- |
-| `Salep.GraphQLParser` | GraphQL lexer, parser, AST, diagnostics, visitors, rewrites, and printing | Public `Salep.GraphQLParser` NuGet package |
-| `Salep.ClientGenerator` | Schema and operation loading, generation orchestration, and C# emission | Private implementation inside the `Salep.ClientGenerator` package |
-| `Salep.ClientGenerator.Cli` | Out-of-process generator host | Private executable inside the `Salep.ClientGenerator` package |
-| `Salep.ClientGenerator.MSBuild` | Build targets and generator packaging | Produces the public `Salep.ClientGenerator` NuGet package |
+| `Salep.GraphQLParser` | Lexer, parser and immutable syntax trees | `Salep.GraphQLParser` |
+| `Salep.ClientGenerator` | Neutral GraphQL models, C# target policies, Scriban templates and generation | Private tool |
+| `Salep.ClientGenerator.Cli` | Configuration validation, generation, inputs and template export | Private tool |
+| `Salep.ClientGenerator.MSBuild` | Props, targets and bundled framework-matched CLI | `Salep.ClientGenerator` |
 
-The generator engine directly references `src/Salep.GraphQLParser/Salep.GraphQLParser.csproj`. The parser does not reference the generator. MSBuild invokes `Salep.ClientGenerator.Cli.dll`, which uses the generator engine. Generated clients do not reference these tool assemblies at runtime.
+The generator directly references `src/Salep.GraphQLParser/Salep.GraphQLParser.csproj`. The parser does not reference the generator. Only the parser and generator MSBuild distribution projects are packable. Generated applications have no Salep or Scriban runtime dependency. Compiler libraries used in generator tests compile generated consumers; they are not bundled with the generator tool.
 
-Project, assembly, and namespace names follow their component: `Salep.GraphQLParser` or `Salep.ClientGenerator.*`. Public parser types such as `GraphQLParser` retain their names. The parser API contract inventory retains normalized reference type names for compatibility comparison; these are not package identifiers.
+The Roslyn implementation and its sample projects have been retired. Scriban is the sole stable generator and retains the `Salep.ClientGenerator` package ID, `SalepConfig`/`SalepToolPath` MSBuild contract, `salep.json` and `.salep.manifest.json` names. Regeneration verifies and upgrades released version-1 ownership manifests, preserving unowned consumer files. Regenerate base clients before modules and tests during an upgrade.
 
-Consumer-facing configuration remains `salep.json`, the public package is `Salep.ClientGenerator`, and its matching build assets are `Salep.ClientGenerator.props` and `Salep.ClientGenerator.targets`. Existing `SalepToolPath` and other MSBuild properties retain their names. Consumers invoking the CLI assembly directly must use its new name.
+`src/Salep.slnx` is the complete solution. `src/Salep.Core.slnf` selects the parser, generator, CLI, MSBuild, tests and parser benchmarks without samples. `Salep.GraphQLParser.PublicApiConsumer` stays outside both and runs only through the paired package verification scripts.
 
-`src/Salep.slnx` is the authoritative complete solution. `src/Salep.Core.slnf` selects the parser, generator, tests, and benchmarks without samples. Production, test, and package-consumer projects live in `src/`; parser test fixtures live in `src/Salep.GraphQLParser.Tests/Fixtures/`, benchmarks in `benchmarks/`, and examples in `src/samples/`.
+Samples live under `src/samples/Scriban/Opinionated/` and `src/samples/Scriban/MinimalDependencies/`. Each owns its operation inputs. Both share `src/samples/Salep.Samples.GraphQLServer/`. Root build/package configuration supplies dependency versions. `build-salep.sh` and `build-salep.ps1` restore samples against the exact package version packed by that invocation.
 
-[Parser documentation](parser/README.md) owns language behavior and compatibility. [Client generator documentation](client-generator/README.md) owns generated C# behavior and build integration. Their coverage checklists describe different contracts and must remain distinct.
-
-Both public packages have explicit packing metadata and separate package READMEs. See [release preparation](releases.md); only these two projects opt into `IsPackable`.
-
-`src/Salep.GraphQLParser.PublicApiConsumer` is a standalone package-verification fixture, excluded from both solution build lists. Its `PackageReference` intentionally tests the packed parser. The paired `scripts/verify-package-compatibility.*` scripts restore and pack the parser before restoring, building, and running this consumer in isolation.
-
-Solution files and tracked solution-specific IDE settings live in `src/`. Shared `Directory.Build.props`, `Directory.Packages.props`, `NuGet.config`, and `global.json` stay at the repository root so they apply to production projects, tests, benchmarks, and samples. Commands in these guides assume the repository root.
-
-Sample project and assembly names are unique across variants: `Salep.Samples.Opinionated.{Client,Client.Tests,Module,Module.Tests,IntegrationTests}` and `Salep.Samples.MinimalDependencies.{Client,Client.Tests,Module,Module.Tests,IntegrationTests}`. The shared server is `Salep.Samples.GraphQLServer`. These eleven projects live under `src/samples/`; each project directory matches its project filename. Generated API namespaces remain independent of project identity.
+See [parser documentation](parser/README.md), [generator documentation](client-generator/README.md), [generator verification](client-generator/generator-parity.md), [template customization](client-generator/template-customization.md) and [releases](releases.md).

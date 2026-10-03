@@ -1,0 +1,79 @@
+[
+  {
+    "Files": [
+      "GraphQLClient.cs",
+      "GraphQLSharedTypes.cs",
+      "Operations.Sample.cs",
+      "Operations.cs",
+      "SchemaTypes.cs",
+      "UnionJsonConverters.cs"
+    ],
+    "Surface": [
+      "ClassDeclaration:CustomClient\u003C\u003E:sealed:::|constructor(HttpClient:httpClient:::,Uri:endpoint:::)|method:ExecuteAsync\u003CTResponse,TVariables\u003E(IGraphQLOperation\u003CTResponse, TVariables\u003E:operation:::,CancellationToken:cancellationToken::= default:):Task\u003CGraphQLResponse\u003CTResponse\u003E\u003E:::False|method:ExecuteBatchAsync\u003CTResponse,TVariables\u003E(IReadOnlyList\u003CIGraphQLOperation\u003CTResponse, TVariables\u003E\u003E:operations:::,CancellationToken:cancellationToken::= default:):Task\u003CGraphQLResponse\u003CTResponse\u003E[]\u003E:::False|method:ExecuteIncrementalAsync\u003CTResponse,TVariables\u003E(IGraphQLOperation\u003CTResponse, TVariables\u003E:operation:::,CancellationToken:cancellationToken::= default:[EnumeratorCancellation]):IAsyncEnumerable\u003CGraphQLResponse\u003CTResponse\u003E\u003E:::False",
+      "ClassDeclaration:CustomOperations\u003C\u003E:sealed:ICustomOperations::|constructor(CustomClient:client:::)|method:ChangedAsync\u003C\u003E(CancellationToken:cancellationToken::= default:):Task\u003CGraphQLResponse\u003CChangedResponse\u003E\u003E:::False|method:FragmentItemsAsync\u003C\u003E(FragmentItemsVariables:variables:::,CancellationToken:cancellationToken::= default:):Task\u003CGraphQLResponse\u003CFragmentItemsResponse\u003E\u003E:::False|method:ItemsAsync\u003C\u003E(ItemsVariables:variables:::,CancellationToken:cancellationToken::= default:):Task\u003CGraphQLResponse\u003CItemsResponse\u003E\u003E:::False|method:UpdateAsync\u003C\u003E(UpdateVariables:variables:::,CancellationToken:cancellationToken::= default:):Task\u003CGraphQLResponse\u003CUpdateResponse\u003E\u003E:::False",
+      "ClassDeclaration:OperationsSample\u003C\u003E:static:::|constructor()|method:RunAsync\u003C\u003E(HttpClient:httpClient:::,Uri:endpoint:::):Task:::True",
+      "ClassDeclaration:UnionJsonConverters\u003C\u003E:static:::|constructor()|method:Register\u003C\u003E(JsonSerializerOptions:options:::):void:::True",
+      "InterfaceDeclaration:ICustomOperations\u003C\u003E::::|method:ChangedAsync\u003C\u003E(CancellationToken:cancellationToken::= default:):Task\u003CGraphQLResponse\u003CChangedResponse\u003E\u003E:::False|method:FragmentItemsAsync\u003C\u003E(FragmentItemsVariables:variables:::,CancellationToken:cancellationToken::= default:):Task\u003CGraphQLResponse\u003CFragmentItemsResponse\u003E\u003E:::False|method:ItemsAsync\u003C\u003E(ItemsVariables:variables:::,CancellationToken:cancellationToken::= default:):Task\u003CGraphQLResponse\u003CItemsResponse\u003E\u003E:::False|method:UpdateAsync\u003C\u003E(UpdateVariables:variables:::,CancellationToken:cancellationToken::= default:):Task\u003CGraphQLResponse\u003CUpdateResponse\u003E\u003E:::False",
+      "InterfaceDeclaration:IGraphQLOperation\u003CTResponse,TVariables\u003E::::|property:OperationName:string::False:get:False|property:Query:string::False:get:False|property:Variables:TVariables?::False:get:False",
+      "RecordDeclaration:ChangedOperation\u003C\u003E:sealed:IGraphQLOperation\u003CChangedResponse, ChangedVariables\u003E::|constructor(ChangedVariables?:variables::= null:)|property:OperationName:string::False:get:False|property:Query:string::False:get:False|property:Variables:ChangedVariables?::False:get,init:False",
+      "RecordDeclaration:ChangedResponse\u003C\u003E:sealed:::|constructor()|property:Changed:Item?:[JsonPropertyName(\u0022changed\u0022)]:False:get,init:False",
+      "RecordDeclaration:ChangedVariables\u003C\u003E:sealed:::|constructor()",
+      "RecordDeclaration:Filter\u003C\u003E:sealed:::|constructor()|property:Names:List\u003Cstring\u003E:[JsonPropertyName(\u0022names\u0022)]:True:get,set:False|property:Optional:int?:[JsonPropertyName(\u0022optional\u0022)]:False:get,set:False|property:Status:Status:[JsonPropertyName(\u0022status\u0022)]:False:get,set:False|property:Token:Guid?:[JsonPropertyName(\u0022token\u0022)]:False:get,set:False",
+      "RecordDeclaration:FragmentItemsOperation\u003C\u003E:sealed:IGraphQLOperation\u003CFragmentItemsResponse, FragmentItemsVariables\u003E::|constructor(FragmentItemsVariables?:variables::= null:)|property:OperationName:string::False:get:False|property:Query:string::False:get:False|property:Variables:FragmentItemsVariables?::False:get,init:False",
+      "RecordDeclaration:FragmentItemsResponse\u003C\u003E:sealed:::|constructor()|property:Items:List\u003CItem?\u003E:[JsonPropertyName(\u0022items\u0022)]:False:get,init:False",
+      "RecordDeclaration:FragmentItemsVariables\u003C\u003E:sealed:::|constructor()|property:Count:int?:[JsonPropertyName(\u0022count\u0022)]:False:get,init:False",
+      "RecordDeclaration:GraphQLError\u003C\u003E:sealed:::|constructor()|property:Extensions:JsonElement?::False:get,init:False|property:Locations:GraphQLErrorLocation[]?::False:get,init:False|property:Message:string::False:get,init:False|property:Path:JsonElement[]?::False:get,init:False",
+      "RecordDeclaration:GraphQLErrorLocation\u003C\u003E:sealed:::|constructor()|property:Column:int::False:get,init:False|property:Line:int::False:get,init:False",
+      "RecordDeclaration:GraphQLRequest\u003CTVariables\u003E:sealed:::|constructor(string:Query:::,string:OperationName:::,TVariables?:Variables:::)|property:OperationName:string::False:get,init:False|property:Query:string::False:get,init:False|property:Variables:TVariables?::False:get,init:False",
+      "RecordDeclaration:GraphQLResponse\u003CTResponse\u003E:sealed:::|constructor()|property:Data:TResponse?::False:get,init:False|property:Errors:GraphQLError[]?::False:get,init:False",
+      "RecordDeclaration:Item\u003C\u003E:sealed:::|constructor()|property:Id:string:[JsonPropertyName(\u0022id\u0022)]:False:get,set:False|property:Names:List\u003Cstring?\u003E?:[JsonPropertyName(\u0022names\u0022)]:False:get,set:False|property:Nested:List\u003CList\u003Cint\u003E\u003E:[JsonPropertyName(\u0022nested\u0022)]:False:get,set:False",
+      "RecordDeclaration:ItemsOperation\u003C\u003E:sealed:IGraphQLOperation\u003CItemsResponse, ItemsVariables\u003E::|constructor(ItemsVariables?:variables::= null:)|property:OperationName:string::False:get:False|property:Query:string::False:get:False|property:Variables:ItemsVariables?::False:get,init:False",
+      "RecordDeclaration:ItemsResponse\u003C\u003E:sealed:::|constructor()|property:Aliased:List\u003CItem?\u003E:[JsonPropertyName(\u0022aliased\u0022)]:False:get,init:False",
+      "RecordDeclaration:ItemsVariables\u003C\u003E:sealed:::|constructor()|property:Count:int?:[JsonPropertyName(\u0022count\u0022)]:False:get,init:False|property:Filter:Filter?:[JsonPropertyName(\u0022filter\u0022)]:False:get,init:False|property:Unused:string?:[JsonPropertyName(\u0022unused\u0022)]:False:get,init:False",
+      "RecordDeclaration:Mutation\u003C\u003E:sealed:::|constructor()|property:Update:Item:[JsonPropertyName(\u0022update\u0022)]:False:get,set:False",
+      "RecordDeclaration:Query\u003C\u003E:sealed:::|constructor()|property:Items:List\u003CItem?\u003E:[JsonPropertyName(\u0022items\u0022)]:False:get,set:False",
+      "RecordDeclaration:Subscription\u003C\u003E:sealed:::|constructor()|property:Changed:Item?:[JsonPropertyName(\u0022changed\u0022)]:False:get,set:False",
+      "RecordDeclaration:UpdateOperation\u003C\u003E:sealed:IGraphQLOperation\u003CUpdateResponse, UpdateVariables\u003E::|constructor(UpdateVariables?:variables::= null:)|property:OperationName:string::False:get:False|property:Query:string::False:get:False|property:Variables:UpdateVariables?::False:get,init:False",
+      "RecordDeclaration:UpdateResponse\u003C\u003E:sealed:::|constructor()|property:Update:Item:[JsonPropertyName(\u0022update\u0022)]:False:get,init:False",
+      "RecordDeclaration:UpdateVariables\u003C\u003E:sealed:::|constructor()|property:Filter:Filter:[JsonPropertyName(\u0022filter\u0022)]:False:get,init:False",
+      "enum:Status:ACTIVE:[JsonStringEnumMemberName(\u0022ACTIVE\u0022)],INACTIVE:[JsonStringEnumMemberName(\u0022INACTIVE\u0022)]"
+    ],
+    "Queries": {
+      "Changed": "subscription Changed {\n  changed {\n    id\n  }\n}",
+      "FragmentItems": "query FragmentItems($count: Int = 2) {\n  ...Root\n}\n\nfragment Root on Query {\n  items(count: $count) {\n    ...Fields\n  }\n}\n\nfragment Fields on Item {\n  id\n  names\n}",
+      "Items": "query Items($filter: Filter, $count: Int = 2, $unused: String) {\n  aliased: items(filter: $filter, count: $count) {\n    id\n    names\n    nested\n  }\n}",
+      "Update": "mutation Update($filter: Filter!) {\n  update(filter: $filter) {\n    id\n    names\n  }\n}"
+    }
+  },
+  {
+    "Files": [
+      "GraphQLClientPayloadTests.cs",
+      "OperationsMetadataTests.cs",
+      "OperationsResponseTests.cs",
+      "OperationsSampleTests.cs",
+      "TestHttpMessageHandler.cs",
+      "UnionConverterTests.cs"
+    ],
+    "Surface": [
+      "Changed_Deserializes_Response",
+      "Changed_Operation_Metadata",
+      "ExecuteAsync_Omits_Null_Variables",
+      "ExecuteAsync_Preserves_GraphQL_Errors",
+      "ExecuteAsync_SerializesOperationPayload",
+      "ExecuteIncrementalAsync_Parses_Multipart_Response",
+      "FragmentItems_Deserializes_Response",
+      "FragmentItems_Operation_Metadata",
+      "GraphQLError_Defaults_Message",
+      "GraphQLError_Deserializes_Details",
+      "GraphQLResponse_Allows_Null_Data_With_Errors",
+      "GraphQLResponse_Allows_Null_For_NonNull_Field_With_Errors",
+      "Items_Deserializes_Response",
+      "Items_Operation_Metadata",
+      "OperationsSample_RunAsync_Completes",
+      "Response_Allows_Null_List_Items",
+      "Update_Deserializes_Response",
+      "Update_Operation_Metadata"
+    ],
+    "Queries": {}
+  }
+]

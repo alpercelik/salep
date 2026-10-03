@@ -1,0 +1,8 @@
+{{ include "schema.enum-annotations" ~}}
+public enum {{ target.type_name type.name }}
+{
+    {{~ for enum_value in type.values # begin for enum_value ~}}
+    [JsonStringEnumMemberName({{ target.string_literal enum_value.name }})]
+    {{ target.enum_value_name enum_value.name }}{{ if !for.last # begin if }},{{ end # end if }}
+    {{~ end # end for enum_value ~}}
+}

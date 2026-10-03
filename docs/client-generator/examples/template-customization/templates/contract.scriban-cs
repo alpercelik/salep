@@ -1,0 +1,2 @@
+// Operation document: {{ operation.name }}
+{{ include "default:operations.contract" }}

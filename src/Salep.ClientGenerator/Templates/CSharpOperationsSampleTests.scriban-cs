@@ -1,0 +1,23 @@
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Xunit;
+{{~ for import_item in settings.additional_imports # begin for import_item ~}}
+using {{ import_item }};
+{{~ end # end for import_item ~}}
+using {{ target.default_namespace }};
+
+namespace {{ settings.test_namespace }};
+
+public sealed class OperationsSampleTests
+{
+    [Fact]
+    public async Task OperationsSample_RunAsync_Completes()
+    {
+        using var handler = new TestHttpMessageHandler(_ => TestHttpMessageHandler.JsonResponse({{ settings.sample_response_literal }}));
+        using var httpClient = new HttpClient(handler);
+
+        await OperationsSample.RunAsync(httpClient, new Uri("https://example.test/graphql"));
+        Assert.NotNull(handler.LastRequest);
+    }
+}

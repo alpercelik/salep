@@ -1,0 +1,8 @@
+{{ include "schema.input-annotations" ~}}
+public sealed record {{ target.type_name type.name }}
+{
+    {{~ for field in type.fields # begin for field ~}}
+{{ include "schema.input-property" ~}}
+    {{~ end # end for field ~}}
+{{ include "schema.input-members" ~}}
+}

@@ -1,0 +1,2 @@
+    [global::System.Text.Json.Serialization.JsonIgnore]
+    public string GraphQlTypeName => {{ target.string_literal type.name }};

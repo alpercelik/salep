@@ -23,7 +23,7 @@ mkdir -p "$output"
 output="$(cd "$output" && pwd)"
 
 for project in src/Salep.GraphQLParser/Salep.GraphQLParser.csproj src/Salep.ClientGenerator.MSBuild/Salep.ClientGenerator.MSBuild.csproj; do
-    dotnet pack "$project" --configuration Release --output "$output" "-p:Version=$version"
+    dotnet pack "$project" --configuration Release --disable-build-servers -m:1 --output "$output" "-p:Version=$version"
 done
 for package in "Salep.GraphQLParser.$version.nupkg" "Salep.GraphQLParser.$version.snupkg" "Salep.ClientGenerator.$version.nupkg"; do
     if [[ ! -f "$output/$package" ]]; then echo "Missing release artifact: $package" >&2; exit 1; fi

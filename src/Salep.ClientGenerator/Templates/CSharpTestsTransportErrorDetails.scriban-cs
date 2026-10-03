@@ -1,0 +1,22 @@
+    [Fact]
+    public void GraphQLError_Defaults_Message()
+    {
+        var error = new GraphQLError();
+        Assert.Equal(string.Empty, error.Message);
+        var response = new GraphQLResponse<DummyResponse> { Errors = new[] { error } };
+        Assert.NotNull(response.Errors);
+    }
+
+    [Fact]
+    public void GraphQLError_Deserializes_Details()
+    {
+        var response = ReadResponse<DummyResponse>({{ settings.error_details_literal }});
+        var error = Assert.Single(response.Errors!);
+        Assert.Equal("bad", error.Message);
+        Assert.Equal(2, error.Locations![0].Line);
+        Assert.Equal(4, error.Locations[0].Column);
+        Assert.Equal("users", error.Path![0].GetString());
+        Assert.Equal(0, error.Path[1].GetInt32());
+        Assert.Equal("name", error.Path[2].GetString());
+        Assert.Equal("BAD", error.Extensions!.Value.GetProperty("code").GetString());
+    }

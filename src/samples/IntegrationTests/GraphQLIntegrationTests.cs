@@ -1,29 +1,35 @@
 using System;
 using System.Net;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Alba;
-using GraphQL.Sharp.Generated;
+#if MINIMAL_DEPENDENCIES
+using Salep.Samples.MinimalDependencies.Scriban.Client;
+#else
+using Salep.Samples.Opinionated.Scriban.Client;
+#endif
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using Xunit;
 #if MINIMAL_DEPENDENCIES
-using ModuleGraphQLClient = GraphQL.Sharp.Generated.Module.MinimalDependencies.GeneratedModuleClient;
-using ModuleGraphQLOperations = GraphQL.Sharp.Generated.Module.MinimalDependencies.GeneratedModuleOperations;
+using ModuleGraphQLClient = Salep.Samples.MinimalDependencies.Scriban.ModuleClient.GraphQLModuleClient;
+using ModuleGraphQLOperations = Salep.Samples.MinimalDependencies.Scriban.ModuleClient.GraphQLModuleOperations;
 #else
-using ModuleGraphQLClient = GraphQL.Sharp.Generated.Module.GeneratedModuleClient;
-using ModuleGraphQLOperations = GraphQL.Sharp.Generated.Module.GeneratedModuleOperations;
+using ModuleGraphQLClient = Salep.Samples.Opinionated.Scriban.ModuleClient.GraphQLModuleClient;
+using ModuleGraphQLOperations = Salep.Samples.Opinionated.Scriban.ModuleClient.GraphQLModuleOperations;
 #endif
 
 namespace GeneratedClient.IntegrationTests;
 
 public sealed class GraphQLIntegrationTests : IAsyncLifetime
 {
+    private static readonly string[] ExpectedEchoValues = ["one", "two"];
     private IAlbaHost _host = null!;
     private HttpClient _httpClient = null!;
     private GraphQLOperations _operations = null!;
@@ -42,6 +48,41 @@ public sealed class GraphQLIntegrationTests : IAsyncLifetime
     {
         _httpClient.Dispose();
         await _host.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task DefaultVariablesAndListsRoundTripThroughTheServer()
+    {
+        var token = TestContext.Current.CancellationToken;
+        var defaults = await _operations.UsersDefaultRoleAsync(token);
+        AssertSuccessful(defaults);
+        var variables = await _operations.UsersByRoleAsync(new UsersByRoleVariables(), token);
+        AssertSuccessful(variables);
+        defaults.Data!.Users.ShouldHaveSingleItem();
+        var user = defaults.Data.Users[0];
+        user.Id.ShouldBe("2");
+        user.Name.ShouldBe("Grace");
+        user.Role.ShouldBe(Role.USER);
+#if MINIMAL_DEPENDENCIES
+        user.CreatedAt.ToUniversalTime().ShouldBe(new DateTime(2025, 2, 1, 0, 0, 0, DateTimeKind.Utc));
+#else
+        user.CreatedAt.ShouldBe(NodaTime.Instant.FromUtc(2025, 2, 1, 0, 0));
+#endif
+        variables.Data!.Admins.ShouldBeEmpty();
+        variables.Data.Guests.ShouldBeEmpty();
+        var echoed = await _operations.EchoListAsync(new EchoListVariables { Values = ["one", "two"] }, token);
+        AssertSuccessful(echoed);
+        echoed.Data!.Echoed.ShouldBe(ExpectedEchoValues);
+        var posts = await _operations.PostsByIdsAsync(new PostsByIdsVariables { Ids = ["1"], AllowMissing = false }, token);
+        AssertSuccessful(posts);
+        posts.Data!.Posts.ShouldHaveSingleItem();
+        var post = posts.Data.Posts[0]!;
+        post.Id.ShouldBe("1");
+        post.Title.ShouldBe("Welcome");
+        post.Content.ShouldBe("A sample post");
+        post.Author.Id.ShouldBe("1");
+        post.Author.Name.ShouldBe("Ada");
+        post.Author.Role.ShouldBe(Role.ADMIN);
     }
 
     [Fact]

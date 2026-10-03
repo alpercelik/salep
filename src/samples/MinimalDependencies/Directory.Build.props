@@ -1,8 +1,0 @@
-<Project>
-  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
-  <PropertyGroup>
-    <TargetFrameworks>net11.0</TargetFrameworks>
-    <LangVersion>preview</LangVersion>
-    <ArtifactsPath>$(MSBuildThisFileDirectory)artifacts</ArtifactsPath>
-  </PropertyGroup>
-</Project>

@@ -1,0 +1,13 @@
+    [Fact]
+    public async Task {{ settings.get_test_name }}()
+    {
+        using var handler = new TestHttpMessageHandler(_ => TestHttpMessageHandler.JsonResponse({{ settings.transport_response_literal }}));
+        using var httpClient = new HttpClient(handler);
+        var client = new {{ settings.client_name }}(httpClient, new Uri("https://example.test/graphql"));
+        _ = await client.ExecuteAsync(new DummyOperation(true, null), TestContext.Current.CancellationToken);
+        Assert.Equal(HttpMethod.{{ if settings.get_fits # begin if }}Get{{ else # else }}Post{{ end # end if }}, handler.LastRequest!.Method);
+        {{~ if settings.get_fits # begin if settings_get_fits ~}}
+        Assert.Contains("operationName=TestOp", handler.LastRequest.RequestUri!.Query);
+        Assert.Contains("query=", handler.LastRequest.RequestUri.Query);
+        {{~ end # end if settings_get_fits ~}}
+    }

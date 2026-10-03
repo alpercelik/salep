@@ -1,0 +1,29 @@
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+{{~ for import_item in target.imports # begin for import_item ~}}
+using {{ import_item }};
+{{~ end # end for import_item ~}}
+
+namespace {{ target.default_namespace }};
+
+{{ include "client.annotations" ~}}
+public sealed class {{ settings.client_name }}
+{
+{{ include "client.fields" ~}}
+{{ include "client.constructor" ~}}
+{{ include "client.execute" ~}}
+{{ include "client.batch" ~}}
+{{ include "client.incremental" ~}}
+{{ include "client.post" ~}}
+{{ include "client.read-response" ~}}
+{{ include "client.get-helpers" ~}}
+{{ include "client.multipart-helpers" ~}}
+{{ include "client.members" ~}}
+}

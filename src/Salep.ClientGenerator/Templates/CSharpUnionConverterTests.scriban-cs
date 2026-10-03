@@ -1,0 +1,80 @@
+using System.Text.Json;
+using Xunit;
+{{~ for import_item in settings.additional_imports # begin for import_item ~}}
+using {{ import_item }};
+{{~ end # end for import_item ~}}
+
+using {{ target.default_namespace }};
+
+namespace {{ settings.test_namespace }};
+
+public sealed class UnionConverterTests
+{
+    {{~ for type in schema_types # begin for type ~}}
+        {{~ if (type.kind == "union" || type.kind == "interface_result") && type.members.size > 0 # begin if ~}}
+            {{~ for member in type.members # begin for member ~}}
+    [Fact]
+    public void {{ type.csharp_union_name }}_Deserializes_{{ target.type_name member }}()
+    {
+        var options = new JsonSerializerOptions();
+                {{~ for registry in settings.converter_registries # begin for registry ~}}
+        {{ registry }}.Register(options);
+                {{~ end # end for registry ~}}
+        var result = JsonSerializer.Deserialize<{{ type.csharp_union_name }}>({{ settings.json_literals[member] }}, options);
+                {{~ if settings.native_unions # begin if ~}}
+        Assert.True(result.Value is {{ target.type_name member }});
+                {{~ else # else ~}}
+        Assert.NotNull(result);
+                {{~ end # end if ~}}
+    }
+
+            {{~ end # end for member ~}}
+    [Fact]
+    public void {{ type.csharp_union_name }}_Write_Serializes_{{ target.type_name type.members[0] }}()
+    {
+        var options = new JsonSerializerOptions();
+            {{~ for registry in settings.converter_registries # begin for registry ~}}
+        {{ registry }}.Register(options);
+            {{~ end # end for registry ~}}
+        var value = JsonSerializer.Deserialize<{{ type.csharp_union_name }}>({{ settings.json_literals[type.members[0]] }}, options);
+        var json = JsonSerializer.Serialize(value, options);
+
+        Assert.False(string.IsNullOrWhiteSpace(json));
+    }
+
+            {{~ if type.kind == "union" # begin if ~}}
+    [Fact]
+    public void {{ target.type_name type.name }}_Read_Returns_Null_When_Json_Null()
+    {
+        var options = new JsonSerializerOptions();
+                {{~ for registry in settings.converter_registries # begin for registry ~}}
+        {{ registry }}.Register(options);
+                {{~ end # end for registry ~}}
+        var result = JsonSerializer.Deserialize<{{ target.type_name type.name }}?>("null", options);
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void {{ target.type_name type.name }}_Read_Throws_When_Typename_Missing()
+    {
+        var options = new JsonSerializerOptions();
+                {{~ for registry in settings.converter_registries # begin for registry ~}}
+        {{ registry }}.Register(options);
+                {{~ end # end for registry ~}}
+        Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<{{ target.type_name type.name }}>("{\"id\":\"sample\"}", options));
+    }
+
+    [Fact]
+    public void {{ target.type_name type.name }}_Read_Throws_When_Typename_Unknown()
+    {
+        var options = new JsonSerializerOptions();
+                {{~ for registry in settings.converter_registries # begin for registry ~}}
+        {{ registry }}.Register(options);
+                {{~ end # end for registry ~}}
+        Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<{{ target.type_name type.name }}>("{\"__typename\":\"Unknown\"}", options));
+    }
+
+            {{~ end # end if ~}}
+        {{~ end # end if ~}}
+    {{~ end # end for type ~}}
+}

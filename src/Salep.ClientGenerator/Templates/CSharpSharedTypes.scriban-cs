@@ -1,0 +1,15 @@
+using System.Text.Json;
+{{~ for import_item in target.imports # begin for import_item ~}}
+using {{ import_item }};
+{{~ end # end for import_item ~}}
+namespace {{ target.default_namespace }};
+
+{{~ if settings.emit_operation_interface # begin if settings_emit_operation_interface ~}}
+{{ include "shared.operation-interface" ~}}
+{{~ end # end if settings_emit_operation_interface ~}}
+
+{{~ if settings.emit_core_types # begin if settings_emit_core_types ~}}
+{{ include "shared.request" ~}}
+{{ include "shared.response" ~}}
+{{ include "shared.errors" ~}}
+{{~ end # end if settings_emit_core_types ~}}

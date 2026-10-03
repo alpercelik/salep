@@ -1,0 +1,2 @@
+    // GraphQL field: {{ type.name }}.{{ field.name }}
+{{ include "default:schema.object-property" }}

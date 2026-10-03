@@ -1,0 +1,2 @@
+    [JsonPropertyName({{ target.string_literal variable.name }})]
+    public {{ variable.type }} {{ variable.property_name }} { get; init; }{{ if variable.is_non_null_reference # begin if }} = default!;{{ end # end if }}

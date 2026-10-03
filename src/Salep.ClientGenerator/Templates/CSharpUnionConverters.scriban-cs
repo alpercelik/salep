@@ -1,0 +1,13 @@
+using System.Text.Json;
+{{~ for import_item in target.imports # begin for import_item ~}}
+using {{ import_item }};
+{{~ end # end for import_item ~}}
+namespace {{ target.default_namespace }};
+
+{{ include "converters.registry" ~}}
+
+{{~ for type in schema_types # begin for type ~}}
+    {{~ if (type.kind == "union" || type.kind == "interface_result") && type.members.size > 0 # begin if type_kind_union_type ~}}
+{{ include "converters.declaration" ~}}
+    {{~ end # end if type_kind_union_type ~}}
+{{~ end # end for type ~}}

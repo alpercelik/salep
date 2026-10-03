@@ -1,0 +1,5 @@
+public sealed record GraphQLResponse<TResponse>
+{
+    public TResponse? Data { get; init; }
+    public GraphQLError[]? Errors { get; init; }
+}

@@ -1,0 +1,18 @@
+public interface {{ operations_interface }}
+{
+    {{~ for operation in csharp_operations # begin for operation ~}}
+    Task<GraphQLResponse<{{ operation.response_type }}>> {{ operation.method_name }}({{ if operation.variables.size > 0 # begin if }}{{ operation.variables_type }} variables, {{ end # end if }}CancellationToken cancellationToken = default);
+    {{~ end # end for operation ~}}
+}
+
+public sealed class {{ operations_class }} : {{ operations_interface }}
+{
+    private readonly {{ client_class }} _client;
+    public {{ operations_class }}({{ client_class }} client) => _client = client;
+
+    {{~ for operation in csharp_operations # begin for operation ~}}
+    public Task<GraphQLResponse<{{ operation.response_type }}>> {{ operation.method_name }}({{ if operation.variables.size > 0 # begin if }}{{ operation.variables_type }} variables, {{ end # end if }}CancellationToken cancellationToken = default)
+        => _client.ExecuteAsync(new {{ operation.type_name }}({{ if operation.variables.size > 0 # begin if }}variables{{ else # else }}null{{ end # end if }}), cancellationToken);
+
+    {{~ end # end for operation ~}}
+}

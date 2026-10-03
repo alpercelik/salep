@@ -1,0 +1,21 @@
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+{{~ for import_item in target.imports # begin for import_item ~}}
+using {{ import_item }};
+{{~ end # end for import_item ~}}
+
+namespace {{ target.default_namespace }};
+
+{{~ for operation in csharp_operations # begin for operation ~}}
+{{ include "operations.contract" ~}}
+{{ include "operations.variables" ~}}
+    {{~ for type in operation.response_types # begin for type ~}}
+        {{~ if type.kind == "abstract" # begin if type_kind_abstract ~}}
+{{ include "operations.response-converter" ~}}
+        {{~ else # else if type_kind_abstract ~}}
+{{ include "operations.response-object" ~}}
+        {{~ end # end if type_kind_abstract ~}}
+    {{~ end # end for type ~}}
+{{~ end # end for operation ~}}
+{{ include "operations.facade" ~}}

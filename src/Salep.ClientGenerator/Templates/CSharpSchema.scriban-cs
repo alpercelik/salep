@@ -1,0 +1,18 @@
+{{~ for import_item in target.imports # begin for import_item ~}}
+using {{ import_item }};
+{{~ end # end for import_item ~}}
+namespace {{ target.default_namespace }};
+
+{{~ for type in schema_types # begin for type ~}}
+    {{~ if type.kind == "object" # begin if type_kind_object ~}}
+{{ include "schema.object" ~}}
+    {{~ else if type.kind == "input" # else if type_kind_object ~}}
+{{ include "schema.input" ~}}
+    {{~ else if type.kind == "interface" # else if type_kind_object ~}}
+{{ include "schema.interface" ~}}
+    {{~ else if type.kind == "enum" # else if type_kind_object ~}}
+{{ include "schema.enum" ~}}
+    {{~ else if type.kind == "union" || type.kind == "interface_result" # else if type_kind_object ~}}
+{{ include "schema.union" ~}}
+    {{~ end # end if type_kind_object ~}}
+{{~ end # end for type ~}}

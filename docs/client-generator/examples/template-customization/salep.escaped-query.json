@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "kind": "client",
+  "schema": "schema.graphql",
+  "operations": "graphql",
+  "namespace": "Example.Escaped",
+  "clientName": "ExampleClient",
+  "output": "EscapedGenerated",
+  "templates": {
+    "operations.contract": "templates/escaped-contract.scriban-cs"
+  }
+}

@@ -1,9 +1,0 @@
-{
-  "version": 1,
-  "kind": "client",
-  "profile": "./base.config.json",
-  "namespace": "GraphQL.Sharp.Generated",
-  "clientName": "GraphQLClient",
-  "operations": "./graphql",
-  "output": "./Generated"
-}

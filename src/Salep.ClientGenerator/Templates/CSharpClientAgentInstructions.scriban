@@ -1,0 +1,25 @@
+# AI Agent Directives — Generated GraphQL Client
+
+> **NOTICE FOR AI AGENTS AND DEVELOPERS**:
+> This directory contains auto-generated build artifacts produced by Salep.
+> Do not manually edit, format, rename, or delete files in this directory. Regeneration overwrites them.
+
+## How to change generated code
+
+1. Edit the GraphQL schema file.
+2. Edit or add `.graphql` operation documents.
+3. Change generator configuration for namespaces, client naming, scalar mappings, union representation, and transport options.
+4. Rebuild to regenerate the client.
+
+## How to consume the client
+
+- Treat generated files as a read-only, strongly typed API. Inspect operation and response models to discover methods and fields.
+- HTTP GET for query operations is {{ if settings.use_http_get # begin if }}enabled{{ else # else }}disabled{{ end # end if }}. Batching is {{ if settings.enable_batching # begin if }}enabled{{ else # else }}disabled{{ end # end if }}.
+{{~ if csharp.use_native_unions # begin if ~}}
+- GraphQL unions and interfaces use native C# union declarations. Handle them with exhaustive type-pattern `switch` expressions.
+{{~ else # else ~}}
+- GraphQL unions and interfaces use Dunet discriminated unions. Use exhaustive `.Match(...)` methods; do not cast or use type-pattern checks.
+{{~ end # end if ~}}
+- Register `{{ settings.client_name }}` with `IHttpClientFactory` and provide the GraphQL endpoint URI.
+- Check `response.Errors` before relying on `response.Data`. GraphQL can return partial data together with errors.
+- For multi-project generation, build referenced client projects first. Their manifests define ownership of shared generated types; downstream generation suppresses ancestor-owned declarations.

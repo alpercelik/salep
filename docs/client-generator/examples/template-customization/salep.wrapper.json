@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "kind": "client",
+  "profile": "profile/templates.json",
+  "schema": "schema.graphql",
+  "operations": "graphql",
+  "namespace": "Example.Wrapped",
+  "clientName": "ExampleClient",
+  "output": "WrappedGenerated",
+  "templates": {
+    "client": "templates/client-wrapper.scriban-cs",
+    "client.read-response": "templates/read-response.scriban-cs"
+  }
+}

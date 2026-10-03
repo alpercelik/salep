@@ -1,0 +1,1 @@
+    public string DocumentName => {{ target.string_literal operation.name }};
