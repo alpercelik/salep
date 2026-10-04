@@ -13,7 +13,7 @@ Salep transforms GraphQL SDL schemas (`.graphql`) and executable operation files
 1. **Schema and Operations as Single Source of Truth**:
    The generator is pure and deterministic. Types, operations, serialization rules, and tests are strictly derived from GraphQL documents, eliminating manual boilerplate and schema drift.
 2. **Build-Time Generation over Runtime Reflection**:
-   Code generation executes at build time (`CoreCompile` after referenced projects build), emitting standard C# records, classes, and JSON converters. There is zero runtime reflection, expression compilation, or dynamic proxying.
+   Code generation executes at build time (`CoreCompile` after referenced projects build), emitting standard C# records, classes, and JSON converters. The generated client uses System.Text.Json and generated union converters; no Salep runtime assembly is required.
 3. **Zero Runtime Coupling**:
    The code generator itself disappears from the runtime architecture. Consuming applications do not reference `Salep.ClientGenerator.dll`, Roslyn, HotChocolate, or MSBuild assemblies at runtime.
 4. **First-Class Discriminated Unions**:
@@ -127,11 +127,11 @@ The MSBuild build-time execution lifecycle proceeds as follows:
      │ Loads the selected versioned config and verifies dependency contracts
      │
 [2. Incremental Check]
-     │ Compares timestamps of inputs (schemas, operations, config) against $(SalepGeneratedMarker)
+     │ Compares timestamps of verified inputs and owned outputs (including templates) against salep.generated.stamp under IntermediateOutputPath
      │ If up-to-date -> Skip to [7. Compilation]
      │
 [3. Out-of-Process CLI Execution]
-     │ Invokes: dotnet exec Salep.ClientGenerator.Cli.dll --config salep.json
+     │ Invokes: dotnet exec Salep.ClientGenerator.Cli.dll generate --config salep.json
      │
 [4. Semantic Loading & Inheritance Resolution]
      │ Parses GraphQL SDL schema (Salep.GraphQLParser)
@@ -141,12 +141,12 @@ The MSBuild build-time execution lifecycle proceeds as follows:
      │ Emits SchemaTypes.cs (C# records, enums, input types)
      │ Emits Operations.cs (request/response models, parameter records)
      │ Emits UnionJsonConverters.cs (System.Text.Json converters)
-     │ Emits GraphQLClient.cs (typed async client methods)
+     │ Emits GraphQLClient.cs (generic typed ExecuteAsync transport)
      │ Emits Tests (xUnit test classes with deterministic mock HTTP handler)
      │
 [6. Manifest Generation]
      │ Writes .salep.manifest.json recording owned types and operations
-     │ Writes timestamp marker to $(SalepGeneratedMarker)
+     │ Writes timestamp marker to salep.generated.stamp under IntermediateOutputPath
      │
 [7. Compilation]
      │ Injects emitted .cs files into @(Compile)

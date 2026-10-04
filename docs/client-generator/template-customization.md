@@ -381,3 +381,7 @@ Empty files in this table are additive hooks. Other files contain the existing d
 | `tests.transport-null-responses` | `CSharpTestsTransportNullResponses.scriban-cs` | Replacement fragment |
 
 See [the NSwag analysis and design](template-customization-analysis.md) for the source-based investigation and [the default backend](scriban-backend.md) for generation and package workflows.
+
+## Template filesystem access
+
+Overrides may read local template files. Template folders outside the solution must be granted with `SalepReadRoot` or `--read-root`; configuring an override or profile does not grant that folder access by itself. See [filesystem boundaries](consumer-guide.md#filesystem-boundaries) for CLI, MSBuild and library examples. `include` continues to accept only catalog keys and `default:` keys, never filesystem paths. Export templates to a subdirectory inside the solution boundary; linked export files/directories are rejected. All exported file paths use `/`.

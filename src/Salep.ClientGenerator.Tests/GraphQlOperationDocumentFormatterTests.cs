@@ -21,7 +21,7 @@ public sealed class GraphQlOperationDocumentFormatterTests
         Assert.Contains("__typename", result, StringComparison.Ordinal);
         Assert.Contains("fragment NodeFields", result, StringComparison.Ordinal);
         Assert.DoesNotContain("fragment Unused", result, StringComparison.Ordinal);
-        Assert.Contains("fragment NodeFields on Node {\n  __typename", result, StringComparison.Ordinal);
+        Assert.Contains("fragment NodeFields on Node {" + Environment.NewLine + "  __typename", result, StringComparison.Ordinal);
     }
 
     [Fact]

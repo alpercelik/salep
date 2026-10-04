@@ -15,6 +15,6 @@ The Roslyn implementation and its sample projects have been retired. Scriban is 
 
 `src/Salep.slnx` is the complete solution. `src/Salep.Core.slnf` selects the parser, generator, CLI, MSBuild, tests and parser benchmarks without samples. `Salep.GraphQLParser.PublicApiConsumer` stays outside both and runs only through the paired package verification scripts.
 
-Samples live under `src/samples/Scriban/Opinionated/` and `src/samples/Scriban/MinimalDependencies/`. Each owns its operation inputs. Both share `src/samples/Salep.Samples.GraphQLServer/`. Root build/package configuration supplies dependency versions. `build-salep.sh` and `build-salep.ps1` restore samples against the exact package version packed by that invocation.
+Samples live under `src/samples/Opinionated/` and `src/samples/MinimalDependencies/`. Each owns its operation inputs. Both share `src/samples/Salep.Samples.GraphQLServer/`. Root build/package configuration supplies dependency versions. `build-salep.sh` and `build-salep.ps1` restore samples against the exact package version packed by that invocation.
 
 See [parser documentation](parser/README.md), [generator documentation](client-generator/README.md), [generator verification](client-generator/generator-parity.md), [template customization](client-generator/template-customization.md) and [releases](releases.md).

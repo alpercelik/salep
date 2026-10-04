@@ -10,7 +10,7 @@ namespace Salep.ClientGenerator.Generation;
 
 /// <summary>Filesystem generation options for the Scriban backend.</summary>
 public sealed record ScribanGeneratorEnvironment(string? TargetFramework, string? LanguageVersion, IReadOnlyList<string>? ReferencedConfigurations = null);
-public sealed record ScribanGeneratorOptions(string? ConfigPath = null, string? WorkingDirectory = null, ScribanGeneratorEnvironment? Environment = null);
+public sealed record ScribanGeneratorOptions(string? ConfigPath = null, string? WorkingDirectory = null, ScribanGeneratorEnvironment? Environment = null, IReadOnlyList<string>? AllowedReadRoots = null, string? SolutionDirectory = null);
 
 /// <summary>A diagnostic emitted while resolving or running a Scriban generation contract.</summary>
 public sealed record ScribanDiagnostic(string Code, string ConfigurationPath, string Property, string Message, string Guidance);
@@ -33,9 +33,9 @@ public static class ScribanGenerator
     public static ScribanGeneratorResult Validate(ScribanGeneratorOptions options)
     {
         var plan = Prepare(options);
-        if (plan.Configuration.Kind == "profile") return new([], [$"Validated profile '{plan.Configuration.ConfigurationPath}'."]);
+        if (plan.Configuration.Kind == "profile") return new([], [$"Validated profile '{GeneratorPathPolicy.Normalize(plan.Configuration.ConfigurationPath)}'."]);
         CheckOwnership(plan);
-        return new([], [$"Validated {plan.Configuration.Kind} configuration '{plan.Configuration.ConfigurationPath}'."]);
+        return new([], [$"Validated {plan.Configuration.Kind} configuration '{GeneratorPathPolicy.Normalize(plan.Configuration.ConfigurationPath)}'."]);
     }
 
     public static ScribanGeneratorResult Generate(ScribanGeneratorOptions options)
@@ -43,8 +43,8 @@ public static class ScribanGenerator
         var plan = Prepare(options);
         if (plan.Configuration.Kind == "profile") throw Error("SALEPS1004", plan.Configuration.ConfigurationPath, "kind", "Profiles provide defaults and cannot generate output.", "Select a client or tests configuration.");
         Publish(plan);
-        return new(plan.Outputs.Keys.Select(name => Path.Combine(plan.Configuration.Output, name)).ToArray(),
-            [$"Generated {plan.Outputs.Count} files from '{plan.Configuration.ConfigurationPath}'.", $"Manifest: {Path.Combine(plan.Configuration.Output, ManifestFileName)}"]);
+        return new(plan.Outputs.Keys.Select(name => GeneratorPathPolicy.Normalize(Path.Combine(plan.Configuration.Output, name))).ToArray(),
+            [$"Generated {plan.Outputs.Count} files from '{GeneratorPathPolicy.Normalize(plan.Configuration.ConfigurationPath)}'.", $"Manifest: {GeneratorPathPolicy.Normalize(Path.Combine(plan.Configuration.Output, ManifestFileName))}"]);
     }
 
     /// <summary>Returns configuration, schema, operation, and currently owned output paths for build tracking.</summary>
@@ -59,10 +59,10 @@ public static class ScribanGenerator
         foreach (var file in plan.Outputs.Keys) paths.Add(Path.Combine(plan.Configuration.Output, file));
         if (File.Exists(manifestPath))
         {
-            var manifest = ReadManifest(manifestPath, plan.Configuration.ConfigurationPath, required: true, verifyOutputs: false)!;
+            var manifest = ReadManifest(manifestPath, plan.Configuration.ConfigurationPath, plan.Paths, required: true, verifyOutputs: false)!;
             foreach (var file in manifest.Files.Keys) paths.Add(Path.Combine(plan.Configuration.Output, file));
         }
-        return paths.Order(PathComparer).ToArray();
+        return paths.Select(GeneratorPathPolicy.Normalize).Order(PathComparer).ToArray();
     }
 
     private static Plan Prepare(ScribanGeneratorOptions options)
@@ -72,36 +72,39 @@ public static class ScribanGenerator
     {
         ArgumentNullException.ThrowIfNull(options);
         var working = Path.GetFullPath(options.WorkingDirectory ?? Environment.CurrentDirectory);
-        var path = Path.GetFullPath(options.ConfigPath ?? "salep.json", working);
+        var path = Path.GetFullPath(GeneratorPathPolicy.Normalize(options.ConfigPath ?? "salep.json"), working);
         if (!configurationStack.Add(path)) throw Error("SALEPS1002", path, "baseClient", "Client configuration reference cycle detected.");
         try
         {
-        var resolved = Config.Resolve(path, new HashSet<string>(PathComparer));
+        var paths = new GeneratorPathPolicy(options.SolutionDirectory ?? GeneratorPathPolicy.FindSolutionRoot(Path.GetDirectoryName(path)!), options.AllowedReadRoots);
+        paths.Read(path);
+        var resolved = Config.Resolve(path, new HashSet<string>(PathComparer), paths);
+        paths.Write(resolved.Output, allowRoot: false);
         if (resolved.Kind == "profile")
         {
             var empty = new Dictionary<string, string>(StringComparer.Ordinal);
             var profileManifest = new Manifest { OutputDirectory = resolved.Output, Configuration = resolved.ConfigurationPath, ConfigurationIdentity = Path.GetRelativePath(resolved.Output, resolved.ConfigurationPath), Kind = resolved.Kind }.Seal();
-            return new(resolved, empty, empty, profileManifest);
+            return new(resolved, empty, empty, profileManifest, paths);
         }
         Plan? baseClientPlan = null;
         Manifest? baseManifest = null;
         if (resolved.BaseClient is { } baseClientPath)
         {
-            baseClientPlan = Prepare(new ScribanGeneratorOptions(baseClientPath, null, options.Environment), configurationStack);
+            baseClientPlan = Prepare(new ScribanGeneratorOptions(baseClientPath, null, options.Environment, paths.ReadRoots), configurationStack);
             if (baseClientPlan.Configuration.Kind != "client") throw Error("SALEPS1004", path, "baseClient", "baseClient must reference a client configuration.");
             var parentManifestPath = Path.Combine(baseClientPlan.Configuration.Output, ManifestFileName);
-            baseManifest = ReadManifest(parentManifestPath, baseClientPlan.Configuration.ConfigurationPath, required: true);
+            baseManifest = ReadManifest(parentManifestPath, baseClientPlan.Configuration.ConfigurationPath, baseClientPlan.Paths, required: true);
             if (baseManifest!.Fingerprint != CreateManifest(baseClientPlan).Fingerprint)
-                throw Error("SALEPS2002", path, "baseClient", $"Base client '{baseClientPlan.Configuration.ConfigurationPath}' is stale.", "Regenerate the base client before generating this client.");
+                throw Error("SALEPS2002", path, "baseClient", $"Base client '{GeneratorPathPolicy.Normalize(baseClientPlan.Configuration.ConfigurationPath)}' is stale.", "Regenerate the base client before generating this client.");
         }
         if (resolved.UseNativeUnions && options.Environment is { } environment
             && (environment.TargetFramework?.StartsWith("net11.", StringComparison.Ordinal) != true || environment.LanguageVersion != "preview"))
             throw Error("SALEPS3001", path, "targetFramework", "Native unions require net11.0 and LangVersion=preview.", "Update the consuming project or select Dunet in the Scriban configuration.");
 
         var schemaPath = resolved.Schema ?? throw Error("SALEPS1001", path, "schema", "A schema path is required for client generation.");
-        if (!File.Exists(schemaPath)) throw Error("SALEPS1001", path, "schema", $"Schema '{schemaPath}' does not exist.");
-        var operationFiles = ResolveOperationFiles(resolved.Operations);
-        if (operationFiles.Count == 0) throw Error("SALEPS1001", path, "operations", $"No GraphQL operation files matched '{resolved.Operations}'.");
+        if (!File.Exists(schemaPath)) throw Error("SALEPS1001", path, "schema", $"Schema '{GeneratorPathPolicy.Normalize(schemaPath)}' does not exist.");
+        var operationFiles = ResolveOperationFiles(resolved.Operations, paths);
+        if (operationFiles.Count == 0) throw Error("SALEPS1001", path, "operations", $"No GraphQL operation files matched '{GeneratorPathPolicy.Normalize(resolved.Operations)}'.");
         foreach (var input in operationFiles)
             if (!File.Exists(input)) throw Error("SALEPS1001", path, "operations", $"Operation input '{input}' does not exist.");
 
@@ -245,6 +248,7 @@ public static class ScribanGenerator
                 inputPaths.Add(Path.Combine(baseClientPlan.Configuration.Output, ManifestFileName));
                 foreach (var file in baseManifest.Files.Keys) inputPaths.Add(Path.Combine(baseClientPlan.Configuration.Output, file));
             }
+            foreach (var input in inputPaths) paths.Read(input);
             var inputs = inputPaths.ToDictionary(file => file, HashFile, PathComparer);
             var outputTypeSignatures = baseManifest is null ? new Dictionary<string, string>(StringComparer.Ordinal) : new Dictionary<string, string>(baseManifest.TypeSignatures, StringComparer.Ordinal);
             foreach (var localType in typeSignatures.Where(type => localTypeNames.Contains(type.Key))) outputTypeSignatures[localType.Key] = localType.Value;
@@ -276,9 +280,9 @@ public static class ScribanGenerator
                 var available = referenceConfigs.Select(reference => Path.GetFullPath(reference, working)).ToHashSet(PathComparer);
                 foreach (var dependency in manifest.Dependencies.Keys)
                     if (!available.Contains(Path.GetFullPath(dependency)))
-                        throw Error("SALEPS3002", path, "projectReference", $"Base client '{dependency}' is not available through the project-reference chain.", "Add the appropriate ProjectReference; Scriban does not modify project files.");
+                        throw Error("SALEPS3002", path, "projectReference", $"Base client '{GeneratorPathPolicy.Normalize(dependency)}' is not available through the project-reference chain.", "Add the appropriate ProjectReference; Scriban does not modify project files.");
             }
-            return new(resolved, outputs, inputs, manifest);
+            return new(resolved, outputs, inputs, manifest, paths);
         }
         catch (ScribanConfigurationException) { throw; }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException or FormatException or global::Scriban.Syntax.ScriptRuntimeException)
@@ -286,32 +290,58 @@ public static class ScribanGenerator
             throw Error("SALEPS1006", path, "$", exception.Message, "Correct the reported input or output error and rerun 'salep validate'.");
         }
         }
+        catch (InvalidDataException exception)
+        {
+            throw Error("SALEPS1007", path, "paths", exception.Message, "Keep paths within the solution; grant external read-only inputs using --read-root or SalepReadRoot.");
+        }
         finally { configurationStack.Remove(path); }
     }
 
     private static void CheckOwnership(Plan plan, bool lockHeld = false)
     {
         var directory = plan.Configuration.Output;
+        CheckOutputPaths(plan);
         using var guard = !lockHeld && Directory.Exists(directory)
             ? AcquireLock(Path.Combine(directory, ".salep.lock")) : null;
         var manifestPath = Path.Combine(directory, ManifestFileName);
-        var current = ReadManifest(manifestPath, plan.Configuration.ConfigurationPath, required: false, lockHeld: true, verifyOutputs: false);
+        var current = ReadManifest(manifestPath, plan.Configuration.ConfigurationPath, plan.Paths, required: false, lockHeld: true, verifyOutputs: false);
         if (current is null && Directory.Exists(directory) && Directory.EnumerateFiles(directory, "*.cs").Any())
-            throw Error("SALEPS2003", plan.Configuration.ConfigurationPath, "output", $"Output '{directory}' contains C# files without a Scriban ownership manifest.", "Choose an empty output directory or move unowned files before generating.");
+            throw Error("SALEPS2003", plan.Configuration.ConfigurationPath, "output", $"Output '{GeneratorPathPolicy.Normalize(directory)}' contains C# files without a Scriban ownership manifest.", "Choose an empty output directory or move unowned files before generating.");
         if (current is not null)
             foreach (var name in plan.Outputs.Keys)
                 if (!current.Files.ContainsKey(name) && File.Exists(Path.Combine(directory, name)))
                     throw Error("SALEPS2003", plan.Configuration.ConfigurationPath, "output", $"Planned output '{name}' already exists without Scriban ownership.", "Move the unowned file or choose another output directory.");
     }
 
+    private static void CheckOutputPaths(Plan plan)
+    {
+        try
+        {
+            var paths = plan.Paths;
+            paths.Write(plan.Configuration.Output, allowRoot: false);
+            foreach (var name in plan.Outputs.Keys)
+            {
+                if (!GeneratorPathPolicy.IsOutputName(name)) throw new InvalidDataException("Invalid generated output filename.");
+                paths.Write(Path.Combine(plan.Configuration.Output, name));
+            }
+            foreach (var name in new[] { ManifestFileName, ".salep-scriban.manifest.json", ".salep.lock" })
+                paths.Write(Path.Combine(plan.Configuration.Output, name));
+        }
+        catch (InvalidDataException exception)
+        {
+            throw Error("SALEPS1007", plan.Configuration.ConfigurationPath, "output", exception.Message);
+        }
+    }
+
     private static void Publish(Plan plan)
     {
+        CheckOutputPaths(plan);
         Directory.CreateDirectory(plan.Configuration.Output);
         var lockPath = Path.Combine(plan.Configuration.Output, ".salep.lock");
         using var guard = AcquireLock(lockPath);
         CheckOwnership(plan, lockHeld: true);
         var manifestPath = Path.Combine(plan.Configuration.Output, ManifestFileName);
-        var previous = ReadManifest(manifestPath, plan.Configuration.ConfigurationPath, required: false, lockHeld: true, verifyOutputs: false);
+        var previous = ReadManifest(manifestPath, plan.Configuration.ConfigurationPath, plan.Paths, required: false, lockHeld: true, verifyOutputs: false);
         var manifest = CreateManifest(plan).Serialize();
         var stage = Path.Combine(plan.Configuration.Output, ".salep-stage-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(stage);
@@ -336,16 +366,20 @@ public static class ScribanGenerator
         finally { Directory.Delete(stage, true); }
     }
 
-    private static Manifest? ReadManifest(string path, string configuration, bool required, bool lockHeld = false, bool verifyOutputs = true)
+    private static Manifest? ReadManifest(string path, string configuration, GeneratorPathPolicy readPaths, bool required, bool lockHeld = false, bool verifyOutputs = true)
     {
         var directory = Path.GetDirectoryName(path)!;
+        var outputPaths = readPaths;
+        outputPaths.Write(path);
+        outputPaths.Write(Path.Combine(directory, ".salep.lock"));
+        outputPaths.Write(Path.Combine(directory, ".salep-scriban.manifest.json"));
         using var guard = !lockHeld && Directory.Exists(directory)
             ? AcquireLock(Path.Combine(directory, ".salep.lock")) : null;
         if (!File.Exists(path) && File.Exists(Path.Combine(directory, ".salep-scriban.manifest.json")))
             path = Path.Combine(directory, ".salep-scriban.manifest.json");
         if (!File.Exists(path))
         {
-            if (required) throw Error("SALEPS2001", configuration, "manifest", $"Manifest '{path}' does not exist.");
+            if (required) throw Error("SALEPS2001", configuration, "manifest", $"Manifest '{GeneratorPathPolicy.Normalize(path)}' does not exist.");
             return null;
         }
         try
@@ -378,21 +412,25 @@ public static class ScribanGenerator
                     throw new InvalidDataException("Manifest version or fingerprint is invalid.");
             }
             var identity = string.IsNullOrWhiteSpace(manifest.ConfigurationIdentity)
-                ? Path.GetFullPath(manifest.Configuration, directory)
-                : Path.GetFullPath(manifest.ConfigurationIdentity, Path.GetDirectoryName(path)!);
+                ? Path.GetFullPath(GeneratorPathPolicy.Normalize(manifest.Configuration), directory)
+                : Path.GetFullPath(GeneratorPathPolicy.Normalize(manifest.ConfigurationIdentity), Path.GetDirectoryName(path)!);
             if (!PathComparer.Equals(identity, Path.GetFullPath(configuration)))
-                throw Error("SALEPS2003", configuration, "output", $"Output is already owned by '{manifest.Configuration}'.", "Use a separate output directory.");
-            if (manifest.Files.Keys.Any(name => Path.GetFileName(name) != name || name == ManifestFileName))
+                throw Error("SALEPS2003", configuration, "output", $"Output is already owned by '{GeneratorPathPolicy.Normalize(manifest.Configuration)}'.", "Use a separate output directory.");
+            if (manifest.Files.Keys.Any(name => !GeneratorPathPolicy.IsOutputName(name)))
                 throw new InvalidDataException("Manifest contains an invalid output path.");
+            foreach (var name in manifest.Files.Keys) outputPaths.Write(Path.Combine(directory, name));
             foreach (var file in verifyOutputs ? manifest.Files : new Dictionary<string, string>())
                 if (!File.Exists(Path.Combine(Path.GetDirectoryName(path)!, file.Key)) || HashFile(Path.Combine(Path.GetDirectoryName(path)!, file.Key)) != file.Value)
                     throw Error("SALEPS2002", configuration, "manifest", $"Owned output '{file.Key}' is missing or has been modified.", "Restore the generated file or clear the Scriban-owned output directory before regenerating.");
-            return manifest.ResolvePaths(directory) with { SourceManifestPath = path };
+            var resolved = manifest.ResolvePaths(directory);
+            readPaths.Read(resolved.Configuration);
+            foreach (var input in resolved.Inputs.Keys.Concat(resolved.Dependencies.Keys)) readPaths.Read(input);
+            return resolved with { SourceManifestPath = path };
         }
         catch (ScribanConfigurationException) { throw; }
         catch (Exception exception) when (exception is IOException or JsonException or InvalidDataException or ArgumentException or KeyNotFoundException or InvalidOperationException)
         {
-            throw Error("SALEPS2001", configuration, "manifest", $"Cannot read verified manifest '{path}': {exception.Message}", "Generate from a clean output directory or restore the manifest and its files.");
+            throw Error("SALEPS2001", configuration, "manifest", $"Cannot read verified manifest '{GeneratorPathPolicy.Normalize(path)}': {exception.Message}", "Generate from a clean output directory or restore the manifest and its files.");
         }
     }
 
@@ -460,10 +498,11 @@ public static class ScribanGenerator
         return string.Join('\n', lines);
     }
 
-    private static IReadOnlyList<string> ResolveOperationFiles(string path)
+    private static IReadOnlyList<string> ResolveOperationFiles(string path, GeneratorPathPolicy paths)
     {
-        if (File.Exists(path)) return [Path.GetFullPath(path)];
-        if (Directory.Exists(path)) return Directory.GetFiles(path, "*.graphql", SearchOption.TopDirectoryOnly).Order(StringComparer.Ordinal).Select(Path.GetFullPath).ToArray();
+        paths.ReadPattern(path);
+        if (File.Exists(path)) return [paths.Read(path)];
+        if (Directory.Exists(path)) return Directory.GetFiles(path, "*.graphql", SearchOption.TopDirectoryOnly).Order(StringComparer.Ordinal).Select(paths.Read).ToArray();
         var wildcard = path.IndexOfAny(['*', '?', '[', ']']);
         if (wildcard < 0) return [];
         var separator = path.LastIndexOfAny([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar], wildcard);
@@ -471,13 +510,23 @@ public static class ScribanGenerator
         var pattern = separator < 0 ? path : path[(separator + 1)..];
         if (string.IsNullOrWhiteSpace(baseDirectory) || string.IsNullOrWhiteSpace(pattern) || !Directory.Exists(baseDirectory)) return [];
         var matcher = new Microsoft.Extensions.FileSystemGlobbing.Matcher(StringComparison.OrdinalIgnoreCase);
-        matcher.AddInclude(pattern);
+        matcher.AddInclude(GeneratorPathPolicy.Normalize(pattern));
+        CheckGlobTree(baseDirectory, paths);
         var result = matcher.Execute(new Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoWrapper(new DirectoryInfo(baseDirectory)));
         return result.Files
-            .Select(match => Path.GetFullPath(Path.Combine(baseDirectory, match.Path)))
+            .Select(match => paths.Read(Path.Combine(baseDirectory, match.Path)))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Order(StringComparer.Ordinal)
             .ToArray();
+    }
+
+    private static void CheckGlobTree(string directory, GeneratorPathPolicy paths)
+    {
+        foreach (var entry in Directory.EnumerateFileSystemEntries(directory))
+        {
+            paths.Read(entry);
+            if (Directory.Exists(entry)) CheckGlobTree(entry, paths);
+        }
     }
 
     private static FileStream AcquireLock(string path)
@@ -493,9 +542,9 @@ public static class ScribanGenerator
     private static string HashFile(string path) => Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path)));
     private static string Hash(string text) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text)));
     private static StringComparer PathComparer => OperatingSystem.IsWindows() || OperatingSystem.IsMacOS() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
-    private static ScribanConfigurationException Error(string code, string path, string property, string message, string guidance = "Correct the configuration and rerun 'salep validate'.") => new(new(code, path, property, message, guidance));
+    private static ScribanConfigurationException Error(string code, string path, string property, string message, string guidance = "Correct the configuration and rerun 'salep validate'.") => new(new(code, GeneratorPathPolicy.Normalize(path), property, message, guidance));
 
-    private sealed record Plan(Config Configuration, IReadOnlyDictionary<string, string> Outputs, IReadOnlyDictionary<string, string> Inputs, Manifest Manifest);
+    private sealed record Plan(Config Configuration, IReadOnlyDictionary<string, string> Outputs, IReadOnlyDictionary<string, string> Inputs, Manifest Manifest, GeneratorPathPolicy Paths);
 
     private sealed record Manifest
     {
@@ -538,7 +587,7 @@ public static class ScribanGenerator
         }
         public Manifest ResolvePaths(string directory)
         {
-            string Absolute(string path) => Path.GetFullPath(path, directory);
+            string Absolute(string path) => Path.GetFullPath(GeneratorPathPolicy.Normalize(path), directory);
             return this with
             {
                 OutputDirectory = directory, Configuration = Absolute(Configuration),
@@ -562,9 +611,9 @@ public static class ScribanGenerator
         IReadOnlyList<string> ConfigurationFiles, IReadOnlyDictionary<string, string> TemplateOverrides,
         string? BaseClient = null)
     {
-        public static Config Resolve(string path, HashSet<string> stack)
+        public static Config Resolve(string path, HashSet<string> stack, GeneratorPathPolicy paths)
         {
-            path = Path.GetFullPath(path);
+            path = paths.Read(path);
             if (!stack.Add(path)) throw Error("SALEPS1002", path, "reference", "Configuration reference cycle detected.");
             try
             {
@@ -590,19 +639,22 @@ public static class ScribanGenerator
                     if (!allowed.Contains(property.Name)) throw Error("SALEPS1003", path, property.Name, $"Property is not allowed for kind '{kind}'.", "Remove the unknown property or place it on its referenced client/profile.");
                 }
                 var directory = Path.GetDirectoryName(path)!;
-                var localTemplateOverrides = ReadTemplateOverrides(root, path, directory);
+                var localTemplateOverrides = ReadTemplateOverrides(root, path, directory, paths);
                 Config? parent = null;
                 var parentField = kind == "profile" ? "extends" : "profile";
                 if (GetString(root, parentField, path) is { } reference)
                 {
-                    var parentPath = Path.GetFullPath(reference, directory);
+                    var parentPath = Path.GetFullPath(GeneratorPathPolicy.Normalize(reference), directory);
+                    paths.Read(parentPath);
                     if (Directory.Exists(parentPath)) parentPath = Path.Combine(parentPath, "salep.json");
-                    parent = Resolve(parentPath, stack);
+                    parent = Resolve(parentPath, stack, paths);
                     if (parent.Kind != "profile") throw Error("SALEPS1004", path, parentField, "The referenced configuration must have kind 'profile'.");
                 }
-                var schema = GetString(root, "schema", path) is { } schemaValue ? Path.GetFullPath(schemaValue, directory) : parent?.Schema;
-                var operations = GetString(root, "operations", path) is { } operationsValue ? Path.GetFullPath(operationsValue, directory) : Path.Combine(directory, "graphql");
-                var output = Path.GetFullPath(GetString(root, "output", path) ?? (kind == "tests" ? "./GeneratedTests" : "./Generated"), directory);
+                var schema = GetString(root, "schema", path) is { } schemaValue ? Path.GetFullPath(GeneratorPathPolicy.Normalize(schemaValue), directory) : parent?.Schema;
+                var operations = GetString(root, "operations", path) is { } operationsValue ? Path.GetFullPath(GeneratorPathPolicy.Normalize(operationsValue), directory) : Path.Combine(directory, "graphql");
+                var output = Path.GetFullPath(GeneratorPathPolicy.Normalize(GetString(root, "output", path) ?? (kind == "tests" ? "./GeneratedTests" : "./Generated")), directory);
+                if (schema is not null) paths.Read(schema);
+                paths.ReadPattern(operations);
                 var clientName = GetString(root, "clientName", path) ?? parent?.ClientName ?? "GraphQLClient";
                 var ns = GetString(root, "namespace", path) ?? parent?.Namespace ?? "Salep.Generated";
                 var unionRepresentation = GetString(root, "unionRepresentation", path) ?? (parent?.UseNativeUnions == true ? "native" : "dunet");
@@ -645,9 +697,10 @@ public static class ScribanGenerator
                 if (kind == "tests")
                 {
                     var clientPathValue = GetString(root, "client", path) ?? throw Error("SALEPS1001", path, "client", "Tests configuration requires a client configuration path.");
-                    var clientPath = Path.GetFullPath(clientPathValue, directory);
+                    var clientPath = Path.GetFullPath(GeneratorPathPolicy.Normalize(clientPathValue), directory);
+                    paths.Read(clientPath);
                     if (Directory.Exists(clientPath)) clientPath = Path.Combine(clientPath, "salep.json");
-                    var client = Resolve(clientPath, stack);
+                    var client = Resolve(clientPath, stack, paths);
                     if (client.Kind != "client") throw Error("SALEPS1004", path, "client", "Tests must reference a client configuration.");
                     var testsNamespace = GetString(root, "namespace", path) ?? client.Namespace + ".Tests";
                     ValidateNamespace(testsNamespace, path);
@@ -672,7 +725,8 @@ public static class ScribanGenerator
                         BaseClient = clientPath
                     };
                 }
-                var baseClient = GetString(root, "baseClient", path) is { } baseClientValue ? Path.GetFullPath(baseClientValue, directory) : null;
+                var baseClient = GetString(root, "baseClient", path) is { } baseClientValue ? Path.GetFullPath(GeneratorPathPolicy.Normalize(baseClientValue), directory) : null;
+                if (baseClient is not null) paths.Read(baseClient);
                 if (baseClient is not null && Directory.Exists(baseClient)) baseClient = Path.Combine(baseClient, "salep.json");
                 var resolved = new Config(path, kind, schema, operations, output, ns, ns + ".Tests", clientName,
                     unionRepresentation == "native",
@@ -698,7 +752,7 @@ public static class ScribanGenerator
             return value.GetString();
         }
 
-        private static IReadOnlyDictionary<string, string> ReadTemplateOverrides(JsonElement root, string path, string directory)
+        private static IReadOnlyDictionary<string, string> ReadTemplateOverrides(JsonElement root, string path, string directory, GeneratorPathPolicy paths)
         {
             if (!root.TryGetProperty("templates", out var templates)) return new Dictionary<string, string>(StringComparer.Ordinal);
             if (templates.ValueKind != JsonValueKind.Object)
@@ -711,9 +765,9 @@ public static class ScribanGenerator
                     throw Error("SALEPS1003", path, "templates." + template.Name, "Unknown template name.", "Use a template key listed in the Scriban template customization guide.");
                 if (template.Value.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(template.Value.GetString()))
                     throw Error("SALEPS1001", path, "templates." + template.Name, "Expected a non-empty template file path.");
-                var templatePath = Path.GetFullPath(template.Value.GetString()!, directory);
+                var templatePath = paths.Read(Path.GetFullPath(GeneratorPathPolicy.Normalize(template.Value.GetString()!), directory));
                 if (!File.Exists(templatePath))
-                    throw Error("SALEPS1001", path, "templates." + template.Name, $"Template file '{templatePath}' does not exist.");
+                    throw Error("SALEPS1001", path, "templates." + template.Name, $"Template file '{GeneratorPathPolicy.Normalize(templatePath)}' does not exist.");
                 if (!result.TryAdd(template.Name, templatePath))
                     throw Error("SALEPS1001", path, "templates." + template.Name, "Template name is specified more than once.");
             }

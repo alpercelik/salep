@@ -71,29 +71,29 @@ try {
 
     # 5. Build and test the Scriban samples. MinimalDependencies uses native unions and therefore targets net11.0 only.
     Write-Host "--> Restoring Scriban sample projects..."
-    dotnet restore src/samples/Scriban/Opinionated/Client.Tests/Salep.Samples.Opinionated.Scriban.Client.Tests.csproj -m:1 /nodeReuse:false --source artifacts/packages --source https://api.nuget.org/v3/index.json -p:SalepVersion="$Version" -p:NuGetAudit=false
+    dotnet restore src/samples/Opinionated/Client.Tests/Salep.Samples.Opinionated.Client.Tests.csproj -m:1 /nodeReuse:false --source artifacts/packages --source https://api.nuget.org/v3/index.json -p:SalepVersion="$Version" -p:NuGetAudit=false
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-    dotnet restore src/samples/Scriban/Opinionated/Module.Tests/Salep.Samples.Opinionated.Scriban.Module.Tests.csproj -m:1 /nodeReuse:false --source artifacts/packages --source https://api.nuget.org/v3/index.json -p:SalepVersion="$Version" -p:NuGetAudit=false
+    dotnet restore src/samples/Opinionated/Module.Tests/Salep.Samples.Opinionated.Module.Tests.csproj -m:1 /nodeReuse:false --source artifacts/packages --source https://api.nuget.org/v3/index.json -p:SalepVersion="$Version" -p:NuGetAudit=false
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-    dotnet restore src/samples/Scriban/MinimalDependencies/Client.Tests/Salep.Samples.MinimalDependencies.Scriban.Client.Tests.csproj -m:1 /nodeReuse:false --source artifacts/packages --source https://api.nuget.org/v3/index.json -p:SalepVersion="$Version" -p:NuGetAudit=false
+    dotnet restore src/samples/MinimalDependencies/Client.Tests/Salep.Samples.MinimalDependencies.Client.Tests.csproj -m:1 /nodeReuse:false --source artifacts/packages --source https://api.nuget.org/v3/index.json -p:SalepVersion="$Version" -p:NuGetAudit=false
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-    dotnet restore src/samples/Scriban/MinimalDependencies/Module.Tests/Salep.Samples.MinimalDependencies.Scriban.Module.Tests.csproj -m:1 /nodeReuse:false --source artifacts/packages --source https://api.nuget.org/v3/index.json -p:SalepVersion="$Version" -p:NuGetAudit=false
+    dotnet restore src/samples/MinimalDependencies/Module.Tests/Salep.Samples.MinimalDependencies.Module.Tests.csproj -m:1 /nodeReuse:false --source artifacts/packages --source https://api.nuget.org/v3/index.json -p:SalepVersion="$Version" -p:NuGetAudit=false
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     Write-Host "--> Testing Scriban Opinionated sample projects..."
     foreach ($Framework in @("net10.0", "net11.0")) {
-        Invoke-TestProject "src/samples/Scriban/Opinionated/Client.Tests/Salep.Samples.Opinionated.Scriban.Client.Tests.csproj" $Framework @("-p:SalepVersion=$Version", "-p:EnforceCodeStyleInBuild=false", "-p:TreatWarningsAsErrors=false")
+        Invoke-TestProject "src/samples/Opinionated/Client.Tests/Salep.Samples.Opinionated.Client.Tests.csproj" $Framework @("-p:SalepVersion=$Version", "-p:EnforceCodeStyleInBuild=false", "-p:TreatWarningsAsErrors=false")
 
-        Invoke-TestProject "src/samples/Scriban/Opinionated/Module.Tests/Salep.Samples.Opinionated.Scriban.Module.Tests.csproj" $Framework @("-p:SalepVersion=$Version", "-p:EnforceCodeStyleInBuild=false", "-p:TreatWarningsAsErrors=false")
+        Invoke-TestProject "src/samples/Opinionated/Module.Tests/Salep.Samples.Opinionated.Module.Tests.csproj" $Framework @("-p:SalepVersion=$Version", "-p:EnforceCodeStyleInBuild=false", "-p:TreatWarningsAsErrors=false")
     }
 
     Write-Host "--> Testing Scriban MinimalDependencies sample projects (net11.0)..."
-    Invoke-TestProject "src/samples/Scriban/MinimalDependencies/Client.Tests/Salep.Samples.MinimalDependencies.Scriban.Client.Tests.csproj" "net11.0" @("-p:SalepVersion=$Version", "-p:EnforceCodeStyleInBuild=false", "-p:TreatWarningsAsErrors=false")
-    Invoke-TestProject "src/samples/Scriban/MinimalDependencies/Module.Tests/Salep.Samples.MinimalDependencies.Scriban.Module.Tests.csproj" "net11.0" @("-p:SalepVersion=$Version", "-p:EnforceCodeStyleInBuild=false", "-p:TreatWarningsAsErrors=false")
+    Invoke-TestProject "src/samples/MinimalDependencies/Client.Tests/Salep.Samples.MinimalDependencies.Client.Tests.csproj" "net11.0" @("-p:SalepVersion=$Version", "-p:EnforceCodeStyleInBuild=false", "-p:TreatWarningsAsErrors=false")
+    Invoke-TestProject "src/samples/MinimalDependencies/Module.Tests/Salep.Samples.MinimalDependencies.Module.Tests.csproj" "net11.0" @("-p:SalepVersion=$Version", "-p:EnforceCodeStyleInBuild=false", "-p:TreatWarningsAsErrors=false")
 
     # Run the same server acceptance fixture for both Scriban profiles.
     foreach ($Profile in @("Opinionated", "MinimalDependencies")) {
-        $Project = "src/samples/Scriban/$Profile/IntegrationTests/Salep.Samples.$Profile.Scriban.IntegrationTests.csproj"
+        $Project = "src/samples/$Profile/IntegrationTests/Salep.Samples.$Profile.IntegrationTests.csproj"
         dotnet restore $Project -m:1 /nodeReuse:false --source artifacts/packages --source https://api.nuget.org/v3/index.json -p:SalepVersion="$Version"
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         Invoke-TestProject $Project "net11.0" @("-p:SalepVersion=$Version", "-p:EnforceCodeStyleInBuild=false", "-p:TreatWarningsAsErrors=false")

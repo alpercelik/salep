@@ -28,23 +28,25 @@
     <Project Path="Salep.ClientGenerator.MSBuild/Salep.ClientGenerator.MSBuild.csproj" />
     <Project Path="Salep.ClientGenerator.MSBuild.Tests/Salep.ClientGenerator.MSBuild.Tests.csproj" />
   </Folder>
-  <Folder Name="/samples/" />
+  <Folder Name="/samples/">
+    <File Path="samples/Directory.Build.props" />
+    <File Path="samples/Directory.Packages.props" />
+  </Folder>
   <Folder Name="/samples/Salep.Samples.GraphQLServer/">
     <Project Path="samples/Salep.Samples.GraphQLServer/Salep.Samples.GraphQLServer.csproj" />
   </Folder>
-  <Folder Name="/samples/Scriban/" />
-  <Folder Name="/samples/Scriban/MinimalDependencies/">
-    <Project Path="samples/Scriban/MinimalDependencies/IntegrationTests/Salep.Samples.MinimalDependencies.Scriban.IntegrationTests.csproj" />
-    <Project Path="samples/Scriban/MinimalDependencies/Client.Tests/Salep.Samples.MinimalDependencies.Scriban.Client.Tests.csproj" />
-    <Project Path="samples/Scriban/MinimalDependencies/Client/Salep.Samples.MinimalDependencies.Scriban.Client.csproj" />
-    <Project Path="samples/Scriban/MinimalDependencies/Module.Tests/Salep.Samples.MinimalDependencies.Scriban.Module.Tests.csproj" />
-    <Project Path="samples/Scriban/MinimalDependencies/Module/Salep.Samples.MinimalDependencies.Scriban.Module.csproj" />
+  <Folder Name="/samples/MinimalDependencies/">
+    <Project Path="samples/MinimalDependencies/IntegrationTests/Salep.Samples.MinimalDependencies.IntegrationTests.csproj" />
+    <Project Path="samples/MinimalDependencies/Client.Tests/Salep.Samples.MinimalDependencies.Client.Tests.csproj" />
+    <Project Path="samples/MinimalDependencies/Client/Salep.Samples.MinimalDependencies.Client.csproj" />
+    <Project Path="samples/MinimalDependencies/Module.Tests/Salep.Samples.MinimalDependencies.Module.Tests.csproj" />
+    <Project Path="samples/MinimalDependencies/Module/Salep.Samples.MinimalDependencies.Module.csproj" />
   </Folder>
-  <Folder Name="/samples/Scriban/Opinionated/">
-    <Project Path="samples/Scriban/Opinionated/IntegrationTests/Salep.Samples.Opinionated.Scriban.IntegrationTests.csproj" />
-    <Project Path="samples/Scriban/Opinionated/Client.Tests/Salep.Samples.Opinionated.Scriban.Client.Tests.csproj" />
-    <Project Path="samples/Scriban/Opinionated/Client/Salep.Samples.Opinionated.Scriban.Client.csproj" />
-    <Project Path="samples/Scriban/Opinionated/Module.Tests/Salep.Samples.Opinionated.Scriban.Module.Tests.csproj" />
-    <Project Path="samples/Scriban/Opinionated/Module/Salep.Samples.Opinionated.Scriban.Module.csproj" />
+  <Folder Name="/samples/Opinionated/">
+    <Project Path="samples/Opinionated/IntegrationTests/Salep.Samples.Opinionated.IntegrationTests.csproj" />
+    <Project Path="samples/Opinionated/Client.Tests/Salep.Samples.Opinionated.Client.Tests.csproj" />
+    <Project Path="samples/Opinionated/Client/Salep.Samples.Opinionated.Client.csproj" />
+    <Project Path="samples/Opinionated/Module.Tests/Salep.Samples.Opinionated.Module.Tests.csproj" />
+    <Project Path="samples/Opinionated/Module/Salep.Samples.Opinionated.Module.csproj" />
   </Folder>
 </Solution>

@@ -1,7 +1,0 @@
-<Project>
-  <Import Project="../../../Directory.Build.props" />
-  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Salep.Samples.MinimalDependencies.Scriban.Client' or '$(MSBuildProjectName)' == 'Salep.Samples.MinimalDependencies.Scriban.Module' or '$(MSBuildProjectName)' == 'Salep.Samples.MinimalDependencies.Scriban.Client.Tests' or '$(MSBuildProjectName)' == 'Salep.Samples.MinimalDependencies.Scriban.Module.Tests'">
-    <TargetFrameworks>net11.0</TargetFrameworks>
-    <LangVersion>preview</LangVersion>
-  </PropertyGroup>
-</Project>

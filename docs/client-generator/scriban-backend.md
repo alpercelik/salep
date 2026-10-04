@@ -9,7 +9,7 @@ Scriban is the sole stable C# generator. The `Salep.ClientGenerator` NuGet packa
 - `src/Salep.ClientGenerator.MSBuild/` contains the props and targets for generating before compile.
 - `src/Salep.ClientGenerator.Tests/` exercises parsing, rendering, generated-code compilation, transport behavior, and ownership.
 - `src/Salep.ClientGenerator.MSBuild.Tests/` exercises the CLI and imported MSBuild targets, including base-client project references.
-- `src/samples/Scriban/` contains isolated consumers using the MinimalDependencies and Opinionated GraphQL schemas and operations.
+- `src/samples/` contains isolated consumers using the MinimalDependencies and Opinionated GraphQL schemas and operations.
 
 The generated client projects reference only their chosen C# runtime dependencies. Scriban, Salep's parser, and generator assemblies are build-time tools; generated code does not reference them.
 
@@ -71,12 +71,12 @@ Each client and module owns its `graphql/` operation inputs and selects `"operat
 
 
 ```bash
-dotnet test src/samples/Scriban/MinimalDependencies/Client.Tests/Salep.Samples.MinimalDependencies.Scriban.Client.Tests.csproj --framework net11.0
-dotnet test src/samples/Scriban/MinimalDependencies/Module.Tests/Salep.Samples.MinimalDependencies.Scriban.Module.Tests.csproj --framework net11.0
-dotnet test src/samples/Scriban/Opinionated/Client.Tests/Salep.Samples.Opinionated.Scriban.Client.Tests.csproj --framework net10.0
-dotnet test src/samples/Scriban/Opinionated/Client.Tests/Salep.Samples.Opinionated.Scriban.Client.Tests.csproj --framework net11.0
-dotnet test src/samples/Scriban/Opinionated/Module.Tests/Salep.Samples.Opinionated.Scriban.Module.Tests.csproj --framework net10.0
-dotnet test src/samples/Scriban/Opinionated/Module.Tests/Salep.Samples.Opinionated.Scriban.Module.Tests.csproj --framework net11.0
+dotnet test src/samples/MinimalDependencies/Client.Tests/Salep.Samples.MinimalDependencies.Client.Tests.csproj --framework net11.0
+dotnet test src/samples/MinimalDependencies/Module.Tests/Salep.Samples.MinimalDependencies.Module.Tests.csproj --framework net11.0
+dotnet test src/samples/Opinionated/Client.Tests/Salep.Samples.Opinionated.Client.Tests.csproj --framework net10.0
+dotnet test src/samples/Opinionated/Client.Tests/Salep.Samples.Opinionated.Client.Tests.csproj --framework net11.0
+dotnet test src/samples/Opinionated/Module.Tests/Salep.Samples.Opinionated.Module.Tests.csproj --framework net10.0
+dotnet test src/samples/Opinionated/Module.Tests/Salep.Samples.Opinionated.Module.Tests.csproj --framework net11.0
 ```
 
 The Opinionated profile exercises Dunet and NodaTime. MinimalDependencies uses native unions and built-in scalar mappings on .NET 11. When adding sample coverage, update the owning operation documents and reviewed contract fixtures when expectations intentionally change.

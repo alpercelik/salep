@@ -24,8 +24,8 @@ public sealed class ScribanSampleIsolationTests
             File.Copy(Path.Combine(repository.FullName, "src", "samples", "Salep.Samples.GraphQLServer", "Generated", "schema.graphql"), Path.Combine(schemaDirectory, "schema.graphql"));
             foreach (var project in new[] { "Client", "Module", "Client.Tests", "Module.Tests" })
             {
-                var original = Path.Combine(repository.FullName, "src", "samples", "Scriban", profile, project);
-                var detached = Path.Combine(samples, "Scriban", profile, project);
+                var original = Path.Combine(repository.FullName, "src", "samples", profile, project);
+                var detached = Path.Combine(samples, profile, project);
                 Directory.CreateDirectory(detached);
                 File.Copy(Path.Combine(original, "salep.json"), Path.Combine(detached, "salep.json"));
                 if (Directory.Exists(Path.Combine(original, "graphql")))
@@ -38,8 +38,8 @@ public sealed class ScribanSampleIsolationTests
             Assert.False(Directory.Exists(Path.Combine(samples, "Roslyn")));
             foreach (var project in new[] { "Client", "Module", "Client.Tests", "Module.Tests" })
             {
-                var directory = Path.Combine(samples, "Scriban", profile, project);
-                ScribanGenerator.Generate(new("salep.json", directory, new("net11.0", "preview")));
+                var directory = Path.Combine(samples, profile, project);
+                ScribanGenerator.Generate(new("salep.json", directory, new("net11.0", "preview"), [samples]));
                 var output = Path.Combine(directory, project.EndsWith(".Tests", StringComparison.Ordinal) ? "GeneratedTests" : "Generated");
                 using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(output, ".salep.manifest.json")));
                 var inputs = manifest.RootElement.GetProperty("Inputs").EnumerateObject().ToArray();

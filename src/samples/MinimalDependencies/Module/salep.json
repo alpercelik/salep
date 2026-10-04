@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "kind": "client",
+  "schema": "../../Salep.Samples.GraphQLServer/Generated/schema.graphql",
+  "operations": "graphql",
+  "namespace": "Salep.Samples.MinimalDependencies.ModuleClient",
+  "clientName": "GraphQLModuleClient",
+  "output": "Generated",
+  "baseClient": "../Client/salep.json",
+  "unionRepresentation": "native",
+  "omitUnusedVariables": true,
+  "inlineDefaultVariables": false,
+  "useHttpGet": true,
+  "enableBatching": true,
+  "maxGetUrlLength": 2048,
+  "emitAgentInstructions": false
+}

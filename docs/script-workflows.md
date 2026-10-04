@@ -11,7 +11,7 @@ All scripts resolve repository paths from their own locations. Use the exact on-
 | Allocation gate and benchmarks | `./scripts/benchmark.sh --filter '*Lexer*' --job Dry` | `pwsh ./scripts/benchmark.ps1 --filter '*Lexer*' --job Dry` |
 | Packed parser API verification | `./scripts/verify-package-compatibility.sh` | `pwsh ./scripts/verify-package-compatibility.ps1` |
 | Public release packages | `./scripts/pack-release.sh 0.1.0-preview.1` | `pwsh ./scripts/pack-release.ps1 0.1.0-preview.1` |
-| Salep packages and Scriban sample dogfooding | `./build-salep.sh` | `pwsh ./build-salep.ps1` |
+| Salep packages and sample dogfooding | `./build-salep.sh` | `pwsh ./build-salep.ps1` |
 
 ## Arguments and environment
 
@@ -38,6 +38,8 @@ The parser package consumer is excluded from `src/Salep.slnx` and `src/Salep.Cor
 
 ## Generator regression gates
 
-`./build-salep.sh` and `pwsh ./build-salep.ps1` test the generator/MSBuild projects, pack Scriban, restore exact-version samples and run generated tests plus server acceptance. The core suite preserves 69 fixed contract fixtures, the complete configuration matrix, seeded compilation cases and transport regressions. After `./scripts/pack-release.sh <version>` or `pwsh ./scripts/pack-release.ps1 <version>`, run `npm run packages:verify -- <version>` for isolated .NET 10/11 consumers, template customization and incremental lifecycle checks. See [generator contracts](client-generator/generator-parity.md).
+`./build-salep.sh` and `pwsh ./build-salep.ps1` test the generator/MSBuild projects, pack `Salep.ClientGenerator`, restore exact-version samples and run generated tests plus server acceptance. The core suite preserves 69 fixed contract fixtures, the complete configuration matrix, seeded compilation cases and transport regressions. After `./scripts/pack-release.sh <version>` or `pwsh ./scripts/pack-release.ps1 <version>`, run `npm run packages:verify -- <version>` for isolated .NET 10/11 consumers, template customization and incremental lifecycle checks. See [generator contracts](client-generator/generator-parity.md).
 
 The `Generator verification` pull-request workflow runs Linux/Bash and Windows/Windows PowerShell gates. Local PowerShell execution does not prove Windows execution. Configure both OS jobs as required branch-protection checks before release. Release scripts produce only `Salep.GraphQLParser` and `Salep.ClientGenerator`.
+
+The sample workflows build `src/samples/Opinionated/` and `src/samples/MinimalDependencies/` directly. Their `Directory.Build.props` and `Directory.Packages.props` are shared from `src/samples/`; sample project names use `Salep.Samples.<Profile>.<Role>`.

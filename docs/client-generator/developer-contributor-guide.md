@@ -15,7 +15,7 @@ Use the .NET SDK pinned by `global.json`. Core projects target .NET 10 and .NET 
 | `src/Salep.ClientGenerator.MSBuild/` | Public package, props and targets |
 | `src/Salep.ClientGenerator.Tests/` | Contract fixtures, rendering, compiled runtime and configuration regressions |
 | `src/Salep.ClientGenerator.MSBuild.Tests/` | CLI/MSBuild integration |
-| `src/samples/Scriban/` | Opinionated and MinimalDependencies package consumers |
+| `src/samples/` | Opinionated and MinimalDependencies package consumers |
 | `src/samples/Salep.Samples.GraphQLServer/` | Shared real server and exported schema |
 
 Scriban is the sole stable generator. Applications reference runtime dependencies such as System.Text.Json, Dunet and NodaTime only when selected; generator/parser/template assemblies remain private tools. Compiler libraries in tests validate generated consumers and are not part of the tool distribution.
@@ -50,7 +50,7 @@ Repeat on `net11.0`. Run all core suites with `./scripts/test.sh --max-parallel-
 For a source CLI run:
 
 ```bash
-dotnet run --project src/Salep.ClientGenerator.Cli --framework net10.0 -- generate --config src/samples/Scriban/Opinionated/Client/salep.json
+dotnet run --project src/Salep.ClientGenerator.Cli --framework net10.0 -- generate --config src/samples/Opinionated/Client/salep.json
 ```
 
 For complete package and sample verification, run `./build-salep.sh` or `pwsh ./build-salep.ps1`. The paired workflows test core/MSBuild on both frameworks, pack `Salep.ClientGenerator`, restore the exact version into samples, export the server schema, and run generated client/module tests plus server acceptance. Opinionated runs on .NET 10/11; MinimalDependencies and server acceptance run on .NET 11. Shared acceptance tests start Hot Chocolate in memory with Alba.
@@ -65,7 +65,7 @@ For release verification, run `./scripts/pack-release.sh <version>` or `pwsh ./s
 2. Project values into the owning template model and add the smallest useful template fragment. Keep existing keys/model scopes compatible; verify overrides and `default:` composition.
 3. Add positive, negative, boundary and regression tests appropriate to the behavior. Extend configuration interactions, compile generated output and assert observable runtime effects.
 4. Review affected fixtures under `Fixtures/Contracts/`: these 69 baselines preserve verified APIs, queries, inventories and generated-test coverage. Do not auto-refresh expectations. Preserve native and Dunet modes and no-implicit-usings compilation.
-5. Update the owning sample inputs, the full `src/samples/Scriban/Opinionated/Client/schema.coverage.graphql` fixture and [spec evidence](spec-coverage.md) as relevant. Regenerate through the package/MSBuild workflow.
+5. Update the owning sample inputs, the full `src/samples/Opinionated/Client/schema.coverage.graphql` fixture and [spec evidence](spec-coverage.md) as relevant. Regenerate through the package/MSBuild workflow.
 6. Update consumer documentation, template examples and paired scripts whenever their contract changes.
 
 See [generator verification](generator-parity.md) for fixed contract, seeded, runtime, ownership and package gates. Finite fixture coverage is not exhaustive proof of all GraphQL inputs.

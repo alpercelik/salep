@@ -43,10 +43,10 @@ public sealed class ScribanGeneratorTests
         Assert.True(File.Exists(Path.Combine(fixture.Root, "Generated", ScribanGenerator.ManifestFileName)));
         Assert.Contains("Example.Client", File.ReadAllText(Path.Combine(fixture.Root, "Generated", "SchemaTypes.cs")), StringComparison.Ordinal);
         var inputs = ScribanGenerator.GetInputFiles(new("scriban.json", fixture.Root));
-        Assert.Contains(Path.Combine(fixture.Root, "scriban.json"), inputs);
-        Assert.Contains(Path.Combine(fixture.Root, "schema.graphql"), inputs);
-        Assert.Contains(Path.Combine(fixture.Root, "graphql", "hello.graphql"), inputs);
-        Assert.Contains(Path.Combine(fixture.Root, "Generated", "SchemaTypes.cs"), inputs);
+        Assert.Contains(GeneratorPathPolicy.Normalize(Path.Combine(fixture.Root, "scriban.json")), inputs);
+        Assert.Contains(GeneratorPathPolicy.Normalize(Path.Combine(fixture.Root, "schema.graphql")), inputs);
+        Assert.Contains(GeneratorPathPolicy.Normalize(Path.Combine(fixture.Root, "graphql", "hello.graphql")), inputs);
+        Assert.Contains(GeneratorPathPolicy.Normalize(Path.Combine(fixture.Root, "Generated", "SchemaTypes.cs")), inputs);
     }
 
     [Fact]
@@ -72,13 +72,13 @@ public sealed class ScribanGeneratorTests
         ScribanGenerator.Generate(new("scriban.json", fixture.Root));
 
         var schemaOutput = Path.Combine(fixture.Root, "Generated", "SchemaTypes.cs");
-        Assert.Equal("// customized schema for Example.Customized\n", File.ReadAllText(schemaOutput));
-        Assert.Contains(templatePath, ScribanGenerator.GetInputFiles(new("scriban.json", fixture.Root)));
+        Assert.Equal("// customized schema for Example.Customized" + Environment.NewLine, File.ReadAllText(schemaOutput));
+        Assert.Contains(GeneratorPathPolicy.Normalize(templatePath), ScribanGenerator.GetInputFiles(new("scriban.json", fixture.Root)));
 
         File.WriteAllText(templatePath, "// updated schema for {{ target.default_namespace }}\n");
         ScribanGenerator.Generate(new("scriban.json", fixture.Root));
 
-        Assert.Equal("// updated schema for Example.Customized\n", File.ReadAllText(schemaOutput));
+        Assert.Equal("// updated schema for Example.Customized" + Environment.NewLine, File.ReadAllText(schemaOutput));
     }
 
     [Fact]
@@ -261,7 +261,7 @@ public sealed class ScribanGeneratorTests
         Assert.Contains("global::Example.Parent.UnionJsonConverters", childClient, StringComparison.Ordinal);
         Assert.Contains("ChildHello", childTests, StringComparison.Ordinal);
         Assert.DoesNotContain("ParentHello", childTests, StringComparison.Ordinal);
-        Assert.Contains(Path.Combine(fixture.Root, "ParentGenerated", "SchemaTypes.cs"), ScribanGenerator.GetInputFiles(new("child.json", fixture.Root)));
+        Assert.Contains(GeneratorPathPolicy.Normalize(Path.Combine(fixture.Root, "ParentGenerated", "SchemaTypes.cs")), ScribanGenerator.GetInputFiles(new("child.json", fixture.Root)));
     }
 
     private sealed class GeneratorFixture : IDisposable

@@ -1,0 +1,7 @@
+<Project>
+  <Import Project="../../Directory.Build.props" />
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Salep.Samples.MinimalDependencies.Client' or '$(MSBuildProjectName)' == 'Salep.Samples.MinimalDependencies.Module' or '$(MSBuildProjectName)' == 'Salep.Samples.MinimalDependencies.Client.Tests' or '$(MSBuildProjectName)' == 'Salep.Samples.MinimalDependencies.Module.Tests'">
+    <TargetFrameworks>net11.0</TargetFrameworks>
+    <LangVersion>preview</LangVersion>
+  </PropertyGroup>
+</Project>

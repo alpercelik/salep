@@ -1,4 +1,5 @@
 using System.Reflection;
+using Salep.ClientGenerator.Generation;
 
 namespace Salep.ClientGenerator.Templates;
 
@@ -105,13 +106,15 @@ public static class ScribanTemplateCatalog
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(directory);
         var outputDirectory = Path.GetFullPath(directory);
+        var paths = new GeneratorPathPolicy(outputDirectory);
+        foreach (var file in ResourceNames.Values) paths.Write(Path.Combine(outputDirectory, file));
         Directory.CreateDirectory(outputDirectory);
         var written = new List<string>(ResourceNames.Count);
         foreach (var template in ResourceNames)
         {
             var path = Path.Combine(outputDirectory, template.Value);
             File.WriteAllText(path, ReadDefault(template.Key));
-            written.Add(path);
+            written.Add(GeneratorPathPolicy.Normalize(path));
         }
 
         return written;

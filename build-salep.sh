@@ -62,37 +62,37 @@ dotnet build src/samples/Salep.Samples.GraphQLServer/Salep.Samples.GraphQLServer
 
 # 5. Build and test the Scriban samples. MinimalDependencies uses native unions and therefore targets net11.0 only.
 echo "--> Restoring Scriban sample projects..."
-dotnet restore src/samples/Scriban/Opinionated/Client.Tests/Salep.Samples.Opinionated.Scriban.Client.Tests.csproj -m:1 /nodeReuse:false --source artifacts/packages --source https://api.nuget.org/v3/index.json -p:SalepVersion="$VERSION" -p:NuGetAudit=false
-dotnet restore src/samples/Scriban/Opinionated/Module.Tests/Salep.Samples.Opinionated.Scriban.Module.Tests.csproj -m:1 /nodeReuse:false --source artifacts/packages --source https://api.nuget.org/v3/index.json -p:SalepVersion="$VERSION" -p:NuGetAudit=false
-dotnet restore src/samples/Scriban/MinimalDependencies/Client.Tests/Salep.Samples.MinimalDependencies.Scriban.Client.Tests.csproj -m:1 /nodeReuse:false --source artifacts/packages --source https://api.nuget.org/v3/index.json -p:SalepVersion="$VERSION" -p:NuGetAudit=false
-dotnet restore src/samples/Scriban/MinimalDependencies/Module.Tests/Salep.Samples.MinimalDependencies.Scriban.Module.Tests.csproj -m:1 /nodeReuse:false --source artifacts/packages --source https://api.nuget.org/v3/index.json -p:SalepVersion="$VERSION" -p:NuGetAudit=false
+dotnet restore src/samples/Opinionated/Client.Tests/Salep.Samples.Opinionated.Client.Tests.csproj -m:1 /nodeReuse:false --source artifacts/packages --source https://api.nuget.org/v3/index.json -p:SalepVersion="$VERSION" -p:NuGetAudit=false
+dotnet restore src/samples/Opinionated/Module.Tests/Salep.Samples.Opinionated.Module.Tests.csproj -m:1 /nodeReuse:false --source artifacts/packages --source https://api.nuget.org/v3/index.json -p:SalepVersion="$VERSION" -p:NuGetAudit=false
+dotnet restore src/samples/MinimalDependencies/Client.Tests/Salep.Samples.MinimalDependencies.Client.Tests.csproj -m:1 /nodeReuse:false --source artifacts/packages --source https://api.nuget.org/v3/index.json -p:SalepVersion="$VERSION" -p:NuGetAudit=false
+dotnet restore src/samples/MinimalDependencies/Module.Tests/Salep.Samples.MinimalDependencies.Module.Tests.csproj -m:1 /nodeReuse:false --source artifacts/packages --source https://api.nuget.org/v3/index.json -p:SalepVersion="$VERSION" -p:NuGetAudit=false
 
 echo "--> Testing Scriban Opinionated sample projects..."
 for framework in net10.0 net11.0; do
-    run_test_project src/samples/Scriban/Opinionated/Client.Tests/Salep.Samples.Opinionated.Scriban.Client.Tests.csproj "$framework" \
+    run_test_project src/samples/Opinionated/Client.Tests/Salep.Samples.Opinionated.Client.Tests.csproj "$framework" \
         -p:SalepVersion="$VERSION" \
         -p:EnforceCodeStyleInBuild=false \
         -p:TreatWarningsAsErrors=false
 
-    run_test_project src/samples/Scriban/Opinionated/Module.Tests/Salep.Samples.Opinionated.Scriban.Module.Tests.csproj "$framework" \
+    run_test_project src/samples/Opinionated/Module.Tests/Salep.Samples.Opinionated.Module.Tests.csproj "$framework" \
         -p:SalepVersion="$VERSION" \
         -p:EnforceCodeStyleInBuild=false \
         -p:TreatWarningsAsErrors=false
 done
 
 echo "--> Testing Scriban MinimalDependencies sample projects (net11.0)..."
-run_test_project src/samples/Scriban/MinimalDependencies/Client.Tests/Salep.Samples.MinimalDependencies.Scriban.Client.Tests.csproj net11.0 \
+run_test_project src/samples/MinimalDependencies/Client.Tests/Salep.Samples.MinimalDependencies.Client.Tests.csproj net11.0 \
     -p:SalepVersion="$VERSION" \
     -p:EnforceCodeStyleInBuild=false \
     -p:TreatWarningsAsErrors=false
-run_test_project src/samples/Scriban/MinimalDependencies/Module.Tests/Salep.Samples.MinimalDependencies.Scriban.Module.Tests.csproj net11.0 \
+run_test_project src/samples/MinimalDependencies/Module.Tests/Salep.Samples.MinimalDependencies.Module.Tests.csproj net11.0 \
     -p:SalepVersion="$VERSION" \
     -p:EnforceCodeStyleInBuild=false \
     -p:TreatWarningsAsErrors=false
 
 # Run the same server acceptance fixture for both Scriban profiles.
 for profile in Opinionated MinimalDependencies; do
-    project="src/samples/Scriban/$profile/IntegrationTests/Salep.Samples.$profile.Scriban.IntegrationTests.csproj"
+    project="src/samples/$profile/IntegrationTests/Salep.Samples.$profile.IntegrationTests.csproj"
     dotnet restore "$project" -m:1 /nodeReuse:false --source artifacts/packages --source https://api.nuget.org/v3/index.json -p:SalepVersion="$VERSION"
     run_test_project "$project" net11.0 -p:SalepVersion="$VERSION" \
         -p:EnforceCodeStyleInBuild=false -p:TreatWarningsAsErrors=false

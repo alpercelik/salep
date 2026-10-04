@@ -9,6 +9,37 @@ namespace Salep.ClientGenerator.MSBuild.Tests;
 
 public sealed class IntegrationContractTests
 {
+    [Theory]
+    [InlineData("--sources-file")]
+    [InlineData("--stamp-file")]
+    [InlineData("--inputs-file")]
+    public void Cli_rejects_tracking_paths_outside_project_before_generation(string option)
+    {
+        using var fixture = new Fixture();
+        fixture.WriteInputs();
+        fixture.WriteConfig("{\"version\":1,\"kind\":\"client\",\"schema\":\"schema.graphql\",\"operations\":\"graphql\",\"output\":\"Generated\"}");
+        using var error = new StringWriter();
+        var command = option == "--inputs-file" ? "inputs" : "generate";
+        Assert.Equal(1, Program.Run([command, "--config", "salep.json", "--working-directory", fixture.Root, option, "../escaped.txt"], TextWriter.Null, error));
+        Assert.Contains("outside the permitted", error.ToString(), StringComparison.Ordinal);
+        Assert.False(Directory.Exists(Path.Combine(fixture.Root, "Generated")));
+    }
+
+    [Fact]
+    public void Cli_accepts_explicit_shared_read_root_and_rejects_external_template_export()
+    {
+        using var fixture = new Fixture();
+        fixture.WriteInputs();
+        var project = Directory.CreateDirectory(Path.Combine(fixture.Root, "consumer"));
+        File.WriteAllText(Path.Combine(project.FullName, "salep.json"), "{\"version\":1,\"kind\":\"client\",\"schema\":\"../schema.graphql\",\"operations\":\"../graphql\",\"output\":\"Generated\"}");
+        string[] args = ["generate", "--config", "salep.json", "--working-directory", project.FullName];
+        Assert.Equal(1, Program.Run(args, TextWriter.Null, TextWriter.Null));
+        Assert.Equal(0, Program.Run([..args, "--read-root", fixture.Root], TextWriter.Null, TextWriter.Null));
+        Assert.Equal(0, Program.Run([..args, "--solution-directory", ".."], TextWriter.Null, TextWriter.Null));
+        Assert.Equal(1, Program.Run(["templates", "--working-directory", project.FullName, "--output-directory", "../exported"], TextWriter.Null, TextWriter.Null));
+        Assert.False(Directory.Exists(Path.Combine(fixture.Root, "exported")));
+    }
+
     [Fact]
     public void Cli_validates_and_generates_sources_for_a_configuration()
     {
@@ -177,6 +208,7 @@ public sealed class IntegrationContractTests
     public void Imported_targets_build_base_clients_first_and_validate_project_references()
     {
         using var fixture = new Fixture();
+        File.WriteAllText(Path.Combine(fixture.Root, "Fixture.slnx"), "<Solution />");
         File.WriteAllText(Path.Combine(fixture.Root, "schema.graphql"), "type Product { id: ID! } type Query { hello: String! product: Product! }");
         Directory.CreateDirectory(Path.Combine(fixture.Root, "parent-ops"));
         Directory.CreateDirectory(Path.Combine(fixture.Root, "child-ops"));
@@ -204,6 +236,7 @@ public sealed class IntegrationContractTests
         Assert.False(File.Exists(Path.Combine(childDirectory, "Generated", "SchemaTypes.cs")));
         Assert.Contains("global::Example.Parent.IGraphQLOperation", File.ReadAllText(Path.Combine(childDirectory, "Generated", "Operations.cs")), StringComparison.Ordinal);
         Assert.Contains("global::Example.Parent.UnionJsonConverters", File.ReadAllText(Path.Combine(childDirectory, "Generated", "GraphQLClient.cs")), StringComparison.Ordinal);
+        Assert.Equal(2, Directory.GetFiles(Path.Combine(fixture.Root, "artifacts"), "salep.generated-sources.txt", SearchOption.AllDirectories).Length);
     }
 
     private static void WriteProject(string directory, string name, string toolDirectory, string schema, string operations,
@@ -225,6 +258,7 @@ public sealed class IntegrationContractTests
                 <Nullable>enable</Nullable>
                 <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
                 <SalepToolPath>{SecurityElement.Escape(toolDirectory)}</SalepToolPath>
+                <IntermediateOutputPath>../artifacts/$(MSBuildProjectName)/$(Configuration)/</IntermediateOutputPath>
               </PropertyGroup>
               <ItemGroup>{reference}</ItemGroup>
               <Import Project="{SecurityElement.Escape(Path.Combine(toolDirectory, "Salep.ClientGenerator.props"))}" />

@@ -10,7 +10,7 @@ This guide provides a comprehensive tutorial for developers consuming the **Sale
 
 ### Key Advantages
 - **Compile-Time Safety**: Typed C# models for all queries, mutations, subscriptions, and schema types.
-- **Zero Runtime Reflection**: Pure System.Text.Json serialization with compile-time generated converters.
+- **System.Text.Json Serialization**: Generated converters handle GraphQL unions; ordinary models use System.Text.Json.
 - **First-Class Discriminated Unions**: Emits idiomatic Dunet unions by default, or native C# 15 unions when opted in.
 - **Zero Salep Runtime Lock-in**: Consuming projects do not reference Salep assemblies at runtime (`PrivateAssets="all"`).
 - **Automated Mock Test Generation**: Optionally generates ready-to-run xUnit tests with an in-memory HTTP handler.
@@ -21,7 +21,7 @@ This guide provides a comprehensive tutorial for developers consuming the **Sale
 
 ### Native C# 15 union output
 
-To use compiler-native unions instead of Dunet, set `"unionRepresentation": "native"` in `salep.json`, target `net11.0`, set `<LangVersion>preview</LangVersion>`, and build with the .NET 11 SDK. This option applies to GraphQL unions and generated interface-result unions. See [MinimalDependencies](../../src/samples/Scriban/MinimalDependencies/README.md) for a sample that reuses the main schema and operations without Dunet or NodaTime.
+To use compiler-native unions instead of Dunet, set `"unionRepresentation": "native"` in `salep.json`, target `net11.0`, set `<LangVersion>preview</LangVersion>`, and build with the .NET 11 SDK. This option applies to GraphQL unions and generated interface-result unions. See [MinimalDependencies](../../src/samples/MinimalDependencies/README.md) for a sample that shares the server schema and owns its operation documents without Dunet or NodaTime.
 
 ### 2.1. Add Package References to `.csproj`
 
@@ -51,13 +51,13 @@ In your consumer `.csproj`, add `Salep.ClientGenerator` as a build-time dependen
 </Project>
 ```
 
-*If using Central Package Management (CPM)* in `Directory.Packages.props`:
+The versionless references above assume Central Package Management (CPM). Otherwise add a `Version` to each package reference. Example version pins in `Directory.Packages.props` (select a Salep revision containing the documented features):
 ```xml
 <ItemGroup>
   <PackageVersion Include="Salep.ClientGenerator" Version="0.1.0" />
-  <PackageVersion Include="Dunet" Version="1.11.2" />
-  <PackageVersion Include="NodaTime" Version="3.2.1" />
-  <PackageVersion Include="NodaTime.Serialization.SystemTextJson" Version="1.3.0" />
+  <PackageVersion Include="Dunet" Version="1.16.2" />
+  <PackageVersion Include="NodaTime" Version="3.3.5" />
+  <PackageVersion Include="NodaTime.Serialization.SystemTextJson" Version="1.4.0" />
 </ItemGroup>
 ```
 
@@ -218,7 +218,7 @@ Default suites are `transport`, `operations`, and `unions`; `samples` is added o
 
 Use `salep validate --config salep.json` (or the bundled CLI DLL with `dotnet`) to validate without writing. Generation accepts configuration selection and a working directory, with no schema, output, or behavior overrides. MSBuild selects exactly one configuration, generates after referenced projects build, verifies configured dependencies against the project-reference chain, and includes exact files from the output manifest. `SalepEnabled=false` disables generation.
 
-Generation renders and validates before writing, serializes writes to each output directory, removes only previously owned files, and publishes its manifest last. Missing, stale, incompatible, or modified dependency outputs fail with structured `SALEP` diagnostics; build the authoritative client first. Output directories must not overlap. Keep NuGet dependencies and versions in developer-owned project/package files. No legacy aliases or automatic package editing are supported.
+Generation renders and validates before writing, serializes writes to each output directory, removes only previously owned files, and publishes its manifest last. Missing, stale, incompatible, or modified dependency outputs fail with structured `SALEPS` diagnostics; build the authoritative client first. Output directories must not overlap. Keep NuGet dependencies and versions in developer-owned project/package files. No legacy aliases or automatic package editing are supported.
 
 ---
 
@@ -233,12 +233,14 @@ using MyService.GraphQL;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Register typed client with HttpClient
-builder.Services.AddHttpClient<MyGraphQLClient>(client =>
+// Configure the HTTP transport and supply the generated client's endpoint.
+builder.Services.AddHttpClient("GraphQL", client =>
 {
-    client.BaseAddress = new Uri("https://api.example.com/graphql");
     client.DefaultRequestHeaders.Add("Authorization", "Bearer token-value");
 });
+builder.Services.AddScoped<MyGraphQLClient>(services => new MyGraphQLClient(
+    services.GetRequiredService<IHttpClientFactory>().CreateClient("GraphQL"),
+    new Uri("https://api.example.com/graphql")));
 
 var app = builder.Build();
 ```
@@ -260,10 +262,10 @@ public class UserService
     public async Task<User?> GetUserAsync(string userId, CancellationToken ct = default)
     {
         // Parameter types are strongly typed records
-        var response = await _client.GetUserAsync(new() { Id = userId }, ct);
+        var response = await _client.ExecuteAsync(new GetUserOperation(new GetUserVariables { Id = userId }), ct);
 
         // Check for GraphQL errors
-        if (response.Errors is { Count: > 0 })
+        if (response.Errors is { Length: > 0 })
         {
             var errorMsg = string.Join(", ", response.Errors.Select(e => e.Message));
             throw new InvalidOperationException($"GraphQL Error: {errorMsg}");
@@ -279,14 +281,14 @@ public class UserService
 When querying unions or interfaces, Salep generates Dunet discriminated unions:
 
 ```csharp
-var searchResult = await _client.SearchAllAsync(new() { Query = "Acme" });
+var searchResult = await _client.ExecuteAsync(new SearchAllOperation(new SearchAllVariables { Query = "Acme" }));
 
-foreach (var item in searchResult.Data.Search)
+foreach (var item in searchResult.Data?.Search ?? [])
 {
     // Match requires handling all union branches exhaustively
     string summary = item.Match(
-        user => $"Found user: {user.Name} (Role: {user.Role})",
-        org => $"Found organization: {org.CompanyName}"
+        user => $"Found user: {user.Value.Name}",
+        org => $"Found organization: {org.Value.CompanyName}"
     );
 
     Console.WriteLine(summary);
@@ -297,26 +299,17 @@ foreach (var item in searchResult.Data.Search)
 
 ## 7. Automated Unit Testing with Mock HTTP Handler
 
-In a separate `kind: "tests"` project, Salep generates xUnit test suites and an in-memory `TestHttpMessageHandler` to test your application without network dependencies:
+Inside a separate `kind: "tests"` project with the `transport` suite enabled, Salep generates xUnit test suites and an in-memory `TestHttpMessageHandler` to test your application without network dependencies. The handler is internal to that test project; import the generated client namespace in your tests:
 
 ```csharp
-// Example using generated TestHttpMessageHandler
-var handler = new TestHttpMessageHandler();
+using var handler = new TestHttpMessageHandler(_ =>
+    TestHttpMessageHandler.JsonResponse(
+        """{"data":{"user":{"id":"123","name":"Alice","email":null,"role":"ADMIN"}}}"""));
+using var httpClient = new HttpClient(handler);
+var client = new MyGraphQLClient(httpClient, new Uri("https://example.test/graphql"));
 
-// Queue an expected response
-handler.EnqueueResponse(new GetUserQueryResponse
-{
-    Data = new()
-    {
-        User = new() { Id = "123", Name = "Alice", Role = UserRole.ADMIN }
-    }
-});
-
-var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://mock/graphql") };
-var client = new MyGraphQLClient(httpClient);
-
-var result = await client.GetUserAsync(new() { Id = "123" });
-Assert.Equal("Alice", result.Data.User.Name);
+var result = await client.ExecuteAsync(new GetUserOperation(new GetUserVariables { Id = "123" }));
+Assert.Equal("Alice", result.Data?.User?.Name);
 ```
 
 ---
@@ -341,13 +334,11 @@ Generated properties and enum members retain their exact GraphQL JSON names, inc
 
 Selections containing nested aliases use operation-specific response records so each alias is available as a property; ordinary selections retain the shared schema types. Aliased union/interface selections use concrete response records and a generated converter keyed by `__typename`. The generator adds an unconditional, unaliased `__typename` to abstract selections, including selections inside named fragments.
 
-## Generator warnings for schema metadata and custom scalars
+## Custom scalars and schema metadata
 
-Directive definitions describe server behavior and do not require generated C# declarations. Their presence does not produce a warning; the client generator does not implement server-side directive execution.
+Directive definitions describe server behavior and do not require generated C# declarations. The client generator does not execute server-side directives.
 
-An unmapped custom scalar produces a warning when referenced by an object/interface field, field argument, input field, or operation variable, including nested list and non-null types. Scalars declared only as schema metadata (including directive-definition arguments) do not produce C# members and do not warn. This check covers schema contracts even when a particular operation does not select those fields.
-
-For a used custom scalar, provide a complete entry in `scalars` with `type`, `isValueType`, and appropriate `sampleExpression` and `sampleJson` values. An unmapped scalar still falls back to `string`; do not add an arbitrary mapping solely to silence the warning.
+Unmapped custom scalars fall back to `string`; the generator does not emit an unmapped-scalar warning. To use another C# type, provide a complete `scalars` entry with `type`, `isValueType`, and appropriate `sampleExpression` and `sampleJson` values when generating samples or tests.
 
 ### Generated C# validation
 
@@ -374,3 +365,47 @@ For example, `client-members.scriban-cs` can contain `public string ConsumerName
 See [the customization tutorial](template-customization.md) for the 73-key catalog, model scopes, export and validation commands, raw/escaped query options, transport/model/test examples and [runnable fixtures](examples/template-customization/README.md). The default operation `Query` uses a formatted multiline raw string; JSON serialization and URL encoding preserve the query value. These customization features require a package revision that includes the composable templates.
 
 Manifest inputs are relative to `.salep.manifest.json` itself. A local `graphql/query.graphql` under a project with output `Generated` appears as `../graphql/query.graphql`; shared schemas and referenced client inputs legitimately need more directory traversal. The sample clients and modules own their local operation documents.
+
+## Filesystem boundaries
+
+The nearest containing `.sln` or `.slnx` directory is the default filesystem boundary. Schemas, operation files/globs, profiles, referenced clients, template overrides and generated output may live anywhere inside it: sibling projects and shared folders work without per-folder grants. This is directory containment, not solution project-membership validation. If no containing solution file exists, the selected project/configuration folder is the fallback boundary. Output must be a subdirectory of the boundary, not the boundary itself.
+
+For custom layouts, detached projects or multiple solutions, pin the intended root in the consuming MSBuild project:
+
+```xml
+<PropertyGroup>
+  <SalepSolutionDirectory>../MySolution</SalepSolutionDirectory>
+</PropertyGroup>
+```
+
+For the CLI, use `--solution-directory` (relative to `--working-directory`, or the current directory):
+
+```text
+salep generate --working-directory ./Client --config salep.json --solution-directory ..
+salep validate --working-directory ./Client --config salep.json --solution-directory ..
+```
+
+The library API accepts `SolutionDirectory` on `ScribanGeneratorOptions`. Without an explicit root, discovery starts at the selected configuration's folder (CLI: the supplied working project folder when present). Configuration input/output paths still resolve relative to the JSON declaring them. The generator does not rewrite consumer configurations.
+
+External inputs require an explicit read-only grant, supplied by the caller rather than `salep.json`:
+
+```xml
+<ItemGroup>
+  <SalepReadRoot Include="../../SharedSchema" />
+  <SalepReadRoot Include="../../BaseClient" />
+</ItemGroup>
+```
+
+For the CLI, repeat `--read-root`. Relative read roots resolve from `--working-directory` (or the current directory when omitted):
+
+```text
+salep generate --working-directory ./Client --config salep.json --read-root ../../SharedSchema --read-root ../../BaseClient
+```
+
+The library API accepts `AllowedReadRoots`, relative to its solution boundary. These grants permit reads only. A ProjectReference still must establish the client dependency; a grant does not replace it. Configurations cannot grant themselves extra permissions. Prefer narrow external directories to a repository or user home.
+
+Generated manifests, locks, staging directories and CLI tracking files remain within the solution boundary. MSBuild tracking files use the configured `IntermediateOutputPath`, which must remain inside the selected solution boundary. Shared artifact folders inside the solution are supported; pin `SalepSolutionDirectory` to the appropriate containing folder for a custom layout.
+
+Backslash input separators are normalized to `/`; generated manifest paths, input/source lists and returned file paths use `/` on every operating system. Manifest paths remain relative to the manifest; inputs must share its filesystem volume. Output inventories reject traversal, drive/device names, alternate data streams and separators using the same rules across platforms. Descendant symlinks and Windows junctions/reparse points are rejected, including in shared read roots and recursive operation globs. Select real solution/shared directories as roots instead of linked directories.
+
+These checks protect against configuration and manifest path redirection during normal builds. They are not an operating-system sandbox against another process replacing files between validation and access, hard links, or arbitrary code a consumer elects to compile and run. Untrusted build processes still require OS-level isolation. Manifest fingerprints detect changes; they are not signatures or an authorization mechanism.

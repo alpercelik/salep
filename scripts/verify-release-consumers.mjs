@@ -92,15 +92,15 @@ sealed class RecordingHandler : HttpMessageHandler {
     }
 }
 `;
-  const scriban = project('ScribanConsumer', 'Salep.ClientGenerator');
+  const scriban = project('ClientGeneratorConsumer', 'Salep.ClientGenerator');
   mkdirSync(path.join(scriban, 'graphql'));
   writeFileSync(path.join(scriban, 'schema.graphql'), consumerSchema);
   writeFileSync(path.join(scriban, 'graphql/Greeting.graphql'), consumerOperation);
   writeFileSync(path.join(scriban, 'salep.json'), JSON.stringify({
     version: 1, kind: 'client', schema: './schema.graphql', operations: './graphql', output: './Generated',
-    namespace: 'ScribanReleaseSmoke', clientName: 'SmokeClient', emitSample: true,
+    namespace: 'ClientGeneratorReleaseSmoke', clientName: 'SmokeClient', emitSample: true,
   }));
-  writeFileSync(path.join(scriban, 'Program.cs'), consumerProgram('ScribanReleaseSmoke'));
+  writeFileSync(path.join(scriban, 'Program.cs'), consumerProgram('ClientGeneratorReleaseSmoke'));
   const consumerEntries = [[parser, 'Salep.GraphQLParser'], [scriban, 'Salep.ClientGenerator']];
   for (const [folder, expectedId] of consumerEntries) {
     const projectPath = path.join(folder, `${path.basename(folder)}.csproj`);
@@ -153,7 +153,7 @@ sealed class RecordingHandler : HttpMessageHandler {
     dotnet(['build', projectPath, '--configuration', 'Release', '--no-restore', '--disable-build-servers']);
     if (existsSync(path.join(generated, 'Operations.Sample.cs'))) throw new Error('Package build retained obsolete sample source.');
     writeFileSync(path.join(folder, 'graphql/Greeting.graphql'), consumerOperation.replace('Greeting(', 'UpdatedGreeting('));
-    writeFileSync(path.join(folder, 'Program.cs'), consumerProgram(folder === scriban ? 'ScribanReleaseSmoke' : 'ReleaseSmoke').replaceAll('GreetingOperation', 'UpdatedGreetingOperation').replaceAll('GreetingVariables', 'UpdatedGreetingVariables'));
+    writeFileSync(path.join(folder, 'Program.cs'), consumerProgram(folder === scriban ? 'ClientGeneratorReleaseSmoke' : 'ReleaseSmoke').replaceAll('GreetingOperation', 'UpdatedGreetingOperation').replaceAll('GreetingVariables', 'UpdatedGreetingVariables'));
     dotnet(['build', projectPath, '--configuration', 'Release', '--no-restore', '--disable-build-servers']);
     const operations = readFileSync(path.join(generated, 'Operations.cs'), 'utf8');
     if (!/public string Query =>\s*"{3,}/.test(operations)) throw new Error('Packaged generator did not emit raw queries.');

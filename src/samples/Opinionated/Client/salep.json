@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "kind": "client",
+  "schema": "../../Salep.Samples.GraphQLServer/Generated/schema.graphql",
+  "operations": "graphql",
+  "namespace": "Salep.Samples.Opinionated.Client",
+  "clientName": "GraphQLClient",
+  "output": "Generated",
+  "scalarPreset": "nodatime",
+  "unionRepresentation": "dunet",
+  "omitUnusedVariables": true,
+  "inlineDefaultVariables": false,
+  "useHttpGet": true,
+  "enableBatching": true,
+  "maxGetUrlLength": 2048,
+  "emitAgentInstructions": false
+}

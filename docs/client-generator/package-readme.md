@@ -38,11 +38,12 @@ Use the `net11.0` tool for .NET 11, or query the restored consumer project with 
 
 This is the default Scriban C# generator. Scriban is the sole stable implementation.
 
+For example, `ClientMembers.scriban-cs` can contain `public string ConsumerName => {{ target.string_literal settings.client_name }};`. That adds one member while the default client methods stay intact. The package exports 73 templates. Named includes compose embedded defaults and configured fragments; `include "default:client.read-response"` reuses a default response method without copying it. See [the complete fragment and model contract](https://github.com/alpercelik/salep/blob/main/docs/client-generator/template-customization.md).
+
+Default operation queries are formatted multiline C# raw strings with native generation-host line endings. Constructor, transport, model and operation hooks add source without replacing whole files; profiles can share mappings and tests can specialize inherited mappings. Use a package revision containing the composable template catalog; older packages may support only whole-output overrides.
+
 ## Upgrading from the Roslyn implementation
 
 Keep the `Salep.ClientGenerator` package reference and version-1 `salep.json` configuration. Regenerate base clients before modules and generated-test projects. The default tool verifies the previous Roslyn version-1 ownership manifest and rewrites its owned files with Scriban output; unrelated consumer files remain untouched. Tampered manifests and mismatched owners still fail. Previous Scriban configurations may keep their explicit filenames; set `SalepConfigFile` accordingly. The former `.salep-scriban.manifest.json` is upgraded to `.salep.manifest.json` during generation.
 
-
-For example, `ClientMembers.scriban-cs` can contain `public string ConsumerName => {{ target.string_literal settings.client_name }};`. That adds one member while the default client methods stay intact. The package exports 73 templates. Named includes compose embedded defaults and configured fragments; `include "default:client.read-response"` reuses a default response method without copying it. See [the complete fragment and model contract](https://github.com/alpercelik/salep/blob/main/docs/client-generator/template-customization.md).
-
-Default operation queries are formatted multiline C# raw strings with native generation-host line endings. Constructor, transport, model and operation hooks add source without replacing whole files; profiles can share mappings and tests can specialize inherited mappings. Use a package revision containing the composable template catalog; older packages may support only whole-output overrides.
+Shared inputs and outputs may reside within the detected solution boundary. Use `SalepSolutionDirectory` when automatic solution discovery is insufficient, and `SalepReadRoot` items for external read-only inputs. JSON configuration cannot grant filesystem permissions. See [filesystem boundaries](https://github.com/alpercelik/salep/blob/main/docs/client-generator/consumer-guide.md#filesystem-boundaries).

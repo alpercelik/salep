@@ -1,7 +1,7 @@
 # Salep C# Client Generator
 
 This guide covers Salep C# Client Generator. For the independent language library, see [Salep GraphQL Parser](../parser/README.md); for shared naming and package mapping, see [architecture](../architecture.md).
-A strongly-typed, schema-driven C# GraphQL client generator and MSBuild build tool. Integrated directly into the MSBuild compilation pipeline, it generates types, operations, System.Text.Json converters, discriminated unions (Dunet by default, or native C# 15 unions when configured), tests, and sample usage at build time — with zero runtime reflection, zero runtime dynamic code, and zero runtime dependency on Salep assemblies.
+A strongly-typed, schema-driven C# GraphQL client generator and MSBuild build tool. Integrated directly into the MSBuild compilation pipeline, it generates types, operations, System.Text.Json converters, discriminated unions (Dunet by default, or native C# 15 unions when configured), tests, and sample usage at build time — with no runtime dependency on Salep assemblies.
 
 ## Documentation & Guides
 
@@ -16,7 +16,7 @@ Salep provides tailored documentation for both human developers and AI agents:
 | **[Developer Contributor Guide](developer-contributor-guide.md)** | Contributing Developers | Codebase layout, generator pipeline internals, test suites, and how to add new features. |
 | **[AI Agent Contributor Guide](agent-contributor-guide.md)** | Contributing AI Agents | Agent operational invariants, diagnostic decision trees, and validation rules for repo contributors. |
 | **[Config Inheritance & Dedup](config-inheritance-dedup.md)** | Enterprise / Multi-Project | Profiles for defaults and verified `baseClient` contracts for ownership. |
-| **[Opinionated Sample Showcase & Architecture](../../src/samples/Scriban/Opinionated/README.md)** | Developers & Contributors | Reference multi-tier client implementation, schema coverage, and dogfooding testbed. |
+| **[Opinionated Sample Showcase & Architecture](../../src/samples/Opinionated/README.md)** | Developers & Contributors | Reference multi-tier client implementation, schema coverage, and dogfooding testbed. |
 | **[GraphQL Spec Coverage](spec-coverage.md)** | Spec Compliance | Living checklist mapping GraphQL spec features to schema and test evidence. |
 
 ---
@@ -71,9 +71,10 @@ src/
     Fixtures/                         # Oracle and reference-suite data
   Salep.GraphQLParser.PublicApiConsumer/       # Packed parser verification
   samples/
-    Scriban/
-      Opinionated/
-      MinimalDependencies/
+    Opinionated/
+    MinimalDependencies/
+    Directory.Build.props
+    Directory.Packages.props
     Salep.Samples.GraphQLServer/
 benchmarks/
   Salep.GraphQLParser.Benchmarks/
@@ -83,10 +84,15 @@ benchmarks/
 
 ### 1. Add the MSBuild package reference
 
-In your consuming `.csproj`:
+In your consuming `.csproj` (versionless references assume Central Package Management; otherwise specify package versions):
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Dunet" /> <!-- required with the default union representation -->
     <PackageReference Include="NodaTime" />
@@ -133,8 +139,7 @@ query GetUser($id: ID!) {
 
 ### 4. Create a generator config
 
-```jsonc
-// salep.json
+```json
 {
   "version": 1,
   "kind": "client",
@@ -159,8 +164,8 @@ The MSBuild task runs `CoreCompile` after referenced projects build. Generated C
 
 ```csharp
 var client = new MyGraphQLClient(httpClient, new Uri("https://api.example.com/graphql"));
-var response = await client.GetUserAsync(new() { Id = "123" });
-Console.WriteLine(response.Data.User.Name);
+var response = await client.ExecuteAsync(new GetUserOperation(new GetUserVariables { Id = "123" }));
+Console.WriteLine(response.Data?.User?.Name);
 ```
 
 ## Configuration contracts
@@ -242,7 +247,7 @@ powershell -ExecutionPolicy Bypass -File .\build-salep.ps1
 ## Development Workflow
 
 - The **generator** is the source of truth; fix issues in the generator, then regenerate outputs
-- Never manually edit generated files in `src/samples/Scriban/Opinionated/Client` or `src/samples/Scriban/Opinionated/Client.Tests`
+- Never manually edit generated files in `src/samples/Opinionated/Client` or `src/samples/Opinionated/Client.Tests`
 - All behavior is driven by the schema and operation inputs
 - If generated code fails to compile: fix the generator, regenerate
 - If tests fail: determine if the generator or test generation is wrong, fix the generator, regenerate

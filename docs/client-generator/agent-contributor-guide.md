@@ -64,7 +64,7 @@ To regenerate sample client artifacts using the standalone CLI:
 
 ```bash
 dotnet run --project src/Salep.ClientGenerator.Cli/Salep.ClientGenerator.Cli.csproj --framework net10.0 -- \
-  generate --config src/samples/Scriban/Opinionated/Client/salep.json
+  generate --config src/samples/Opinionated/Client/salep.json
 ```
 
 ### Via Full Monorepo Bootstrap
@@ -86,7 +86,7 @@ pwsh ./build-salep.ps1
 
 When encountering failures during an agent session, follow this decision tree:
 
-### Case A: Compilation Error in Generated Code (`src/samples/Scriban/Opinionated/Client/`)
+### Case A: Compilation Error in Generated Code (`src/samples/Opinionated/Client/`)
 1. Inspect the error message and line in the generated `.cs` file.
 2. Identify the owning template and model factory:
    - Schema types: `Templates/SchemaTypes.scriban-cs` and `Targets/CSharpSchemaTemplateModelFactory.cs`.
@@ -124,5 +124,5 @@ Check request serialization, response JSON names, polymorphic `__typename` and s
 ## 6. Spec Coverage Tracking
 
 Whenever GraphQL SDL syntax or operation features are added or changed:
-1. Update `src/samples/Scriban/Opinionated/Client/schema.coverage.graphql` or `src/samples/Scriban/Opinionated/Client/graphql/` with the new syntax.
+1. Update `src/samples/Opinionated/Client/schema.coverage.graphql` or `src/samples/Opinionated/Client/graphql/` with the new syntax.
 2. Ensure `docs/client-generator/spec-coverage.md` reflects the updated status and line numbers in the evidence section.

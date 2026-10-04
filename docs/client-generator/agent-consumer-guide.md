@@ -100,10 +100,10 @@ In ASP.NET Core `Program.cs` or Service Registration:
 ```csharp
 using TargetApp.GraphQL;
 
-builder.Services.AddHttpClient<TargetGraphQLClient>(client =>
-{
-    client.BaseAddress = new Uri("https://api.example.com/graphql");
-});
+builder.Services.AddHttpClient("GraphQL");
+builder.Services.AddScoped<TargetGraphQLClient>(services => new TargetGraphQLClient(
+    services.GetRequiredService<IHttpClientFactory>().CreateClient("GraphQL"),
+    new Uri("https://api.example.com/graphql")));
 ```
 
 #### Calling Client Methods
@@ -116,9 +116,9 @@ public class UserClientService
 
     public async Task<User?> FetchUserAsync(string id, CancellationToken ct = default)
     {
-        var response = await _client.GetUserAsync(new() { Id = id }, ct);
+        var response = await _client.ExecuteAsync(new GetUserOperation(new GetUserVariables { Id = id }), ct);
 
-        if (response.Errors is { Count: > 0 })
+        if (response.Errors is { Length: > 0 })
         {
             throw new InvalidOperationException(response.Errors[0].Message);
         }
@@ -130,35 +130,31 @@ public class UserClientService
 
 #### Handling Discriminated Unions with Dunet
 ```csharp
-// For GraphQL union SearchResult = User | Organization
-var searchResponse = await _client.SearchAsync(new() { Query = "test" });
+// With the SearchAll operation and SearchResult schema from the consumer guide.
+var searchResponse = await _client.ExecuteAsync(new SearchAllOperation(new SearchAllVariables { Query = "test" }));
 
-foreach (var item in searchResponse.Data.Search)
+foreach (var item in searchResponse.Data?.Search ?? [])
 {
     item.Match(
-        user => ProcessUser(user),
-        org => ProcessOrg(org)
+        user => ProcessUser(user.Value),
+        org => ProcessOrg(org.Value)
     );
 }
 ```
 
 ### Phase 6: Implement Unit Tests with `TestHttpMessageHandler`
 
+Use the internal handler in the generated tests project with the `transport` suite enabled. Import its namespace and the generated client namespace.
+
 ```csharp
 [Fact]
 public async Task FetchUserAsync_ReturnsUser_WhenResponseSuccessful()
 {
-    var handler = new TestHttpMessageHandler();
-    handler.EnqueueResponse(new GetUserQueryResponse
-    {
-        Data = new()
-        {
-            User = new() { Id = "u1", Name = "Alice", Email = "alice@example.com" }
-        }
-    });
-
-    var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://mock/graphql") };
-    var client = new TargetGraphQLClient(httpClient);
+    using var handler = new TestHttpMessageHandler(_ =>
+        TestHttpMessageHandler.JsonResponse(
+            """{"data":{"user":{"id":"u1","name":"Alice","email":"alice@example.com"}}}"""));
+    using var httpClient = new HttpClient(handler);
+    var client = new TargetGraphQLClient(httpClient, new Uri("https://example.test/graphql"));
 
     var service = new UserClientService(client);
     var user = await service.FetchUserAsync("u1");
@@ -189,7 +185,7 @@ When exploring or modifying a codebase consuming Salep:
 | `Salep: Base generator config file not found` | Invalid `"extends"` path in `salep.json` | Verify parent path is relative to current `salep.json`. |
 | `CS0433: The type 'X' exists in both ProjectA and ProjectB` | Type duplication in layered projects | In child `salep.json`, add `"baseClient": "../ProjectA/salep.json"`. |
 | `No operations found matching path` | Invalid `operations` in `salep.json` | Verify directory exists and contains `.graphql` files. |
-| `NullReferenceException` on `response.Data.Field` | GraphQL execution returned errors | Always check `if (response.Errors is { Count: > 0 })` before accessing `response.Data`. |
+| `NullReferenceException` on `response.Data.Field` | Data may be absent independently of errors | Check response.Data for null and check `if (response.Errors is { Length: > 0 })` before using the response. |
 
 
 ## Consumer template overrides

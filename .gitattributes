@@ -1,0 +1,3 @@
+# Oracle AST locations and rejection offsets refer to the exact committed source bytes.
+# Preserve intentional LF, CRLF, or mixed terminators instead of checkout conversion.
+/src/Salep.GraphQLParser.Tests/Fixtures/Oracle/*.graphql -text

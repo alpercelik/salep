@@ -36,7 +36,7 @@ public sealed partial class GeneratorContractTests
     public void Full_spec_coverage_client_and_operation_surfaces_match_verified_contracts(string unionRepresentation, string targetFramework, string languageVersion)
     {
         var repositoryRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../"));
-        var coverage = Path.Combine(repositoryRoot, "src/samples/Scriban/Opinionated/Client/schema.coverage.graphql");
+        var coverage = Path.Combine(repositoryRoot, "src/samples/Opinionated/Client/schema.coverage.graphql");
         using var fixture = new ContractFixture("Coverage", unionRepresentation, "builtin", targetFramework, languageVersion, coverage, coverage);
         fixture.Generate();
         AssertContract($"Coverage-{unionRepresentation}-{targetFramework}", fixture.Outputs.Select(output => (output.Scriban, output.Tests)));
@@ -231,10 +231,10 @@ public sealed partial class GeneratorContractTests
             native = unionRepresentation == "native";
             Directory.CreateDirectory(root);
             var samples = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../src/samples"));
-            schema = schemaOverride ?? Path.Combine(samples, "Salep.Samples.GraphQLServer/Generated/schema.graphql");
-            var sampleDirectory = Path.Combine(samples, "Scriban", sample);
-            clientOperations = operationsOverride ?? Path.Combine(sampleDirectory, "Client/graphql");
-            moduleOperations = operationsOverride ?? Path.Combine(sampleDirectory, "Module/graphql");
+            schema = CopyInput(schemaOverride ?? Path.Combine(samples, "Salep.Samples.GraphQLServer/Generated/schema.graphql"), "schema");
+            var sampleDirectory = Path.Combine(samples, sample);
+            clientOperations = CopyInput(operationsOverride ?? Path.Combine(sampleDirectory, "Client/graphql"), "client-operations");
+            moduleOperations = CopyInput(operationsOverride ?? Path.Combine(sampleDirectory, "Module/graphql"), "module-operations");
             namespaceRoot = $"Salep.Samples.{sample}.Parity";
             scribanClientConfig = WriteConfig("scriban-client.json");
             scribanModuleConfig = WriteConfig("scriban-module.json");
@@ -249,6 +249,28 @@ public sealed partial class GeneratorContractTests
             ];
         }
 
+        private string CopyInput(string source, string name)
+        {
+            // The runner checkout and system temp directory can be on different Windows drives.
+            // Keep every manifest input beside its generated output, preserving fixture bytes.
+            var destination = Path.Combine(root, "inputs", name);
+            Directory.CreateDirectory(destination);
+            if (File.Exists(source))
+            {
+                var file = Path.Combine(destination, Path.GetFileName(source));
+                File.Copy(source, file);
+                return file;
+            }
+
+            foreach (var sourceFile in Directory.EnumerateFiles(source, "*.graphql", SearchOption.AllDirectories))
+            {
+                var file = Path.Combine(destination, Path.GetRelativePath(source, sourceFile));
+                Directory.CreateDirectory(Path.GetDirectoryName(file)!);
+                File.Copy(sourceFile, file);
+            }
+            return destination;
+        }
+
         public void Generate()
         {
             var scribanEnvironment = new ScribanGeneratorEnvironment(targetFramework, languageVersion, [scribanClientConfig]);
@@ -258,6 +280,17 @@ public sealed partial class GeneratorContractTests
 
             ScribanGenerator.Generate(new(scribanClientTestsConfig, root));
             ScribanGenerator.Generate(new(scribanModuleTestsConfig, root));
+
+            foreach (var output in Outputs)
+            {
+                using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(output.Scriban, ".salep.manifest.json")));
+                foreach (var input in manifest.RootElement.GetProperty("Inputs").EnumerateObject())
+                {
+                    var relative = Path.GetRelativePath(root, Path.GetFullPath(input.Name, output.Scriban));
+                    Assert.False(Path.IsPathRooted(relative));
+                    Assert.DoesNotContain("..", relative.Split(Path.DirectorySeparatorChar));
+                }
+            }
 
             var scribanSnapshot = Snapshot(Path.Combine(root, "Scriban"));
             ScribanGenerator.Generate(new(scribanClientConfig, root, native ? scribanEnvironment with { ReferencedConfigurations = [] } : null));

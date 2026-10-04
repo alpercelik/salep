@@ -19,6 +19,10 @@ Scriban is the sole stable implementation of `Salep.ClientGenerator`. Before ret
 
 Core and MSBuild tests run on .NET 10 and .NET 11. Opinionated samples exercise Dunet/NodaTime on both; MinimalDependencies and native unions require .NET 11 with preview language support. These finite cases do not prove every possible input or complete GraphQL semantic validation.
 
+## Portable fixture setup
+
+Contract tests copy schema and operation inputs into the isolated fixture directory before generating. Windows runners may check out the repository on `D:` while system temporary directories live on `C:`; relative manifest paths require input and output on the same volume. Generated source assertions use the host's native newline. Parser oracle `.graphql` files are marked `-text` in `.gitattributes` because their exact bytes determine recorded AST spans and error offsets.
+
 ## Reviewing baseline changes
 
 The fixtures in `src/Salep.ClientGenerator.Tests/Fixtures/Contracts/` are immutable during test execution. A failing comparison must be investigated; do not auto-update snapshots to make tests pass. Review intentional API, document, inventory or coverage changes and update only affected fixtures alongside behavior tests. Query fixture newlines are normalized to LF for portability; separate raw-string/runtime tests verify native output newlines and value preservation. The legacy fixture records a released ownership format and must remain independent of current generation.

@@ -30,7 +30,7 @@ Shared schema definitions, scalar representations, and union representation must
 
 Give each client a distinct namespace and a separate output directory. Equal and nested dependency outputs are rejected, and another configuration cannot claim an owned directory. Tests reference the selected concrete client with `client`, never `baseClient`, and retain union coverage for ancestor-owned types.
 
-See [configuration](configuration.md) for every setting and test suite. This is an unpublished breaking change: reset obsolete generated manifests and regenerate in dependency order when migrating the repository. Do not hand-edit generated C#.
+See [configuration](configuration.md) for every setting and test suite. Verified legacy manifests can migrate during regeneration; build in dependency order and follow the [upgrade guidance](package-readme.md#upgrading-from-the-roslyn-implementation). Do not hand-edit generated C#.
 
 
 ## Template mapping inheritance

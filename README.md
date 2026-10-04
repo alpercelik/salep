@@ -27,9 +27,10 @@ src/
     Fixtures/                         # Oracle and reference-suite data
   Salep.GraphQLParser.PublicApiConsumer/
   samples/
-    Scriban/
-      Opinionated/
-      MinimalDependencies/
+    Directory.Build.props
+    Directory.Packages.props
+    Opinionated/
+    MinimalDependencies/
     Salep.Samples.GraphQLServer/
 benchmarks/
   Salep.GraphQLParser.Benchmarks/

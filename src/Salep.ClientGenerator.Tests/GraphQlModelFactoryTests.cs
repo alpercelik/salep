@@ -547,7 +547,7 @@ public sealed class GraphQlModelFactoryTests
     public Task CSharpTemplateGenerator_RendersExistingSampleGraphQlInputs(string sample, string clientProject)
     {
         var repositoryRoot = FindRepositoryRoot();
-        var sampleRoot = Path.Combine(repositoryRoot, "src", "samples", "Scriban", sample);
+        var sampleRoot = Path.Combine(repositoryRoot, "src", "samples", sample);
         var schemaPath = Path.Combine(repositoryRoot, "src", "samples", "Salep.Samples.GraphQLServer", "Generated", "schema.graphql");
         var operationDirectory = Path.Combine(sampleRoot, clientProject, "graphql");
         var schema = GraphQlModelFactory.CreateSchema(Parse(File.ReadAllText(schemaPath)));

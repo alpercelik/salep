@@ -8,9 +8,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Alba;
 #if MINIMAL_DEPENDENCIES
-using Salep.Samples.MinimalDependencies.Scriban.Client;
+using Salep.Samples.MinimalDependencies.Client;
 #else
-using Salep.Samples.Opinionated.Scriban.Client;
+using Salep.Samples.Opinionated.Client;
 #endif
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.TestHost;
@@ -18,11 +18,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using Xunit;
 #if MINIMAL_DEPENDENCIES
-using ModuleGraphQLClient = Salep.Samples.MinimalDependencies.Scriban.ModuleClient.GraphQLModuleClient;
-using ModuleGraphQLOperations = Salep.Samples.MinimalDependencies.Scriban.ModuleClient.GraphQLModuleOperations;
+using ModuleGraphQLClient = Salep.Samples.MinimalDependencies.ModuleClient.GraphQLModuleClient;
+using ModuleGraphQLOperations = Salep.Samples.MinimalDependencies.ModuleClient.GraphQLModuleOperations;
 #else
-using ModuleGraphQLClient = Salep.Samples.Opinionated.Scriban.ModuleClient.GraphQLModuleClient;
-using ModuleGraphQLOperations = Salep.Samples.Opinionated.Scriban.ModuleClient.GraphQLModuleOperations;
+using ModuleGraphQLClient = Salep.Samples.Opinionated.ModuleClient.GraphQLModuleClient;
+using ModuleGraphQLOperations = Salep.Samples.Opinionated.ModuleClient.GraphQLModuleOperations;
 #endif
 
 namespace GeneratedClient.IntegrationTests;

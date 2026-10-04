@@ -24,6 +24,8 @@
       <_SalepSourcesFile>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)salep.generated-sources.txt', '$(MSBuildProjectDirectory)'))</_SalepSourcesFile>
       <_SalepInputsFile>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)salep.inputs.txt', '$(MSBuildProjectDirectory)'))</_SalepInputsFile>
       <_SalepStampFile>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)salep.generated.stamp', '$(MSBuildProjectDirectory)'))</_SalepStampFile>
+      <_SalepSolutionArg Condition="'$(SalepSolutionDirectory)' != ''">--solution-directory &quot;$(SalepSolutionDirectory)&quot;</_SalepSolutionArg>
+      <_SalepReadRootArgs>@(SalepReadRoot->'--read-root &quot;%(FullPath)&quot;', ' ')</_SalepReadRootArgs>
       <_SalepReferenceArgs>@(_SalepReferencedConfigs->'--reference-config &quot;%(Identity)&quot;', ' ')</_SalepReferenceArgs>
     </PropertyGroup>
   </Target>
@@ -37,7 +39,7 @@
 
   <Target Name="_SalepResolveInputs" DependsOnTargets="_SalepResolveConfig" Condition="'$(SalepEnabled)' == 'true'">
     <Error Condition="!Exists('$(_SalepCliDll)')" Text="Salep.ClientGenerator.Cli.dll was not found at '$(SalepToolPath)'. Build the Scriban CLI or set SalepToolPath." />
-    <Exec Command="dotnet exec &quot;$(_SalepCliDll)&quot; inputs --config &quot;$(_SalepEffectiveConfig)&quot; --working-directory &quot;$(MSBuildProjectDirectory)&quot; --target-framework &quot;$(TargetFramework)&quot; --language-version &quot;$(LangVersion)&quot; $(_SalepReferenceArgs) --inputs-file &quot;$(_SalepInputsFile)&quot;" WorkingDirectory="$(MSBuildProjectDirectory)" />
+    <Exec Command="dotnet exec &quot;$(_SalepCliDll)&quot; inputs --config &quot;$(_SalepEffectiveConfig)&quot; --working-directory &quot;$(MSBuildProjectDirectory)&quot; --target-framework &quot;$(TargetFramework)&quot; --language-version &quot;$(LangVersion)&quot; $(_SalepReferenceArgs) $(_SalepReadRootArgs) $(_SalepSolutionArg) --inputs-file &quot;$(_SalepInputsFile)&quot;" WorkingDirectory="$(MSBuildProjectDirectory)" />
     <ReadLinesFromFile File="$(_SalepInputsFile)" Condition="Exists('$(_SalepInputsFile)')"><Output TaskParameter="Lines" ItemName="_SalepInputFiles" /></ReadLinesFromFile>
   </Target>
 
@@ -54,7 +56,7 @@
 
   <Target Name="SalepGenerate" BeforeTargets="CoreCompile" DependsOnTargets="_SalepRemovePreviouslyOwnedCompileItems" Inputs="@(_SalepInputFiles);$(_SalepInputsFile)" Outputs="$(_SalepStampFile)" Condition="'$(SalepEnabled)' == 'true'">
     <Error Condition="'$(_SalepEffectiveConfig)' != '' and !Exists('$(_SalepCliDll)')" Text="Salep.ClientGenerator.Cli.dll was not found at '$(SalepToolPath)'. Build the Scriban CLI or set SalepToolPath." />
-    <Exec Condition="'$(_SalepEffectiveConfig)' != ''" Command="dotnet exec &quot;$(_SalepCliDll)&quot; generate --config &quot;$(_SalepEffectiveConfig)&quot; --working-directory &quot;$(MSBuildProjectDirectory)&quot; --target-framework &quot;$(TargetFramework)&quot; --language-version &quot;$(LangVersion)&quot; $(_SalepReferenceArgs) --sources-file &quot;$(_SalepSourcesFile)&quot; --stamp-file &quot;$(_SalepStampFile)&quot;" WorkingDirectory="$(MSBuildProjectDirectory)" />
+    <Exec Condition="'$(_SalepEffectiveConfig)' != ''" Command="dotnet exec &quot;$(_SalepCliDll)&quot; generate --config &quot;$(_SalepEffectiveConfig)&quot; --working-directory &quot;$(MSBuildProjectDirectory)&quot; --target-framework &quot;$(TargetFramework)&quot; --language-version &quot;$(LangVersion)&quot; $(_SalepReferenceArgs) $(_SalepReadRootArgs) $(_SalepSolutionArg) --sources-file &quot;$(_SalepSourcesFile)&quot; --stamp-file &quot;$(_SalepStampFile)&quot;" WorkingDirectory="$(MSBuildProjectDirectory)" />
   </Target>
 
   <Target Name="_SalepIncludeGeneratedFiles" BeforeTargets="CoreCompile" DependsOnTargets="SalepGenerate" Condition="'$(SalepEnabled)' == 'true' and Exists('$(_SalepSourcesFile)')">

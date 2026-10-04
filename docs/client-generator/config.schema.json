@@ -22,11 +22,13 @@
         },
         "extends": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "Path relative to this configuration. Inputs outside the solution require caller-granted SalepReadRoot or --read-root; linked descendants are rejected."
         },
         "schema": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "Path relative to this configuration. Inputs outside the solution require caller-granted SalepReadRoot or --read-root; linked descendants are rejected."
         },
         "unionRepresentation": {
           "enum": [
@@ -199,19 +201,23 @@
         },
         "profile": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "Path relative to this configuration. Inputs outside the solution require caller-granted SalepReadRoot or --read-root; linked descendants are rejected."
         },
         "baseClient": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "Path relative to this configuration. Inputs outside the solution require caller-granted SalepReadRoot or --read-root; linked descendants are rejected."
         },
         "schema": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "Path relative to this configuration. Inputs outside the solution require caller-granted SalepReadRoot or --read-root; linked descendants are rejected."
         },
         "operations": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "Path relative to this configuration. Inputs outside the solution require caller-granted SalepReadRoot or --read-root; linked descendants are rejected."
         },
         "namespace": {
           "type": "string",
@@ -223,7 +229,8 @@
         },
         "output": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "Generated output subdirectory within the containing solution (or project fallback). Parent traversal outside that boundary and linked directories are rejected."
         },
         "emitSample": {
           "type": "boolean"
@@ -403,11 +410,13 @@
         },
         "client": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "Path relative to this configuration. Inputs outside the solution require caller-granted SalepReadRoot or --read-root; linked descendants are rejected."
         },
         "output": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "Generated output subdirectory within the containing solution (or project fallback). Parent traversal outside that boundary and linked directories are rejected."
         },
         "namespace": {
           "type": "string",

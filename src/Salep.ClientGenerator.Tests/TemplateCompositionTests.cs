@@ -114,8 +114,8 @@ public sealed class TemplateCompositionTests
             Assert.Contains("// child annotation", source, StringComparison.Ordinal);
             Assert.DoesNotContain("// parent annotation", source, StringComparison.Ordinal);
             var inputs = ScribanGenerator.GetInputFiles(new("salep.json", root));
-            Assert.Contains(Path.Combine(root, "profile", "members.scriban-cs"), inputs);
-            Assert.Contains(Path.Combine(root, "annotations.scriban-cs"), inputs);
+            Assert.Contains(GeneratorPathPolicy.Normalize(Path.Combine(root, "profile", "members.scriban-cs")), inputs);
+            Assert.Contains(GeneratorPathPolicy.Normalize(Path.Combine(root, "annotations.scriban-cs")), inputs);
             using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, "Generated", ".salep.manifest.json")));
             Assert.True(manifest.RootElement.GetProperty("Inputs").TryGetProperty("../profile/members.scriban-cs", out _));
         }
