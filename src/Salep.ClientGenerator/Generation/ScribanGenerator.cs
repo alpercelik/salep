@@ -52,7 +52,14 @@ public static class ScribanGenerator
     public static IReadOnlyList<string> GetInputFiles(ScribanGeneratorOptions options)
     {
         var plan = Prepare(options);
-        var paths = plan.Inputs.Keys.ToHashSet(PathComparer);
+        CheckOutputPaths(plan);
+        return InputFiles(plan);
+    }
+
+    [System.Diagnostics.CodeAnalysis.RequiresAssemblyFiles("C# MSBuild tracking includes the physical generator and parser assemblies.")]
+    private static IReadOnlyList<string> InputFiles(Plan plan)
+    {
+        var paths = plan.Inputs.Keys.Concat(plan.Configuration.ConfigurationFiles).Concat(plan.Manifest.Dependencies.Keys).ToHashSet(PathComparer);
         paths.Add(typeof(ScribanGenerator).Assembly.Location);
         paths.Add(typeof(GraphQlModelFactory).Assembly.Location);
         paths.Add(typeof(Salep.GraphQLParser.GraphQLParser).Assembly.Location);
@@ -65,6 +72,46 @@ public static class ScribanGenerator
             foreach (var file in manifest.Files.Keys) paths.Add(Path.Combine(plan.Configuration.Output, file));
         }
         return paths.Select(GeneratorPathPolicy.Normalize).Order(PathComparer).ToArray();
+    }
+
+    /// <summary>Checks CLI tracking files against all inputs and owned outputs before publication.</summary>
+    [System.Diagnostics.CodeAnalysis.RequiresAssemblyFiles("CLI tracking guards include the physical generator and parser assemblies.")]
+    public static void ValidateAuxiliaryOutputPaths(ScribanGeneratorOptions options, IReadOnlyList<string> outputPaths, IReadOnlyList<string>? additionalInputPaths = null)
+    {
+        if (outputPaths.Count == 0) return;
+        var plan = Prepare(options);
+        CheckOutputPaths(plan);
+        var auxiliary = outputPaths.Select(file => plan.Paths.Write(file)).ToArray();
+        var protectedPaths = InputFiles(plan).Concat(OwnedPaths(plan)).Concat(additionalInputPaths ?? []).ToArray();
+        for (var index = 0; index < auxiliary.Length; index++)
+        {
+            var file = auxiliary[index];
+            if (Directory.Exists(file) || protectedPaths.Any(path => PathsConflict(file, path)) || auxiliary.Take(index).Any(path => PathsConflict(file, path)))
+                throw Error("SALEPS1007", plan.Configuration.ConfigurationPath, "tracking", "Tracking files cannot overlap generator inputs, owned outputs, control files, directories or each other.", "Choose separate tracking files outside the generator's input and output inventory.");
+        }
+    }
+
+    private static bool PathsConflict(string left, string right)
+    {
+        left = GeneratorPathPolicy.PhysicalIdentity(left);
+        right = GeneratorPathPolicy.PhysicalIdentity(right);
+        return left.Equals(right, StringComparison.OrdinalIgnoreCase)
+            || left.StartsWith(Path.TrimEndingDirectorySeparator(right) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+            || right.StartsWith(Path.TrimEndingDirectorySeparator(left) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static IReadOnlyList<string> OwnedPaths(Plan plan)
+    {
+        var directory = plan.Configuration.Output;
+        var owned = plan.Outputs.Keys.Select(name => plan.Paths.Write(Path.Combine(directory, name)))
+            .Concat(new[] { ManifestFileName, ".salep-scriban.manifest.json", ".salep.lock" }.Select(name => plan.Paths.Write(Path.Combine(directory, name)))).ToList();
+        var previous = ReadManifest(Path.Combine(directory, ManifestFileName), plan.Configuration.ConfigurationPath, plan.Paths, required: false, lockHeld: true, verifyOutputs: false);
+        if (previous is not null)
+        {
+            owned.Add(plan.Paths.Write(previous.SourceManifestPath!));
+            owned.AddRange(previous.Files.Keys.Select(name => plan.Paths.Write(Path.Combine(directory, name))));
+        }
+        return owned;
     }
 
     private static Plan Prepare(ScribanGeneratorOptions options)
@@ -113,10 +160,33 @@ public static class ScribanGenerator
         try
         {
             var parserOptions = new ParserOptions(maxAllowedDirectives: 10_000);
-            var schemaDocument = global::Salep.GraphQLParser.GraphQLParser.Parse(new SourceText(File.ReadAllText(schemaPath).AsMemory()), parserOptions);
-            var operationDocuments = operationFiles.Select(file => global::Salep.GraphQLParser.GraphQLParser.Parse(new SourceText(File.ReadAllText(file).AsMemory()), parserOptions)).ToArray();
-            var schema = GraphQlModelFactory.CreateSchema(schemaDocument);
-            var executable = GraphQlModelFactory.CreateExecutable(schema, operationDocuments);
+            var sourceDirectory = Path.GetDirectoryName(path)!;
+            var schemaSource = new GraphQlInputSource(GeneratorPathPolicy.Normalize(Path.GetRelativePath(sourceDirectory, schemaPath)), File.ReadAllText(schemaPath));
+            var operationSources = operationFiles.Select(file => new GraphQlInputSource(GeneratorPathPolicy.Normalize(Path.GetRelativePath(sourceDirectory, file)), File.ReadAllText(file))).ToArray();
+            DocumentNode schemaDocument;
+            DocumentNode[] operationDocuments;
+            GraphQlSchemaModel schema;
+            GraphQlExecutableDocument executable;
+            try
+            {
+                schemaDocument = schemaSource.Parse(parserOptions);
+                schemaSource.ValidateDocumentKind(schemaDocument, executable: false);
+                operationDocuments = operationSources.Select(source => source.Parse(parserOptions)).ToArray();
+                for (var index = 0; index < operationDocuments.Length; index++)
+                    operationSources[index].ValidateDocumentKind(operationDocuments[index], executable: true);
+                schema = GraphQlModelFactory.CreateSchema(schemaDocument, schemaSource.Map);
+                var parts = operationDocuments.Select((document, index) => GraphQlModelFactory.CreateExecutable([document], operationSources[index].Map)).ToArray();
+                executable = new(parts.SelectMany(part => part.Operations).ToArray(), parts.SelectMany(part => part.Fragments).ToArray());
+                // C# historically supports retaining or omitting unused variables. Validate
+                // all other source invariants before projection and default-value inlining.
+                new GraphQlDocumentValidator(schema, executable, allowUnusedVariables: true).Validate();
+                var projector = new GraphQlResponseProjector(schema, executable);
+                executable = executable with { Operations = executable.Operations.Select(operation => operation with { ResponseProjection = projector.Project(operation) }).ToArray() };
+            }
+            catch (InvalidDataException exception)
+            {
+                throw Error("SALEPS1008", path, "graphql", exception.Message, "Correct the reported GraphQL schema or operation source and rerun 'salep validate'.");
+            }
             var typeSignatures = SchemaSignatures(schemaDocument);
             var typeOwnersByGraphQlName = baseManifest is null
                 ? new Dictionary<string, string>(StringComparer.Ordinal)
@@ -135,6 +205,9 @@ public static class ScribanGenerator
                     typeOwnersByGraphQlName[type.Key] = resolved.Namespace;
                 }
             }
+            var signatureDocument = executable with { Fragments = executable.Fragments.OrderBy(fragment => fragment.Name, StringComparer.Ordinal).ToArray() };
+            var signatureFormatter = new GraphQlOperationDocumentFormatter(schema, signatureDocument);
+            string OperationSignature(GraphQlOperationDefinition operation) => Hash(signatureFormatter.Format(operation, new GraphQlOperationDocumentOptions { AddTypename = false }).ReplaceLineEndings("\n"));
             var operationSignatures = baseManifest is null
                 ? new Dictionary<string, string>(StringComparer.Ordinal)
                 : new Dictionary<string, string>(baseManifest.OperationSignatures, StringComparer.Ordinal);
@@ -147,7 +220,7 @@ public static class ScribanGenerator
                     if (baseManifest!.OwnedOperationNames.Contains(operation.Name, StringComparer.Ordinal)) localOperations.Add(operation);
                     continue;
                 }
-                var signature = Hash(operation.ToString());
+                var signature = OperationSignature(operation);
                 if (operationSignatures.TryGetValue(operation.Name, out var inheritedSignature))
                 {
                     if (inheritedSignature != signature) throw Error("SALEPS2004", path, "operations." + operation.Name, "Operation conflicts with a name owned by the referenced base client.", "Rename the operation or keep its definition identical.");
@@ -257,7 +330,7 @@ public static class ScribanGenerator
             var outputOperationSignatures = baseManifest is null ? new Dictionary<string, string>(StringComparer.Ordinal) : new Dictionary<string, string>(baseManifest.OperationSignatures, StringComparer.Ordinal);
             if (resolved.Kind != "tests")
                 foreach (var operation in localOperations)
-                    if (operation.Name is { } name) outputOperationSignatures[name] = Hash(operation.ToString());
+                    if (operation.Name is { } name) outputOperationSignatures[name] = OperationSignature(operation);
             var registryNames = baseManifest is null
                 ? new[] { "global::" + resolved.Namespace + ".UnionJsonConverters" }
                 : baseManifest.ConverterRegistries.Append("global::" + resolved.Namespace + ".UnionJsonConverters").Distinct(StringComparer.Ordinal).ToArray();
@@ -299,6 +372,61 @@ public static class ScribanGenerator
         finally { configurationStack.Remove(path); }
     }
 
+    private sealed record GraphQlInputSource(string Name, string Text)
+    {
+        public GraphQlSourceSpan Map(GraphQlSourceSpan span)
+        {
+            var (line, column) = Coordinates(span.Start);
+            return span with { Line = line, Column = column, SourceName = Name };
+        }
+
+        public DocumentNode Parse(ParserOptions options)
+        {
+            try { return global::Salep.GraphQLParser.GraphQLParser.Parse(new SourceText(Text.AsMemory()), options); }
+            catch (GraphQLSyntaxException exception) { throw Syntax(exception.Message, exception.Position, exception); }
+            catch (GraphQLLexicalException exception) { throw Syntax(exception.Message, exception.Position, exception); }
+            catch (GraphQLResourceLimitException exception) { throw Syntax(exception.Message, exception.Location.Start, exception); }
+        }
+
+        public void ValidateDocumentKind(DocumentNode document, bool executable)
+        {
+            foreach (var definition in document.Definitions)
+            {
+                var isExecutable = definition is OperationDefinitionNode or FragmentDefinitionNode;
+                if (isExecutable == executable) continue;
+                var location = definition.Location;
+                var source = Map(new GraphQlSourceSpan(location.Start, location.End, location.Line, location.Column, definition is AstNode { HasLocation: true }));
+                throw new InvalidDataException(source.Diagnostic(executable
+                    ? "Operation inputs must contain only operations and fragments."
+                    : "Schema inputs must contain only type-system definitions and extensions."));
+            }
+        }
+
+        private InvalidDataException Syntax(string message, int position, Exception inner)
+        {
+            var (line, column) = Coordinates(position);
+            return new($"{Name}({line},{column}): {message}", inner);
+        }
+
+        private (int Line, int Column) Coordinates(int offset)
+        {
+            var line = 1;
+            var column = 1;
+            for (var index = 0; index < Math.Clamp(offset, 0, Text.Length); index++)
+            {
+                if (Text[index] == '\r')
+                {
+                    line++;
+                    column = 1;
+                    if (index + 1 < offset && Text[index + 1] == '\n') index++;
+                }
+                else if (Text[index] == '\n') { line++; column = 1; }
+                else column++;
+            }
+            return (line, column);
+        }
+    }
+
     private static void CheckOwnership(Plan plan, bool lockHeld = false)
     {
         var directory = plan.Configuration.Output;
@@ -328,6 +456,9 @@ public static class ScribanGenerator
             }
             foreach (var name in new[] { ManifestFileName, ".salep-scriban.manifest.json", ".salep.lock" })
                 paths.Write(Path.Combine(plan.Configuration.Output, name));
+            var inputs = plan.Inputs.Keys.Concat(plan.Configuration.ConfigurationFiles).Concat(plan.Manifest.Dependencies.Keys).ToArray();
+            if (OwnedPaths(plan).Any(file => inputs.Any(input => PathsConflict(file, input))))
+                throw new InvalidDataException("Generator inputs cannot overlap current or previously owned outputs and control files.");
         }
         catch (InvalidDataException exception)
         {

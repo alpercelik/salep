@@ -50,8 +50,10 @@ public static class Program
             var projectDirectory = parsed.WorkingDirectory ?? Path.GetDirectoryName(Path.GetFullPath(GeneratorPathPolicy.Normalize(parsed.Config ?? "salep.json"), Environment.CurrentDirectory))!;
             var outputPaths = new GeneratorPathPolicy(selectedSolution ?? GeneratorPathPolicy.FindSolutionRoot(projectDirectory));
             var cliWorking = Path.GetFullPath(parsed.WorkingDirectory ?? Environment.CurrentDirectory);
-            foreach (var file in new[] { parsed.InputsFile, parsed.SourcesFile, parsed.StampFile }.OfType<string>())
-                outputPaths.Write(Path.GetFullPath(GeneratorPathPolicy.Normalize(file), cliWorking));
+            var auxiliaryPaths = new[] { parsed.InputsFile, parsed.SourcesFile, parsed.StampFile }.OfType<string>()
+                .Select(file => outputPaths.Write(Path.GetFullPath(GeneratorPathPolicy.Normalize(file), cliWorking))).ToArray();
+            var cliAssembly = typeof(Program).Assembly.Location;
+            ScribanGenerator.ValidateAuxiliaryOutputPaths(options, auxiliaryPaths, [cliAssembly, Path.GetDirectoryName(cliAssembly)!]);
             if (parsed.ListInputs)
             {
                 var working = Path.GetFullPath(parsed.WorkingDirectory ?? Environment.CurrentDirectory);

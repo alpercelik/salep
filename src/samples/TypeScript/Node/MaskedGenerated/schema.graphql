@@ -19,4 +19,20 @@ input GqlReadBookResult { id: ID! }
 
 
 extend type Book { label(prefix: String = "#"): String! }
-extend type Query { localTitle: String! }
+extend type Query { localTitle: String! localBook: Book! localEntry: Entry! }
+
+input LocalOptions { limit: Int! = 10 labels: [String!]! = [] }
+extend type Query { localInput(values: [String!]!, options: LocalOptions!): String! }
+
+extend type Query { localId(id: ID! = 9007199254740993): ID! localNullableList(values: [String]): String! }
+
+# Valid schema names must remain valid generated TypeScript symbols.
+enum extends { VALUE }
+enum new { VALUE }
+enum delete { VALUE }
+enum void { VALUE }
+enum Promise { VALUE }
+input ResolverParentTypes { value: String }
+input LocalResolvers { value: String }
+enum LocalSelection { VALUE }
+enum ResolverFunction { VALUE }

@@ -77,7 +77,7 @@ public sealed class GeneratorInputValidationTests
     public void Directive_limit_boundary_is_enforced(int directiveCount, bool accepted)
     {
         using var fixture = new ValidationFixture();
-        File.WriteAllText(fixture.SchemaPath, "directive @mark on FIELD type Query { value: String }");
+        File.WriteAllText(fixture.SchemaPath, "directive @mark repeatable on FIELD type Query { value: String }");
         var directives = string.Join(' ', Enumerable.Repeat("@mark", directiveCount));
         File.WriteAllText(fixture.OperationPath, $"query Boundary {{ value {directives} }}");
         var scribanConfig = fixture.WriteConfig("scriban.json", "Scriban");
@@ -90,7 +90,11 @@ public sealed class GeneratorInputValidationTests
         }
         else
         {
-            Assert.IsType<global::Salep.GraphQLParser.GraphQLResourceLimitException>(scriban);
+            var diagnostic = Assert.IsType<ScribanConfigurationException>(scriban).Diagnostic;
+            Assert.Equal("SALEPS1008", diagnostic.Code);
+            Assert.Contains("graphql/boundary.graphql(", diagnostic.Message);
+            Assert.Contains("limit exceeded", diagnostic.Message);
+            Assert.Contains("10000", diagnostic.Message);
             Assert.False(Directory.Exists(Path.Combine(fixture.Root, "Scriban")));
         }
     }
@@ -105,7 +109,10 @@ public sealed class GeneratorInputValidationTests
 
         var scriban = Record.Exception(() => ScribanGenerator.Generate(new(scribanConfig, fixture.Root)));
 
-        Assert.IsType<global::Salep.GraphQLParser.GraphQLSyntaxException>(scriban);
+        var diagnostic = Assert.IsType<ScribanConfigurationException>(scriban).Diagnostic;
+        Assert.Equal("SALEPS1008", diagnostic.Code);
+        Assert.Equal("graphql", diagnostic.Property);
+        Assert.Contains("schema.graphql(", diagnostic.Message);
         Assert.False(Directory.Exists(Path.Combine(fixture.Root, "Scriban")));
     }
 
@@ -124,7 +131,11 @@ public sealed class GeneratorInputValidationTests
         if (operationSource == "{ value }")
             Assert.Equal("SALEPS1005", Assert.IsType<ScribanConfigurationException>(scriban).Diagnostic.Code);
         else
-            Assert.IsType<global::Salep.GraphQLParser.GraphQLSyntaxException>(scriban);
+        {
+            var diagnostic = Assert.IsType<ScribanConfigurationException>(scriban).Diagnostic;
+            Assert.Equal("SALEPS1008", diagnostic.Code);
+            Assert.Contains("graphql/boundary.graphql(", diagnostic.Message);
+        }
         Assert.False(Directory.Exists(Path.Combine(fixture.Root, "Scriban")));
     }
 

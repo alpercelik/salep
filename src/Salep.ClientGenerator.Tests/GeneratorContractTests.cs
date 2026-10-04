@@ -37,7 +37,8 @@ public sealed partial class GeneratorContractTests
     {
         var repositoryRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../"));
         var coverage = Path.Combine(repositoryRoot, "src/samples/Opinionated/Client/schema.coverage.graphql");
-        using var fixture = new ContractFixture("Coverage", unionRepresentation, "builtin", targetFramework, languageVersion, coverage, coverage);
+        var coverageOperations = Path.Combine(repositoryRoot, "src/samples/Opinionated/Client/operations.coverage.graphql");
+        using var fixture = new ContractFixture("Coverage", unionRepresentation, "builtin", targetFramework, languageVersion, coverage, coverageOperations);
         fixture.Generate();
         AssertContract($"Coverage-{unionRepresentation}-{targetFramework}", fixture.Outputs.Select(output => (output.Scriban, output.Tests)));
 

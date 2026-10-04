@@ -74,11 +74,44 @@ public sealed class TypeScriptClientDocumentPlanner(GraphQlSchemaModel schema, G
         GraphQlValueKind.Variable => new { kind = "variable", name = value.Text },
         GraphQlValueKind.ListLiteral => new { kind = "list", items = value.Items!.Select(InputValue).ToArray() },
         GraphQlValueKind.ObjectLiteral => new { kind = "object", fields = value.Fields!.ToDictionary(field => field.Name, field => InputValue(field.Value)) },
-        GraphQlValueKind.IntegerLiteral or GraphQlValueKind.FloatLiteral => new { kind = "literal", value = (object)double.Parse(value.Text!, System.Globalization.CultureInfo.InvariantCulture) },
+        GraphQlValueKind.IntegerLiteral => new { kind = "integer", value = value.Text },
+        GraphQlValueKind.FloatLiteral => new { kind = "literal", value = (object)double.Parse(value.Text!, System.Globalization.CultureInfo.InvariantCulture) },
         GraphQlValueKind.BooleanLiteral => new { kind = "literal", value = (object?)value.Boolean },
         GraphQlValueKind.NullLiteral => new { kind = "literal", value = (object?)null },
         _ => new { kind = "literal", value = (object?)value.Text }
     };
+
+    public static object TypeReference(GraphQlTypeReference type) => type switch
+    {
+        GraphQlNonNullTypeReference required => new { kind = "non-null", ofType = TypeReference(required.NullableType) },
+        GraphQlListTypeReference list => new { kind = "list", ofType = TypeReference(list.ElementType) },
+        GraphQlNamedTypeReference named => new { kind = "named", name = named.Name },
+        _ => throw new InvalidDataException("Unknown local type.")
+    };
+
+    /// <summary>Includes concrete output members for local runtime discriminator validation.</summary>
+    public object OutputReference(GraphQlTypeReference type) => type switch
+    {
+        GraphQlNonNullTypeReference required => new { kind = "non-null", ofType = OutputReference(required.NullableType) },
+        GraphQlListTypeReference list => new { kind = "list", ofType = OutputReference(list.ElementType) },
+        GraphQlNamedTypeReference named => OutputNamedReference(named.Name),
+        _ => throw new InvalidDataException("Unknown local output type.")
+    };
+
+    private object OutputNamedReference(string name)
+    {
+        var semantics = new GraphQlSchemaSemantics(schema);
+        return semantics.Type(name) is GraphQlObjectType or GraphQlInterfaceType or GraphQlUnionType
+            ? new { kind = "named", name, possibleTypes = semantics.PossibleTypes(name), @abstract = semantics.Type(name) is GraphQlInterfaceType or GraphQlUnionType }
+            : (object)new { kind = "named", name };
+    }
+
+    public object InputTypes() => schema.Types.Where(type => type is GraphQlInputObjectType or GraphQlEnumType).GroupBy(type => type.Name, StringComparer.Ordinal).ToDictionary(group => group.Key, group =>
+    {
+        var semantics = new GraphQlSchemaSemantics(schema);
+        if (group.First() is GraphQlEnumType) return (object)new { kind = "enum", values = group.Cast<GraphQlEnumType>().SelectMany(type => type.Values).Select(value => value.Name).ToArray() };
+        return new { kind = "object", oneOf = semantics.IsOneOf(group.Key), fields = semantics.Inputs(group.Key).ToDictionary(field => field.Name, field => new { type = TypeReference(field.Type), defaultValue = field.DefaultValue is null ? null : InputValue(field.DefaultValue) }) };
+    });
 
     private object[] Selections(GraphQlSelectionSet set, string parent, HashSet<string> active, bool inheritedLocal = false)
     {
@@ -97,7 +130,10 @@ public sealed class TypeScriptClientDocumentPlanner(GraphQlSchemaModel schema, G
                     return (object)new
                     {
                         name = field.Name, responseName = field.ResponseName, parentType = parent,
+                        parentTypeIsAbstract = semantics.Type(parent) is GraphQlInterfaceType or GraphQlUnionType,
                         local = inheritedLocal || field.Directives.Any(item => item.Name == "client"), arguments, argumentDefaults,
+                        argumentTypes = definition?.Arguments.ToDictionary(argument => argument.Name, argument => TypeReference(argument.Type)),
+                        outputType = definition is null ? null : OutputReference(definition.Type),
                         include = Conditions(field, "include"), skip = Conditions(field, "skip"),
                         children = field.SelectionSet is null ? [] : Selections(field.SelectionSet, GraphQlSchemaSemantics.NamedType(definition!.Type), active)
                     };

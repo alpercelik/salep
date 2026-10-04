@@ -26,3 +26,17 @@ query InspectSchema($name: String!) {
 
 query LocalBook($prefix: String = "#") { book(id: "book-1") { id display: label(prefix: $prefix) @client } }
 query LocalOnly { localTitle @client }
+
+query LocalMerged {
+  first: localBook @client { id }
+  first: localBook @client { kind: __typename title }
+}
+
+query LocalAbstract {
+  localEntry @client { ... on Book { title } ... on Author { name } }
+}
+
+query LocalCoercion { localInput(values: "one", options: {}) @client }
+
+query LocalExactId($id: ID = 9007199254740993) { literal: localId(id: 9007199254740993) @client argumentDefault: localId @client variableDefault: localId(id: $id) @client }
+query LocalMissingList($value: String) { localNullableList(values: [$value]) @client }

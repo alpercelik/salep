@@ -20,7 +20,7 @@ public sealed class TypeScriptGeneratorTests
             File.WriteAllText(Path.Combine(root, "one.graphql"), fragment);
             File.WriteAllText(Path.Combine(root, "two.tsx"), "const document = graphql(`" + fragment + "`);");
             var config = Path.Combine(root, "salep.typescript.json");
-            File.WriteAllText(config, """{"version":1,"target":"typescript","schema":"schema.graphql","documents":"*.{graphql,tsx}","output":"Generated"}""");
+            File.WriteAllText(config, """{"version":1,"target":"typescript","schema":"schema.graphql","documents":["one.graphql","two.tsx"],"output":"Generated"}""");
             var files = TypeScriptGenerator.Generate(new(config));
             var source = File.ReadAllText(Assert.Single(files, file => file.EndsWith("/gql/graphql.ts", StringComparison.Ordinal)));
             Assert.Contains("SummaryFragmentDocument", source);

@@ -20,5 +20,6 @@
     "request"
   ],
   "clientSchema": "client.graphql",
-  "persistedOperations": true
+  "persistedOperations": true,
+  "outputLayout": "per-operation"
 }

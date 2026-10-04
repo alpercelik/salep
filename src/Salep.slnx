@@ -62,6 +62,25 @@
     <File Path="samples/TypeScript/Node/MaskedGenerated/gql/gql.ts" />
     <File Path="samples/TypeScript/Node/MaskedGenerated/gql/graphql.ts" />
     <File Path="samples/TypeScript/Node/MaskedGenerated/gql/index.ts" />
+    <File Path="samples/TypeScript/Node/MaskedGenerated/gql/shared.ts" />
+  </Folder>
+  <Folder Name="/samples/TypeScript/Node/MaskedGenerated/gql/operations/">
+    <File Path="samples/TypeScript/Node/MaskedGenerated/gql/operations/operation-ConditionalBook.ts" />
+    <File Path="samples/TypeScript/Node/MaskedGenerated/gql/operations/operation-InspectSchema.ts" />
+    <File Path="samples/TypeScript/Node/MaskedGenerated/gql/operations/operation-LocalAbstract.ts" />
+    <File Path="samples/TypeScript/Node/MaskedGenerated/gql/operations/operation-LocalBook.ts" />
+    <File Path="samples/TypeScript/Node/MaskedGenerated/gql/operations/operation-LocalCoercion.ts" />
+    <File Path="samples/TypeScript/Node/MaskedGenerated/gql/operations/operation-LocalExactId.ts" />
+    <File Path="samples/TypeScript/Node/MaskedGenerated/gql/operations/operation-LocalMerged.ts" />
+    <File Path="samples/TypeScript/Node/MaskedGenerated/gql/operations/operation-LocalMissingList.ts" />
+    <File Path="samples/TypeScript/Node/MaskedGenerated/gql/operations/operation-LocalOnly.ts" />
+    <File Path="samples/TypeScript/Node/MaskedGenerated/gql/operations/operation-LookupChoice.ts" />
+    <File Path="samples/TypeScript/Node/MaskedGenerated/gql/operations/operation-LookupEntry.ts" />
+    <File Path="samples/TypeScript/Node/MaskedGenerated/gql/operations/operation-ParityChecks.ts" />
+    <File Path="samples/TypeScript/Node/MaskedGenerated/gql/operations/operation-ParityFragments.ts" />
+    <File Path="samples/TypeScript/Node/MaskedGenerated/gql/operations/operation-ReadBook.ts" />
+    <File Path="samples/TypeScript/Node/MaskedGenerated/gql/operations/operation-RenameBook.ts" />
+    <File Path="samples/TypeScript/Node/MaskedGenerated/gql/operations/operation-SearchCatalog.ts" />
   </Folder>
   <Folder Name="/parser/">
     <File Path="../docs/parser/README.md" />

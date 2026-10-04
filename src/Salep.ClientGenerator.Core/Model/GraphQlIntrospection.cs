@@ -24,18 +24,18 @@ public static class GraphQlIntrospection
           name: String
           description: String
           specifiedByURL: String
-          fields(includeDeprecated: Boolean = false): [__Field!]
+          fields(includeDeprecated: Boolean! = false): [__Field!]
           interfaces: [__Type!]
           possibleTypes: [__Type!]
-          enumValues(includeDeprecated: Boolean = false): [__EnumValue!]
-          inputFields(includeDeprecated: Boolean = false): [__InputValue!]
+          enumValues(includeDeprecated: Boolean! = false): [__EnumValue!]
+          inputFields(includeDeprecated: Boolean! = false): [__InputValue!]
           ofType: __Type
           isOneOf: Boolean
         }
-        type __Field { name: String! description: String args(includeDeprecated: Boolean = false): [__InputValue!]! type: __Type! isDeprecated: Boolean! deprecationReason: String }
+        type __Field { name: String! description: String args(includeDeprecated: Boolean! = false): [__InputValue!]! type: __Type! isDeprecated: Boolean! deprecationReason: String }
         type __InputValue { name: String! description: String type: __Type! defaultValue: String isDeprecated: Boolean! deprecationReason: String }
         type __EnumValue { name: String! description: String isDeprecated: Boolean! deprecationReason: String }
-        type __Directive { name: String! description: String isRepeatable: Boolean! locations: [__DirectiveLocation!]! args(includeDeprecated: Boolean = false): [__InputValue!]! }
+        type __Directive { name: String! description: String isRepeatable: Boolean! locations: [__DirectiveLocation!]! args(includeDeprecated: Boolean! = false): [__InputValue!]! }
         enum __TypeKind { SCALAR OBJECT INTERFACE UNION ENUM INPUT_OBJECT LIST NON_NULL }
         enum __DirectiveLocation { QUERY MUTATION SUBSCRIPTION FIELD FRAGMENT_DEFINITION FRAGMENT_SPREAD INLINE_FRAGMENT VARIABLE_DEFINITION SCHEMA SCALAR OBJECT FIELD_DEFINITION ARGUMENT_DEFINITION INTERFACE UNION ENUM ENUM_VALUE INPUT_OBJECT INPUT_FIELD_DEFINITION }
         """;

@@ -59,7 +59,7 @@ public static class TypeScriptGenerator
         {
             var name = source.LocalPath is null ? source.Name : GeneratorPathPolicy.Normalize(Path.GetRelativePath(directory, source.LocalPath));
             var input = new TypeScriptSourceDocument(source.Converted ? name + " [converted SDL]" : name, source.Text, source.Text);
-            return GraphQlModelFactory.CreateSchema(input.Parse(parserOptions), input.Map);
+            return GraphQlModelFactory.CreateSchema(input.ValidateDocumentKind(input.Parse(parserOptions), schema: true), input.Map);
         }).ToArray();
         var schema = new GraphQlSchemaModel(schemaParts.SelectMany(part => part.Types).ToArray(), schemaParts.SelectMany(part => part.SchemaDefinitions).ToArray(), schemaParts.SelectMany(part => part.DirectiveDefinitions).ToArray());
         if (clientSources.Count > 0)
@@ -73,7 +73,7 @@ public static class TypeScriptGenerator
             throw new InvalidDataException("documentTags must contain unique, nonempty JavaScript identifiers.");
         var sourceDocuments = documents.SelectMany(file => ReadDocuments(file, directory, tags)).ToArray();
         var rawSources = sourceDocuments.Select(source => source.Text).Distinct(StringComparer.Ordinal).ToArray();
-        var parts = sourceDocuments.Select(source => GraphQlModelFactory.CreateExecutable([source.Parse(parserOptions)], source.Map)).ToArray();
+        var parts = sourceDocuments.Select(source => GraphQlModelFactory.CreateExecutable([source.ValidateDocumentKind(source.Parse(parserOptions), schema: false)], source.Map)).ToArray();
         var executable = new GraphQlExecutableDocument(parts.SelectMany(part => part.Operations).ToArray(), parts.SelectMany(part => part.Fragments).ToArray());
         if (executable.Operations.Count == 0 && executable.Fragments.Count == 0) throw new InvalidDataException("No named operations were found in the document inputs.");
         var operations = new List<GraphQlOperationDefinition>();
@@ -158,7 +158,7 @@ public static class TypeScriptGenerator
                 var typeDeclarations = System.Text.RegularExpressions.Regex.Replace(declarations, @"export const [^\r\n]*", "");
                 typeDeclarations = System.Text.RegularExpressions.Regex.Replace(typeDeclarations, @"/\*[\s\S]*?\*/", "");
                 typeDeclarations = System.Text.RegularExpressions.Regex.Replace(typeDeclarations, @"""(?:\\.|[^""\\])*""", "");
-                var imports = sharedNames.Where(name => System.Text.RegularExpressions.Regex.IsMatch(typeDeclarations, @"(?<![\w$])" + System.Text.RegularExpressions.Regex.Escape(name) + @"(?![\w$])")).ToArray();
+                var imports = sharedNames.Where(name => System.Text.RegularExpressions.Regex.IsMatch(typeDeclarations, @"(?<![\w$])" + System.Text.RegularExpressions.Regex.Escape(name) + @"(?![\w$])")).Append("TypedDocument").Distinct(StringComparer.Ordinal).ToArray();
                 sources["gql/operations/" + module + ".ts"] = templates.Render("partition.operation", new { imports = string.Join(", ", imports), declarations });
                 modules.Add(module);
             }
@@ -171,11 +171,25 @@ public static class TypeScriptGenerator
         // Resolve and fingerprint the complete plan before touching the publication directory.
         var inputHashes = inputs.Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)
             .ToDictionary(file => Relative(output, file), Hash);
-        if (inputHashes.Keys.Any(path => sources.ContainsKey(path) || path == ".salep.manifest.json"))
-            throw new InvalidDataException("Generator inputs cannot overlap owned output paths.");
+        var lockPath = paths.Write(Path.Combine(output, ".salep.lock"));
+        var inputPaths = new HashSet<string>(inputs.Select(GeneratorPathPolicy.PhysicalIdentity), StringComparer.OrdinalIgnoreCase);
+        void RejectInputOverlap(IEnumerable<string> ownedPaths)
+        {
+            if (ownedPaths.Any(file => inputPaths.Contains(GeneratorPathPolicy.PhysicalIdentity(file))))
+                throw new InvalidDataException("Generator inputs cannot overlap owned output paths.");
+        }
+        RejectInputOverlap(destinations.Values.Append(manifestPath).Append(lockPath));
+        // Stale outputs are still owned until publication completes. Check them before
+        // creating the directory/lock, then recheck the inventory under the lock.
+        if (File.Exists(manifestPath))
+        {
+            using var previous = JsonDocument.Parse(File.ReadAllText(manifestPath));
+            RejectInputOverlap(previous.RootElement.GetProperty("Outputs").EnumerateObject()
+                .Select(entry => paths.Write(Path.Combine(output, entry.Name))));
+        }
         var sourceHashes = sources.ToDictionary(entry => entry.Key, entry => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(entry.Value))), StringComparer.Ordinal);
         if (!validateOnly) Directory.CreateDirectory(output);
-        using var publicationLock = validateOnly ? null : new FileStream(paths.Write(Path.Combine(output, ".salep.lock")), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+        using var publicationLock = validateOnly ? null : new FileStream(lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
         var previousOutputs = new HashSet<string>(StringComparer.Ordinal);
         if (File.Exists(manifestPath))
         {
@@ -186,6 +200,7 @@ public static class TypeScriptGenerator
                 throw new InvalidDataException("Output belongs to another generator or configuration.");
             var owned = inventory.GetProperty("Outputs");
             var previousNames = owned.EnumerateObject().Select(entry => entry.Name).ToArray();
+            RejectInputOverlap(previousNames.Select(name => paths.Write(Path.Combine(output, name))));
             var partitionNames = previousNames.Where(name => name == "gql/shared.ts" || System.Text.RegularExpressions.Regex.IsMatch(name, @"^gql/operations/operation-[A-Za-z_][A-Za-z0-9_]*(?:-[a-f0-9]{12})?\.ts$"));
             CheckProperties(owned, sources.Keys.Concat(new[] { "graphql.ts", "operations.json", "gql/resolvers.ts" }).Concat(partitionNames).ToArray());
             foreach (var entry in owned.EnumerateObject())
@@ -281,7 +296,7 @@ public static class TypeScriptGenerator
         var name = GeneratorPathPolicy.Normalize(Path.GetRelativePath(directory, file));
         var text = File.ReadAllText(file);
         if (Path.GetExtension(file) is not (".ts" or ".tsx")) return [new(name, text, text)];
-        try { return TypeScriptDocumentExtractor.ExtractWithLocations(text, tags).Select(source => new TypeScriptSourceDocument(name, text, source.Text, source.Offsets)).ToArray(); }
+        try { return TypeScriptDocumentExtractor.ExtractWithLocations(text, tags, jsx: Path.GetExtension(file) == ".tsx").Select(source => new TypeScriptSourceDocument(name, text, source.Text, source.Offsets)).ToArray(); }
         catch (InvalidDataException error)
         {
             var input = new TypeScriptSourceDocument(name, text, text);

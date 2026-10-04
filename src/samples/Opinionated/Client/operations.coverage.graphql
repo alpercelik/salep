@@ -1,0 +1,37 @@
+query UsersDefaultRole @opTag(name: "users-default") {
+  users @opTag(name: "users-field") {
+    ...UserCore @opTag(name: "spread-user")
+  }
+}
+
+query UsersByRole(
+  $role: Role = ADMIN,
+  $ids: [ID!] = ["1"],
+  $filter: UserFilter = { roles: [USER], ids: ["1"] }
+) @opTag(name: "users-by-role") {
+  admins: users(role: $role, filter: $filter) {
+    ...UserCore
+    posts {
+      ...PostCore
+    }
+  }
+  guests: users(role: GUEST) @skip(if: false) {
+    ...UserCore
+  }
+}
+
+fragment UserCore on User @opTag(name: "frag-user") {
+  id
+  name
+  role
+  createdAt
+}
+
+fragment PostCore on Post @opTag(name: "frag-post") {
+  id
+  title
+  content
+  author {
+    ...UserCore @opTag(name: "spread-user")
+  }
+}

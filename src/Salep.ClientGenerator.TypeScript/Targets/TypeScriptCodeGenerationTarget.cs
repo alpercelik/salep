@@ -12,8 +12,17 @@ public sealed class TypeScriptCodeGenerationTarget(IReadOnlyDictionary<string, T
 {
     public string Id => "typescript";
     public string DefaultNamespace => "graphql";
-    private static string PreferredName(string graphQlName) => graphQlName is "string" or "number" or "boolean" or "unknown" or "any" or "never" or "object" or "null" or "undefined" or "type" or "interface" or "class" or "default" or "export" or "import" or "const" or "let" or "var" or "function" or "enum" or "GraphQLClient" or "TypedDocument" or "TypedDocumentNode" or "GraphQLError" or "RequestOptions" or "FragmentType" or "Scalars"
-        ? "Gql" + graphQlName : graphQlName;
+    private static readonly HashSet<string> Keywords = new(StringComparer.Ordinal)
+    {
+        "break", "case", "catch", "class", "const", "continue", "debugger", "default", "delete", "do", "else", "enum", "export", "extends", "false", "finally", "for", "function", "if", "import", "in", "instanceof", "new", "null", "return", "super", "switch", "this", "throw", "true", "try", "typeof", "var", "void", "while", "with", "implements", "interface", "let", "package", "private", "protected", "public", "static", "yield", "await",
+        "any", "boolean", "never", "number", "object", "string", "symbol", "undefined", "unknown", "bigint", "intrinsic", "type"
+    };
+    private static readonly string[] RuntimeSymbols =
+    [
+        "Readonly", "ReadonlyArray", "Record", "Promise", "Scalars", "TypedDocument", "TypedDocumentNode", "GraphQLClient", "GraphQLRequestError", "GraphQLError", "RequestOptions", "FragmentType", "FragmentReference", "getFragmentData", "graphql",
+        "ResolverParentTypes", "LocalResolvers", "LocalSelection", "LocalValue", "LocalType", "LocalInputDefinitions", "ResolverFunction", "ResolverMap", "resolveLocalSelections", "localValue", "coerceLocalInput"
+    ];
+    private static string PreferredName(string graphQlName) => Keywords.Contains(graphQlName) ? "Gql" + graphQlName : graphQlName;
     private readonly Dictionary<string, string> typeNames = new(StringComparer.Ordinal);
     private readonly Dictionary<string, string> operationNames = new(StringComparer.Ordinal);
     private readonly Dictionary<string, string> fragmentNames = new(StringComparer.Ordinal);
@@ -25,7 +34,7 @@ public sealed class TypeScriptCodeGenerationTarget(IReadOnlyDictionary<string, T
     public void PrepareNames(GraphQlSchemaModel schema, GraphQlExecutableDocument document)
     {
         if (namesPrepared) return;
-        var occupied = new HashSet<string>(["ReadonlyArray", "Record", "Scalars", "TypedDocument", "TypedDocumentNode", "GraphQLClient", "GraphQLRequestError", "GraphQLError", "RequestOptions", "FragmentType", "FragmentReference", "getFragmentData", "graphql"], StringComparer.Ordinal);
+        var occupied = new HashSet<string>(RuntimeSymbols, StringComparer.Ordinal);
         string Allocate(string preferred, Func<string, string[]> symbols)
         {
             var candidate = preferred;

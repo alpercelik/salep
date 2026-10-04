@@ -45,6 +45,7 @@ interface Timestamped implements Node {
 interface Account implements Node & Named {
   id: ID!
   name: String!
+  legacyName: String
   email: String!
 }
 
@@ -93,6 +94,7 @@ type User implements Node & Named & Timestamped @tag(name: "user") @auth(role: A
 }
 
 extend type User {
+  legacyName: String
   nickname: String
   email: String @auth(role: ADMIN)
 }
@@ -134,26 +136,4 @@ type Mutation {
 type Subscription {
   postCreated(role: Role = USER): Post!
   commentAdded: Comment!
-}
-
-query UsersDefaultRole @opTag(name: "users-default") {
-  users @opTag(name: "users-field") {
-    ...UserCore @opTag(name: "spread-user")
-  }
-}
-
-query UsersByRole(
-  $role: Role = ADMIN,
-  $ids: [ID!] = ["1"],
-  $filter: UserFilter = { roles: [USER], ids: ["1"] }
-) @opTag(name: "users-by-role") {
-  admins: users(role: $role, filter: $filter) {
-    ...UserCore
-    posts {
-      ...PostCore
-    }
-  }
-  guests: users(role: GUEST) @skip(if: false) {
-    ...UserCore
-  }
 }

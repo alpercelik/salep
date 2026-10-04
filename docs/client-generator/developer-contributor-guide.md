@@ -25,7 +25,8 @@ Scriban is the sole stable generator. Applications reference runtime dependencie
 ```text
 GraphQL SDL + operations + version-1 JSON configuration
   -> Salep.GraphQLParser syntax trees
-  -> GraphQlModelFactory neutral semantic models
+  -> source-mapped GraphQlModelFactory models and GraphQlDocumentValidator
+  -> response projection
   -> CSharpCodeGenerationTarget and template model factories
   -> ScribanCSharpTemplateGenerator embedded/custom composition
   -> generated C# and verified .salep.manifest.json ownership
@@ -65,7 +66,7 @@ For release verification, run `./scripts/pack-release.sh <version>` or `pwsh ./s
 2. Project values into the owning template model and add the smallest useful template fragment. Keep existing keys/model scopes compatible; verify overrides and `default:` composition.
 3. Add positive, negative, boundary and regression tests appropriate to the behavior. Extend configuration interactions, compile generated output and assert observable runtime effects.
 4. Review affected fixtures under `Fixtures/Contracts/`: these 69 baselines preserve verified APIs, queries, inventories and generated-test coverage. Do not auto-refresh expectations. Preserve native and Dunet modes and no-implicit-usings compilation.
-5. Update the owning sample inputs, the full `src/samples/Opinionated/Client/schema.coverage.graphql` fixture and [spec evidence](spec-coverage.md) as relevant. Regenerate through the package/MSBuild workflow.
+5. Update the owning sample inputs, the split `src/samples/Opinionated/Client/schema.coverage.graphql` and `src/samples/Opinionated/Client/operations.coverage.graphql` fixtures and [spec evidence](spec-coverage.md) as relevant. Regenerate through the package/MSBuild workflow.
 6. Update consumer documentation, template examples and paired scripts whenever their contract changes.
 
 See [generator verification](generator-parity.md) for fixed contract, seeded, runtime, ownership and package gates. Finite fixture coverage is not exhaustive proof of all GraphQL inputs.

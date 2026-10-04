@@ -4,14 +4,20 @@ using System.Text.Json;
 namespace Salep.ClientGenerator.Model;
 
 /// <summary>Validates schema relationships and executable contracts before client output is published.</summary>
-public sealed class GraphQlDocumentValidator(GraphQlSchemaModel schema, GraphQlExecutableDocument document)
+public sealed class GraphQlDocumentValidator(GraphQlSchemaModel schema, GraphQlExecutableDocument document, bool allowUnusedVariables = false)
 {
     private readonly GraphQlSchemaSemantics types = new(schema);
     private static readonly HashSet<string> Builtins = new(["String", "ID", "Int", "Float", "Boolean"], StringComparer.Ordinal);
-    private readonly Dictionary<string, GraphQlFragmentDefinition> fragments = document.Fragments.ToDictionary(fragment => fragment.Name, StringComparer.Ordinal);
+    private readonly Dictionary<string, GraphQlFragmentDefinition> fragments = new(StringComparer.Ordinal);
 
     public void Validate()
     {
+        Unique(document.Fragments.Select(fragment => (fragment.Name, fragment.Source)), "fragment");
+        Unique(document.Operations.Where(operation => operation.Name is not null).Select(operation => (operation.Name!, operation.Source)), "operation");
+        if (document.Operations.Count > 1 && document.Operations.FirstOrDefault(operation => operation.Name is null) is { } anonymous)
+            Fail("An anonymous operation must be the only operation in its document.", anonymous.Source);
+        fragments.Clear();
+        foreach (var fragment in document.Fragments) fragments.Add(fragment.Name, fragment);
         ValidateSchema();
         foreach (var fragment in document.Fragments)
         {
@@ -36,10 +42,11 @@ public sealed class GraphQlDocumentValidator(GraphQlSchemaModel schema, GraphQlE
             Directives(operation.Directives, operation.OperationType.ToUpperInvariant(), variables, used);
             Selections(operation.SelectionSet, root, variables, used, new(StringComparer.Ordinal));
             foreach (var variable in operation.Variables)
-                if (!used.Contains(variable.Name)) Fail($"Unused variable '${variable.Name}' in operation '{operation.Name}'.", variable.Source);
+                if (!allowUnusedVariables && !used.Contains(variable.Name)) Fail($"Unused variable '${variable.Name}' in operation '{operation.Name}'.", variable.Source);
             if (operation.OperationType == "subscription")
             {
-                var fields = Flatten(operation.SelectionSet, root, new(StringComparer.Ordinal)).Where(field => !GraphQlSelectionConditions.Excluded(field.Field.Directives)).ToArray();
+                ValidateSubscriptionRoot(operation.SelectionSet, new(StringComparer.Ordinal));
+                var fields = Flatten(operation.SelectionSet, root, new(StringComparer.Ordinal)).ToArray();
                 if (fields.Select(field => field.Field.ResponseName).Distinct(StringComparer.Ordinal).Count() != 1 || fields.Any(field => field.Field.Name.StartsWith("__", StringComparison.Ordinal)))
                     Fail("Subscriptions require exactly one non-introspection root field.", operation.Source);
             }
@@ -55,6 +62,8 @@ public sealed class GraphQlDocumentValidator(GraphQlSchemaModel schema, GraphQlE
             var definition = definitions[0];
             if (group.Key.StartsWith("__", StringComparison.Ordinal)) Fail("Schema names beginning with '__' are reserved.", definition.Source);
             if (Builtins.Contains(group.Key) && definition is not GraphQlScalarType) Fail($"Built-in scalar '{group.Key}' cannot be replaced.", definition.Source);
+            if (Builtins.Contains(group.Key) && group.SelectMany(type => type.Directives).FirstOrDefault(directive => directive.Name == "specifiedBy") is { } specification)
+                Fail("@specifiedBy cannot appear on built-in scalar types.", specification.Source);
             if (group.Any(type => type.GetType() != definition.GetType())) Fail($"Extension kind does not match '{group.Key}'.", definition.Source);
             Unique(group.SelectMany(type => type switch
             {
@@ -100,6 +109,8 @@ public sealed class GraphQlDocumentValidator(GraphQlSchemaModel schema, GraphQlE
                 InputDefinitions(fields, "INPUT_FIELD_DEFINITION");
                 if (types.IsOneOf(group.Key) && fields.Any(field => field.Type.IsNonNull || field.DefaultValue is not null)) Fail("OneOf fields must be nullable and have no defaults.", definition.Source);
                 if (HasInputCycle(group.Key, new(StringComparer.Ordinal))) Fail($"Required input cycle at '{group.Key}'.", definition.Source);
+                if (HasInputDefaultCycle(group.Key, new(GraphQlValueKind.ObjectLiteral, Fields: []), new(StringComparer.Ordinal)))
+                    Fail($"Input default cycle at '{group.Key}'.", definition.Source);
             }
             if (definition is GraphQlUnionType)
             {
@@ -117,29 +128,79 @@ public sealed class GraphQlDocumentValidator(GraphQlSchemaModel schema, GraphQlE
                     Directives(value.Directives, "ENUM_VALUE", null, null);
                 }
             }
-            foreach (var type in group) Directives(type.Directives, definition switch
+            Directives(group.SelectMany(type => type.Directives).ToArray(), definition switch
             {
                 GraphQlObjectType => "OBJECT", GraphQlInterfaceType => "INTERFACE", GraphQlInputObjectType => "INPUT_OBJECT", GraphQlUnionType => "UNION", GraphQlEnumType => "ENUM", _ => "SCALAR"
             }, null, null);
         }
-        Unique(schema.SchemaDefinitions.SelectMany(definition => definition.RootOperations).Select(root => root.Operation), "schema root", EmptySpan);
-        if (types.Type(types.Root("query")) is not GraphQlObjectType) Fail("Schema requires a query object root.", EmptySpan);
+        Unique(schema.SchemaDefinitions.SelectMany(definition => definition.RootOperations).Select(root => (root.Operation, root.Source)), "schema root");
+        if (types.Type(types.Root("query")) is not GraphQlObjectType) Fail("Schema requires a query object root.", SchemaSource());
         foreach (var definition in schema.SchemaDefinitions)
         {
             foreach (var root in definition.RootOperations)
                 if (types.Type(root.TypeName) is not GraphQlObjectType) Fail($"Root '{root.TypeName}' must be an object.", root.Source);
-            Directives(definition.Directives, "SCHEMA", null, null);
         }
-        if (schema.SchemaDefinitions.Count(definition => !definition.IsExtension) > 1) Fail("Multiple schema definitions.", EmptySpan);
+        Directives(schema.SchemaDefinitions.SelectMany(definition => definition.Directives).ToArray(), "SCHEMA", null, null);
+        if (schema.SchemaDefinitions.Where(definition => !definition.IsExtension).Skip(1).FirstOrDefault() is { } duplicateSchema)
+            Fail("Multiple schema definitions.", duplicateSchema.Source);
         var roots = new[] { "query", "mutation", "subscription" }.Select(types.Root).Where(name => types.Type(name) is not null).ToArray();
-        Unique(roots, "root object type", EmptySpan);
-        Unique(schema.DirectiveDefinitions.Select(directive => directive.Name), "directive definition", EmptySpan);
+        foreach (var root in roots)
+            if (types.Type(root) is not GraphQlObjectType) Fail($"Root '{root}' must be an object.", types.Type(root)!.Source);
+        Unique(roots.Select(name => (name, schema.SchemaDefinitions.SelectMany(definition => definition.RootOperations).LastOrDefault(root => root.TypeName == name)?.Source ?? types.Type(name)!.Source)), "root object type");
+        Unique(schema.DirectiveDefinitions.Select(directive => (directive.Name, directive.Source)), "directive definition");
         foreach (var directive in schema.DirectiveDefinitions)
         {
             Reserved(directive.Name, directive.Source);
             InputDefinitions(directive.Arguments);
             Unique(directive.Locations, "directive location", directive.Source);
             if (directive.Locations.Count == 0 || directive.Locations.Any(location => !Locations.Contains(location))) Fail($"Invalid location for directive '@{directive.Name}'.", directive.Source);
+            if (HasDirectiveReferenceCycle(directive)) Fail($"Directive reference cycle at '@{directive.Name}'.", directive.Source);
+        }
+    }
+
+    private bool HasDirectiveReferenceCycle(GraphQlDirectiveDefinition root)
+    {
+        var visitedDirectives = new HashSet<string>(StringComparer.Ordinal);
+        var visitedTypes = new HashSet<string>(StringComparer.Ordinal);
+        bool Uses(IReadOnlyList<GraphQlDirective> usages)
+        {
+            foreach (var usage in usages)
+            {
+                if (usage.Name == root.Name) return true;
+                if (visitedDirectives.Add(usage.Name) && schema.DirectiveDefinitions.FirstOrDefault(item => item.Name == usage.Name) is { } referenced
+                    && ArgumentsReference(referenced.Arguments)) return true;
+            }
+            return false;
+        }
+        bool TypeReferences(string name)
+        {
+            if (!visitedTypes.Add(name)) return false;
+            foreach (var type in schema.Types.Where(type => type.Name == name))
+            {
+                if (Uses(type.Directives)) return true;
+                if (type is GraphQlInputObjectType input && ArgumentsReference(input.Fields)) return true;
+                if (type is GraphQlEnumType enumeration && enumeration.Values.Any(value => Uses(value.Directives))) return true;
+            }
+            return false;
+        }
+        bool ArgumentsReference(IReadOnlyList<GraphQlInputValueDefinition> arguments)
+            => arguments.Any(argument => Uses(argument.Directives) || TypeReferences(GraphQlSchemaSemantics.NamedType(argument.Type)));
+        return ArgumentsReference(root.Arguments);
+    }
+
+    private GraphQlSourceSpan SchemaSource() => schema.SchemaDefinitions.FirstOrDefault()?.Source
+        ?? schema.Types.FirstOrDefault()?.Source ?? schema.DirectiveDefinitions.FirstOrDefault()?.Source
+        ?? document.Operations.FirstOrDefault()?.Source ?? document.Fragments.FirstOrDefault()?.Source ?? EmptySpan;
+
+    private void ValidateSubscriptionRoot(GraphQlSelectionSet set, HashSet<string> visitedFragments)
+    {
+        foreach (var selection in set.Selections)
+        {
+            foreach (var directive in selection.Directives)
+                if (directive.Name is "skip" or "include") Fail("Subscription root selections cannot use @skip or @include.", directive.Source);
+            if (selection is GraphQlInlineFragmentSelection inline) ValidateSubscriptionRoot(inline.SelectionSet, visitedFragments);
+            if (selection is GraphQlFragmentSpreadSelection spread && visitedFragments.Add(spread.Name))
+                ValidateSubscriptionRoot(fragments[spread.Name].SelectionSet, visitedFragments);
         }
     }
 
@@ -168,6 +229,32 @@ public sealed class GraphQlDocumentValidator(GraphQlSchemaModel schema, GraphQlE
         if (!path.Add(name)) return true;
         try { return types.Inputs(name).Any(field => field.Type is GraphQlNonNullTypeReference { NullableType: GraphQlNamedTypeReference named } && types.Type(named.Name) is GraphQlInputObjectType && HasInputCycle(named.Name, path)); }
         finally { path.Remove(name); }
+    }
+
+    private bool HasInputDefaultCycle(string name, GraphQlValue value, HashSet<string> visitedDefaults)
+    {
+        if (types.Type(name) is not GraphQlInputObjectType) return false;
+        if (value.Kind == GraphQlValueKind.ListLiteral)
+            return value.Items!.Any(item => HasInputDefaultCycle(name, item, visitedDefaults));
+        if (value.Kind != GraphQlValueKind.ObjectLiteral) return false;
+        foreach (var field in types.Inputs(name))
+        {
+            var fieldType = GraphQlSchemaSemantics.NamedType(field.Type);
+            if (types.Type(fieldType) is not GraphQlInputObjectType) continue;
+            var supplied = value.Fields!.FirstOrDefault(item => item.Name == field.Name);
+            if (supplied is not null)
+            {
+                if (HasInputDefaultCycle(fieldType, supplied.Value, visitedDefaults)) return true;
+            }
+            else if (field.DefaultValue is not null)
+            {
+                var identity = name + "." + field.Name;
+                if (!visitedDefaults.Add(identity)) return true;
+                try { if (HasInputDefaultCycle(fieldType, field.DefaultValue, visitedDefaults)) return true; }
+                finally { visitedDefaults.Remove(identity); }
+            }
+        }
+        return false;
     }
 
     private void Selections(GraphQlSelectionSet set, string parent, IReadOnlyDictionary<string, GraphQlVariableDefinition>? variables, HashSet<string>? used, HashSet<string> active)
@@ -324,7 +411,27 @@ public sealed class GraphQlDocumentValidator(GraphQlSchemaModel schema, GraphQlE
                     if (Required(field) && !value.Fields!.Any(item => item.Name == field.Name)) Fail($"Missing required input field '{name}.{field.Name}'.", value.Source ?? EmptySpan);
             }
         }
+        else if (!Builtins.Contains(name) && types.Type(name) is GraphQlScalarType)
+            ScalarLiteralVariables(value, variables, used);
         if (!valid) Fail($"Invalid value for input type '{name}'.", value.Source ?? EmptySpan);
+    }
+
+    private static void ScalarLiteralVariables(GraphQlValue value, IReadOnlyDictionary<string, GraphQlVariableDefinition>? variables, HashSet<string>? used)
+    {
+        if (value.Kind == GraphQlValueKind.Variable && variables is not null)
+        {
+            if (!variables.ContainsKey(value.Text!)) Fail($"Undefined variable '${value.Text}'.", value.Source ?? EmptySpan);
+            used!.Add(value.Text!);
+        }
+        // A scalar owns its composite literal shape, so nested members have no
+        // schema input-field type for variable compatibility checks.
+        if (value.Items is not null)
+            foreach (var item in value.Items) ScalarLiteralVariables(item, variables, used);
+        if (value.Fields is not null)
+        {
+            Unique(value.Fields.Select(field => (field.Name, field.Source)), "input object field");
+            foreach (var field in value.Fields) ScalarLiteralVariables(field.Value, variables, used);
+        }
     }
     private void Directives(IReadOnlyList<GraphQlDirective> directives, string location, IReadOnlyDictionary<string, GraphQlVariableDefinition>? variables, HashSet<string>? used)
     {
@@ -346,7 +453,7 @@ public sealed class GraphQlDocumentValidator(GraphQlSchemaModel schema, GraphQlE
         return name switch
         {
             "include" or "skip" => new(name, null, [Argument("if", "Boolean", true)], false, ["FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT"], [], EmptySpan),
-            "deprecated" => new(name, null, [Argument("reason", "String", false, new(GraphQlValueKind.StringLiteral, "No longer supported"))], false, ["FIELD_DEFINITION", "ENUM_VALUE", "ARGUMENT_DEFINITION", "INPUT_FIELD_DEFINITION"], [], EmptySpan),
+            "deprecated" => new(name, null, [Argument("reason", "String", true, new(GraphQlValueKind.StringLiteral, "No longer supported"))], false, ["FIELD_DEFINITION", "ENUM_VALUE", "ARGUMENT_DEFINITION", "INPUT_FIELD_DEFINITION"], [], EmptySpan),
             "oneOf" => new(name, null, [], false, ["INPUT_OBJECT"], [], EmptySpan),
             "specifiedBy" => new(name, null, [Argument("url", "String", true)], false, ["SCALAR"], [], EmptySpan),
             _ => null
@@ -399,6 +506,12 @@ public sealed class GraphQlDocumentValidator(GraphQlSchemaModel schema, GraphQlE
     {
         var seen = new HashSet<string>(StringComparer.Ordinal);
         foreach (var name in names) if (!seen.Add(name)) Fail($"Duplicate {kind} '{name}'.", source);
+    }
+    private static void Unique(IEnumerable<(string Name, GraphQlSourceSpan Source)> definitions, string kind)
+    {
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var definition in definitions)
+            if (!seen.Add(definition.Name)) Fail($"Duplicate {kind} '{definition.Name}'.", definition.Source);
     }
     private static void Reserved(string name, GraphQlSourceSpan source) { if (name.StartsWith("__", StringComparison.Ordinal)) Fail("Names beginning with '__' are reserved.", source); }
     private static readonly GraphQlSourceSpan EmptySpan = new(0, 0, 0, 0, false);

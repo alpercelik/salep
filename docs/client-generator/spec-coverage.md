@@ -4,7 +4,7 @@ This checklist tracks which GraphQL specification features are exercised by the 
 
 Legend:
 
-- [x] Covered by src/samples/Opinionated/Client/schema.coverage.graphql or src/samples/Opinionated/Client/graphql operations
+- [x] Covered by src/samples/Opinionated/Client/schema.coverage.graphql and src/samples/Opinionated/Client/operations.coverage.graphql or src/samples/Opinionated/Client/graphql operations
 - [ ] Not covered yet or not verified
 
 ## SDL (Schema Definition Language)
@@ -150,3 +150,5 @@ The parser package gate (`scripts/verify-package-compatibility.sh` / `.ps1`) use
 ## Generator regression evidence
 
 Schema and type extensions are merged before Scriban rendering. The [shared compatibility contract](generator-parity.md) links reviewed schema/converter API fixtures, extension/ownership regressions, configuration interactions, runtime observations, packed consumer lifecycle checks and cross-platform CI. Syntax checklist coverage alone is not proof of exhaustive behavior.
+
+The standalone coverage fixture separates [schema definitions](../../src/samples/Opinionated/Client/schema.coverage.graphql) from [operations and reachable fragments](../../src/samples/Opinionated/Client/operations.coverage.graphql). Both generator targets validate schemas and operations before rendering. Subscription root selections reject `@skip` and `@include`, including directives on root fragments; child selections can use those directives.

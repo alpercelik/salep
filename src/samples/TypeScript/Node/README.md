@@ -1,6 +1,6 @@
 # TypeScript Node sample
 
-Original catalog schema/documents demonstrate nullable fields, nested selections, fragments, input objects, enums, custom scalars, union/interface narrowing, fragment masking and mutations. `Generated/gql/` contains unmasked typed ASTs, lookup, fragment helpers and fetch transport; `MaskedGenerated/gql/` exercises fragment masking. Both export their own schema. Generated files come from Salep; edit the inputs or generator rather than generated output.
+Original catalog schema/documents demonstrate nullable fields, nested selections, fragments, input objects, enums, custom scalars, union/interface narrowing, fragment masking and mutations. `Generated/gql/` contains unmasked typed ASTs, lookup, fragment helpers and fetch transport; `MaskedGenerated/gql/` exercises fragment masking with shared types and one module per operation. Both export their own schema. Generated files come from Salep; edit the inputs or generator rather than generated output.
 
 From this directory:
 

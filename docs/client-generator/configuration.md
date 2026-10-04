@@ -79,3 +79,7 @@ CLI failures return a nonzero exit code and JSON diagnostics with `Code`, `Confi
 ## Path selection
 
 The CLI accepts `--working-directory`, `--solution-directory`, and repeatable `--read-root` arguments. MSBuild exposes `SalepSolutionDirectory` and `SalepReadRoot` items. These are invocation-level permissions, not JSON configuration properties. See [filesystem boundaries](consumer-guide.md#filesystem-boundaries) for discovery, relative-path resolution, shared solution files, external read grants and link restrictions.
+
+Schema and operation syntax, semantic and parser-resource-limit errors stop generation before output publication. `SALEPS1008` identifies GraphQL input errors and includes the original source path, line and column when available. Both `generate` and `validate` perform these checks. C# deliberately permits unused variable declarations to preserve the `omitUnusedVariables` option; unknown variables and incompatible variable types still fail validation.
+
+CLI tracking outputs (`--inputs-file`, `--sources-file`, `--stamp-file`) must be separate from generator inputs, the running tool directory, owned current/stale outputs, control files and each other. Case aliases, physical path aliases and file/directory conflicts are rejected before publication. Previously owned files that become inputs are protected from stale-output deletion. Operation ownership signatures use canonical operation content and reachable fragments, independent of input filenames or source coordinates.

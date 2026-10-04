@@ -106,7 +106,8 @@ public sealed class TypeScriptSourceRenderer(GraphQlSchemaModel schema, GraphQlE
             var hasLocal = clientExecution && planner.HasLocalSelections(operation);
             var localExecution = hasLocal ? new
             {
-                query = planner.RemoteQuery(operation), selections = planner.Plan(operation),
+                query = planner.RemoteQuery(operation), selections = new Salep.ClientGenerator.TypeScript.Generation.TypeScriptClientDocumentPlanner(schema, normalized).Plan(normalized.Operations.Single()),
+                inputTypes = planner.InputTypes(), variableTypes = operation.Variables.ToDictionary(variable => variable.Name, variable => Salep.ClientGenerator.TypeScript.Generation.TypeScriptClientDocumentPlanner.TypeReference(variable.Type)),
                 defaults = operation.Variables.Where(variable => variable.DefaultValue is not null).ToDictionary(variable => variable.Name, variable => Salep.ClientGenerator.TypeScript.Generation.TypeScriptClientDocumentPlanner.InputValue(variable.DefaultValue!))
             } : null;
             var ast = TypeScriptDocumentAst.Operation(normalized, query, persistedOperations && (!hasLocal || localExecution?.query is not null) ? OperationId(hasLocal ? localExecution!.query! : query) : null, localExecution);

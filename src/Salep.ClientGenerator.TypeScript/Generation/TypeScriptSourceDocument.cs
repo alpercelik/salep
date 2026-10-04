@@ -18,7 +18,20 @@ public sealed record TypeScriptSourceDocument(string Name, string Original, stri
         try { return global::Salep.GraphQLParser.GraphQLParser.Parse(new SourceText(Text.AsMemory()), options); }
         catch (GraphQLSyntaxException error) { throw Syntax(error.Message, error.Position, error); }
         catch (GraphQLLexicalException error) { throw Syntax(error.Message, error.Position, error); }
+        catch (GraphQLResourceLimitException error) { throw Syntax(error.Message, error.Location.Start, error); }
     }
+    public DocumentNode ValidateDocumentKind(DocumentNode document, bool schema)
+    {
+        foreach (var definition in document.Definitions)
+        {
+            var valid = schema ? definition is ITypeSystemDefinitionNode or ITypeSystemExtensionNode : definition is IExecutableDefinitionNode;
+            if (valid) continue;
+            var (line, column) = Coordinates(Offset(definition.Location.Start));
+            throw new InvalidDataException($"{Name}({line},{column}): {(schema ? "Schema inputs require type-system definitions and extensions" : "Operation inputs require executable operations and fragments")}.");
+        }
+        return document;
+    }
+
     private InvalidDataException Syntax(string message, int offset, Exception inner)
     {
         var (line, column) = Coordinates(Offset(offset));

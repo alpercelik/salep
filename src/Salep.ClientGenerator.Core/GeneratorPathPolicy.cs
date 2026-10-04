@@ -32,6 +32,37 @@ public sealed class GeneratorPathPolicy
 
     public static string Normalize(string path) => path.Replace('\\', '/');
 
+    /// <summary>Resolves physical path identity for ownership comparisons without changing read/write boundaries.</summary>
+    public static string PhysicalIdentity(string path) => PhysicalIdentity(path, new HashSet<string>(StringComparer.OrdinalIgnoreCase), 0);
+
+    private static string PhysicalIdentity(string path, HashSet<string> activeLinks, int linkDepth)
+    {
+        // Keep the path policy lexical boundary intact. Identity comparisons also
+        // resolve aliases above that boundary, such as macOS /var and /tmp.
+        var full = Path.GetFullPath(Normalize(path));
+        var root = Path.GetPathRoot(full)!;
+        var current = root;
+        foreach (var component in full[root.Length..].Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries))
+        {
+            current = Path.Combine(current, component);
+            FileSystemInfo entry = Directory.Exists(current) ? new DirectoryInfo(current) : new FileInfo(current);
+            if (entry.LinkTarget is null) continue;
+            var link = current;
+            if (linkDepth >= 64 || !activeLinks.Add(link))
+                throw new InvalidDataException($"Generator path identity contains a symbolic-link cycle or exceeds 64 links: '{Normalize(path)}'.");
+            try
+            {
+                // A target can itself contain ancestor aliases. Resolve its entire
+                // path rather than accepting the lexical target returned by .NET.
+                var target = entry.ResolveLinkTarget(returnFinalTarget: false)
+                    ?? throw new InvalidDataException($"Cannot resolve generator path identity: '{Normalize(link)}'.");
+                current = PhysicalIdentity(target.FullName, activeLinks, linkDepth + 1);
+            }
+            finally { activeLinks.Remove(link); }
+        }
+        return Path.GetFullPath(current);
+    }
+
     public string Read(string path) => Check(path, ReadRoots, true);
     public string Write(string path, bool allowRoot = true) => Check(path, [boundaryRoot], allowRoot);
 
