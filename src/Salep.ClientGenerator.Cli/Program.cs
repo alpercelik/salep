@@ -65,14 +65,14 @@ public static class Program
             }
             var result = parsed.ValidateOnly ? ScribanGenerator.Validate(options) : ScribanGenerator.Generate(options);
             foreach (var message in result.Logs) stdout.WriteLine("[Salep.Scriban] " + message);
-            if (!parsed.ValidateOnly && parsed.SourcesFile is { } sourcesFile)
+            if (parsed is { ValidateOnly: false, SourcesFile: { } sourcesFile })
             {
                 var working = Path.GetFullPath(parsed.WorkingDirectory ?? Environment.CurrentDirectory);
                 var path = outputPaths.Write(Path.GetFullPath(GeneratorPathPolicy.Normalize(sourcesFile), working));
                 Directory.CreateDirectory(Path.GetDirectoryName(path)!);
                 File.WriteAllLines(path, result.GeneratedFiles.Where(file => file.EndsWith(".cs", StringComparison.Ordinal)));
             }
-            if (!parsed.ValidateOnly && parsed.StampFile is { } stampFile)
+            if (parsed is { ValidateOnly: false, StampFile: { } stampFile })
             {
                 var working = Path.GetFullPath(parsed.WorkingDirectory ?? Environment.CurrentDirectory);
                 var path = outputPaths.Write(Path.GetFullPath(GeneratorPathPolicy.Normalize(stampFile), working));

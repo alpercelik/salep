@@ -1,0 +1,5 @@
+export type {{ name }}Variables = {
+  {{~ for property in properties # begin for properties ~}}
+{{ property }}
+  {{~ end # end for properties ~}}
+};

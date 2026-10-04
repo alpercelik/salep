@@ -1,0 +1,1 @@
+export const {{ name }}Document = {{ ast }} as unknown as {{ document_type }}<{{ result }}, {{ variables }}>;

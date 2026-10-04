@@ -1,0 +1,5 @@
+{
+  {{~ for property in properties # begin for properties ~}}
+{{ property }}
+  {{~ end # end for properties ~}}
+}

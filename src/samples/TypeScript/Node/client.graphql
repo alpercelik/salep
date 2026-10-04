@@ -1,0 +1,2 @@
+extend type Book { label(prefix: String = "#"): String! }
+extend type Query { localTitle: String! }

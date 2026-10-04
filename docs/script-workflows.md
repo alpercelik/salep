@@ -43,3 +43,7 @@ The parser package consumer is excluded from `src/Salep.slnx` and `src/Salep.Cor
 The `Generator verification` pull-request workflow runs Linux/Bash and Windows/Windows PowerShell gates. Local PowerShell execution does not prove Windows execution. Configure both OS jobs as required branch-protection checks before release. Release scripts produce only `Salep.GraphQLParser` and `Salep.ClientGenerator`.
 
 The sample workflows build `src/samples/Opinionated/` and `src/samples/MinimalDependencies/` directly. Their `Directory.Build.props` and `Directory.Packages.props` are shared from `src/samples/`; sample project names use `Salep.Samples.<Profile>.<Role>`.
+
+## TypeScript client generation
+
+`./scripts/verify-typescript.sh` and `pwsh ./scripts/verify-typescript.ps1` regenerate and test the Node sample with its locked npm dependencies. `./scripts/publish-typescript.sh <RID> [output-directory]` and `pwsh ./scripts/publish-typescript.ps1 <RID> [output-directory]` produce a self-contained single-file executable. Paths resolve from each script location; npm commands use an explicit sample prefix. See [TypeScript usage and distribution](typescript-client-generator/README.md).

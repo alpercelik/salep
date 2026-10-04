@@ -53,7 +53,7 @@ public sealed class AstCopyMethodsTests
         Assert.Contains(spread.GetNodes(), node => ReferenceEquals(node, argument));
 
         var document = GraphQLParser.Parse(new SourceText("{ ...details }".AsMemory()));
-        var spreadRewriter = SyntaxRewriter.Create<object>((node, _) => node is ArgumentNode current && current.Name.Value == "id"
+        var spreadRewriter = SyntaxRewriter.Create<object>((node, _) => node is ArgumentNode { Name.Value: "id" } current
             ? current.WithValue(new IntValueNode(8))
             : node);
         var rewrittenSpread = Assert.IsType<FragmentSpreadNode>(spreadRewriter.Rewrite(spread));

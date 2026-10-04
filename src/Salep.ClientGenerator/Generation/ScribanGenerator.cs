@@ -48,11 +48,13 @@ public static class ScribanGenerator
     }
 
     /// <summary>Returns configuration, schema, operation, and currently owned output paths for build tracking.</summary>
+    [System.Diagnostics.CodeAnalysis.RequiresAssemblyFiles("C# MSBuild tracking includes the physical generator and parser assemblies.")]
     public static IReadOnlyList<string> GetInputFiles(ScribanGeneratorOptions options)
     {
         var plan = Prepare(options);
         var paths = plan.Inputs.Keys.ToHashSet(PathComparer);
         paths.Add(typeof(ScribanGenerator).Assembly.Location);
+        paths.Add(typeof(GraphQlModelFactory).Assembly.Location);
         paths.Add(typeof(Salep.GraphQLParser.GraphQLParser).Assembly.Location);
         var manifestPath = Path.Combine(plan.Configuration.Output, ManifestFileName);
         paths.Add(manifestPath);

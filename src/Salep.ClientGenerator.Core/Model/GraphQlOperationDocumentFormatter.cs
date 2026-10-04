@@ -19,6 +19,13 @@ public sealed record GraphQlOperationDocumentOptions
 /// <summary>Formats a normalized operation and its transitive fragments as valid GraphQL source.</summary>
 public sealed class GraphQlOperationDocumentFormatter(GraphQlSchemaModel schema, GraphQlExecutableDocument executable)
 {
+    /// <summary>Adds response discriminators to a standalone fragment and its nested selections.</summary>
+    public GraphQlFragmentDefinition NormalizeFragment(GraphQlFragmentDefinition fragment)
+    {
+        ArgumentNullException.ThrowIfNull(fragment);
+        return fragment with { SelectionSet = AddTypename(fragment.SelectionSet, fragment.TypeCondition) };
+    }
+
     /// <summary>Formats one operation, including only fragments it references directly or transitively.</summary>
     public string Format(GraphQlOperationDefinition operation, GraphQlOperationDocumentOptions? options = null)
     {
@@ -157,10 +164,7 @@ public sealed class GraphQlOperationDocumentFormatter(GraphQlSchemaModel schema,
     }
 
     private GraphQlFieldDefinition? FindField(string parentType, string fieldName)
-        => schema.Types.OfType<GraphQlObjectType>().Where(type => StringComparer.Ordinal.Equals(type.Name, parentType))
-            .SelectMany(type => type.Fields)
-            .Concat(schema.Types.OfType<GraphQlInterfaceType>().Where(type => StringComparer.Ordinal.Equals(type.Name, parentType)).SelectMany(type => type.Fields))
-            .FirstOrDefault(field => StringComparer.Ordinal.Equals(field.Name, fieldName));
+        => new GraphQlSchemaSemantics(schema).Fields(parentType).FirstOrDefault(field => StringComparer.Ordinal.Equals(field.Name, fieldName));
 
     private string RootTypeName(string operationType)
     {
@@ -222,7 +226,7 @@ public sealed class GraphQlOperationDocumentFormatter(GraphQlSchemaModel schema,
 
     private static GraphQlValue ReplaceVariables(GraphQlValue value, IReadOnlyDictionary<string, GraphQlValue> defaults)
     {
-        if (value.Kind == GraphQlValueKind.Variable && value.Text is not null && defaults.TryGetValue(value.Text, out var replacement))
+        if (value is { Kind: GraphQlValueKind.Variable, Text: not null } && defaults.TryGetValue(value.Text, out var replacement))
         {
             return replacement;
         }
@@ -246,7 +250,7 @@ public sealed class GraphQlOperationDocumentFormatter(GraphQlSchemaModel schema,
 
     private static void CollectVariables(GraphQlValue value, ISet<string> used)
     {
-        if (value.Kind == GraphQlValueKind.Variable && value.Text is not null) used.Add(value.Text);
+        if (value is { Kind: GraphQlValueKind.Variable, Text: not null }) used.Add(value.Text);
         if (value.Items is not null) foreach (var item in value.Items) CollectVariables(item, used);
         if (value.Fields is not null) foreach (var field in value.Fields) CollectVariables(field.Value, used);
     }

@@ -1,12 +1,15 @@
 # Architecture and public packages
 
-Salep contains the independent GraphQL language library and the Scriban C# client generator.
+Salep contains the independent GraphQL language library and Scriban client generation for C# and TypeScript.
 
 | Projects | Responsibility | Public package |
 | --- | --- | --- |
 | `Salep.GraphQLParser` | Lexer, parser and immutable syntax trees | `Salep.GraphQLParser` |
-| `Salep.ClientGenerator` | Neutral GraphQL models, C# target policies, Scriban templates and generation | Private tool |
+| `Salep.ClientGenerator.Core` | Neutral GraphQL models, common target interface and filesystem policy | Private library |
+| `Salep.ClientGenerator` | C# target policies, templates and generation | Private library |
+| `Salep.ClientGenerator.TypeScript` | TypeScript target policies, templates, typed ASTs and generation | Private library |
 | `Salep.ClientGenerator.Cli` | Configuration validation, generation, inputs and template export | Private tool |
+| `Salep.ClientGenerator.TypeScript.Cli` | Standalone TypeScript generation and template export | Standalone executable |
 | `Salep.ClientGenerator.MSBuild` | Props, targets and bundled framework-matched CLI | `Salep.ClientGenerator` |
 
 The generator directly references `src/Salep.GraphQLParser/Salep.GraphQLParser.csproj`. The parser does not reference the generator. Only the parser and generator MSBuild distribution projects are packable. Generated applications have no Salep or Scriban runtime dependency. Compiler libraries used in generator tests compile generated consumers; they are not bundled with the generator tool.
@@ -18,3 +21,5 @@ The Roslyn implementation and its sample projects have been retired. Scriban is 
 Samples live under `src/samples/Opinionated/` and `src/samples/MinimalDependencies/`. Each owns its operation inputs. Both share `src/samples/Salep.Samples.GraphQLServer/`. Root build/package configuration supplies dependency versions. `build-salep.sh` and `build-salep.ps1` restore samples against the exact package version packed by that invocation.
 
 See [parser documentation](parser/README.md), [generator documentation](client-generator/README.md), [generator verification](client-generator/generator-parity.md), [template customization](client-generator/template-customization.md) and [releases](releases.md).
+
+The TypeScript executable uses `Salep.ClientGenerator.TypeScript`, which owns its target policy and composed Scriban templates. Both language libraries consume neutral GraphQL models from `Salep.ClientGenerator.Core`. Node samples own original inputs under `src/samples/TypeScript/`; their npm workflow is independent of C# MSBuild. See [the TypeScript guide](typescript-client-generator/README.md). No additional public NuGet package is introduced.

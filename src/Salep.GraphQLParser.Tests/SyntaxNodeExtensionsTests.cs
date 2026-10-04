@@ -37,7 +37,7 @@ public sealed class SyntaxNodeExtensionsTests
         }));
         Assert.Equal("other", extension.WithLocation(new Location(2, 32, 2, 1)).WithName(new NameNode("other")).Name.Value.ToString());
 
-        var rewritten = SyntaxRewriter.Create(static (node) => node is NameNode name && name.Value == "custom"
+        var rewritten = SyntaxRewriter.Create(static (node) => node is NameNode { Value: "custom" } name
             ? name.WithValue("rewritten")
             : node).Rewrite(extension);
         Assert.Equal("extend directive @rewritten @deprecated", rewritten.ToString());

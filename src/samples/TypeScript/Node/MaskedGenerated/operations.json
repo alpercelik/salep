@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "algorithm": "sha256",
+  "operations": {
+    "d712d179411c0498df3edbee9f4afd0cfc23d78b324e40b0739dd6c520ccf9d6": {
+      "name": "ConditionalBook",
+      "type": "query",
+      "query": "query ConditionalBook($id: ID!, $show: Boolean!) {\n  book(id: $id) {\n    id\n    ... on Book @include(if: $show) {\n      title\n    }\n  }\n}"
+    },
+    "f21492db5d6f9db6bc4e08b25ef9341c53cc05d96f173a19865d5de22f3f51a7": {
+      "name": "ReadBook",
+      "type": "query",
+      "query": "query ReadBook($id: ID!) {\n  selected: book(id: $id) {\n    ...BookSummary\n    published\n    authors\n  }\n}\n\nfragment BookSummary on Book {\n  id\n  title\n}"
+    },
+    "cbdb1dc4a52fe6ff032666f5181a4c81b79ae5d280ba64a6626f70315c093979": {
+      "name": "SearchCatalog",
+      "type": "query",
+      "query": "query SearchCatalog($filter: BookFilter) {\n  search(filter: $filter) {\n    __typename\n    ... on Book {\n      ...BookSummary\n    }\n    ... on Author {\n      id\n      name\n    }\n  }\n}\n\nfragment BookSummary on Book {\n  id\n  title\n}"
+    },
+    "4dc0c7a1c48b239c6aece9855c409d8ad380a278cb1731f6203c9c2acd9104f0": {
+      "name": "RenameBook",
+      "type": "mutation",
+      "query": "mutation RenameBook($id: ID!, $title: String!) {\n  renameBook(id: $id, title: $title) {\n    ...BookSummary\n  }\n}\n\nfragment BookSummary on Book {\n  id\n  title\n}"
+    },
+    "1756c228d7e67c765cc64da85b6d9973a1c7f0c2d03001a18587f614e527b0e6": {
+      "name": "LookupEntry",
+      "type": "query",
+      "query": "query LookupEntry($id: ID!) {\n  entry(id: $id) {\n    __typename\n    id\n    ... on Book {\n      title\n    }\n    ... on Author {\n      name\n    }\n  }\n}"
+    },
+    "012707a0126914ef7af2485d28fe8973a6de094d6f8e8f9c396a09a14b9ff84b": {
+      "name": "ParityChecks",
+      "type": "query",
+      "query": "query ParityChecks($id: ID!, $show: Boolean!) {\n  book(id: $id) {\n    id\n  }\n  book(id: $id) @include(if: $show) {\n    title\n  }\n  guaranteed: book(id: $id) {\n    title @include(if: true)\n    hidden: title @skip(if: true)\n  }\n}"
+    },
+    "b92af410f2040902356233d8dae2c520a23321243d9140dc88a1bddad33fcd10": {
+      "name": "ParityFragments",
+      "type": "query",
+      "query": "query ParityFragments {\n  search {\n    __typename\n    ...SearchKeys\n  }\n}\n\nfragment SearchKeys on SearchHit {\n  __typename\n  ... on Book {\n    id\n  }\n  ... on Author {\n    name\n  }\n}"
+    },
+    "4f9916c0d5efb6e87c62f7229d969eaada44ac2ef200c1954795a36bea19a53a": {
+      "name": "LookupChoice",
+      "type": "query",
+      "query": "query LookupChoice($choice: BookChoice!) {\n  bookBy(choice: $choice) {\n    id\n  }\n}"
+    },
+    "9da9d7c09668fc07f36b10451a869c55b02791e662828fe744b6aeee42766890": {
+      "name": "InspectSchema",
+      "type": "query",
+      "query": "query InspectSchema($name: String!) {\n  __schema {\n    queryType {\n      name\n      kind\n    }\n    directives {\n      name\n      locations\n      isRepeatable\n    }\n  }\n  __type(name: $name) {\n    name\n    kind\n    fields(includeDeprecated: true) {\n      name\n      type {\n        kind\n        name\n        ofType {\n          name\n          kind\n        }\n      }\n    }\n  }\n}"
+    },
+    "2785d5e6677032f717d3a06efb43ef1c6d0606073d070edd03fec66e0c414c91": {
+      "name": "LocalBook",
+      "type": "query",
+      "query": "query LocalBook {\n  book(id: \u0022book-1\u0022) {\n    id\n    __typename\n  }\n}"
+    }
+  }
+}

@@ -12,7 +12,7 @@ public static class GraphQLAstPredicates
     /// <summary>Returns whether a syntax node is a value.</summary>
     public static bool IsValueNode(ISyntaxNode node) => node is IValueNode;
     /// <summary>Returns whether a value contains no variable references.</summary>
-    public static bool IsConstValueNode(ISyntaxNode node) => node is IValueNode value && value is AstNode ast && IsConstant(ast as ValueNode ?? throw new ArgumentException("Value nodes must be created by this parser.", nameof(node)));
+    public static bool IsConstValueNode(ISyntaxNode node) => node is IValueNode and AstNode ast && IsConstant(ast as ValueNode ?? throw new ArgumentException("Value nodes must be created by this parser.", nameof(node)));
     /// <summary>Returns whether a syntax node is a type reference.</summary>
     public static bool IsTypeNode(ISyntaxNode node) => node is ITypeNode;
     /// <summary>Returns whether a syntax node is a type-system definition.</summary>

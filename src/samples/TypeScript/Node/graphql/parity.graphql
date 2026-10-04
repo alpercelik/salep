@@ -1,0 +1,28 @@
+query ParityChecks($id: ID!, $show: Boolean!) {
+  book(id: $id) { id }
+  book(id: $id) @include(if: $show) { title }
+  guaranteed: book(id: $id) {
+    title @include(if: true)
+    hidden: title @skip(if: true)
+  }
+}
+
+query ParityFragments {
+  search { ...SearchKeys }
+}
+
+fragment SearchKeys on SearchHit {
+  __typename
+  ... on Book { id }
+  ... on Author { name }
+}
+
+query LookupChoice($choice: BookChoice!) { bookBy(choice: $choice) { id } }
+
+query InspectSchema($name: String!) {
+  __schema { queryType { name kind } directives { name locations isRepeatable } }
+  __type(name: $name) { name kind fields(includeDeprecated: true) { name type { kind name ofType { name kind } } } }
+}
+
+query LocalBook($prefix: String = "#") { book(id: "book-1") { id display: label(prefix: $prefix) @client } }
+query LocalOnly { localTitle @client }

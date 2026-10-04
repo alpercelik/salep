@@ -8,7 +8,7 @@ Use the .NET SDK pinned by `global.json`. Core projects target .NET 10 and .NET 
 | --- | --- |
 | `src/Salep.GraphQLParser/` | Independent language library |
 | `src/Salep.ClientGenerator/Generation/` | Configuration, orchestration, input discovery and ownership manifests |
-| `src/Salep.ClientGenerator/Model/` | Target-neutral schema/executable models and GraphQL semantics |
+| `src/Salep.ClientGenerator.Core/Model/` | Target-neutral schema/executable models and GraphQL semantics |
 | `src/Salep.ClientGenerator/Targets/` | C# policies, template projections, sample values and rendering |
 | `src/Salep.ClientGenerator/Templates/` | Embedded whole-output templates and composable fragments/hooks |
 | `src/Salep.ClientGenerator.Cli/` | Out-of-process CLI |

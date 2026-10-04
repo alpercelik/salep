@@ -1,0 +1,6 @@
+{{ variables }}
+{{ response }}
+{{ document }}
+
+export type {{ name }}{{ kind }} = {{ name }}Result;
+export type {{ name }}{{ kind }}Variables = {{ name }}Variables;

@@ -1,0 +1,5 @@
+export type Scalars = {
+  {{~ for scalar in scalars # begin for scalars ~}}
+{{ scalar.documentation }}  {{ scalar.name }}: { input: {{ scalar.input }}; output: {{ scalar.output }} };
+  {{~ end # end for scalars ~}}
+};

@@ -1,24 +1,29 @@
 # Salep
 
-Salep provides GraphQL tooling for .NET: a standalone lexer and parser, and a schema-driven C# client generator with MSBuild integration.
+Salep provides GraphQL tooling for .NET: a standalone lexer and parser, and schema-driven C# clients with MSBuild integration, and a standalone TypeScript client generator.
 
-| Component | Purpose | NuGet package | Documentation |
+| Component | Purpose | Distribution | Documentation |
 | --- | --- | --- | --- |
 | **Salep GraphQL Parser** | Lexing, parsing, syntax trees, diagnostics, traversal, rewriting, and printing | `Salep.GraphQLParser` | [Parser guide](docs/parser/README.md) |
 | **Salep C# Client Generator** | Generate typed C# clients from GraphQL schemas and operations during builds | `Salep.ClientGenerator` | [Client generator guide](docs/client-generator/README.md) |
+
+| **Salep TypeScript Client Generator** | Generate selected result types and portable fetch clients from GraphQL | Standalone executable | [TypeScript guide](docs/typescript-client-generator/README.md) |
 
 The parser can be used independently. The client generator references the parser directly; generated applications have no runtime dependency on either implementation assembly. See [architecture and naming](docs/architecture.md) for component ownership and package mapping.
 
 ## Solution and projects
 
-Open `src/Salep.slnx` for the complete solution, including samples. `src/Salep.Core.slnf` selects the eight core projects without samples. The package-only `Salep.GraphQLParser.PublicApiConsumer` fixture stays outside both solution build lists; run it through `scripts/verify-package-compatibility.sh` or `scripts/verify-package-compatibility.ps1`, which pack the parser before restoring the consumer.
+Open `src/Salep.slnx` for the complete solution, including samples. `src/Salep.Core.slnf` selects core projects without samples. The package-only `Salep.GraphQLParser.PublicApiConsumer` fixture stays outside both solution build lists; run it through `scripts/verify-package-compatibility.sh` or `scripts/verify-package-compatibility.ps1`, which pack the parser before restoring the consumer.
 
 ```text
 src/
   Salep.slnx
   Salep.Core.slnf
   Salep.GraphQLParser/
-  Salep.ClientGenerator/               # Default Scriban backend
+  Salep.ClientGenerator.Core/          # Shared GraphQL models and filesystem policy
+  Salep.ClientGenerator/               # C# Scriban backend
+  Salep.ClientGenerator.TypeScript/    # TypeScript Scriban backend
+  Salep.ClientGenerator.TypeScript.Cli/ # Standalone TypeScript executable
   Salep.ClientGenerator.Cli/
   Salep.ClientGenerator.MSBuild/
   Salep.ClientGenerator.Tests/

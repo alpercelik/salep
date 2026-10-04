@@ -14,6 +14,55 @@
     <File Path="../NuGet.config" />
     <File Path="../README.md" />
   </Folder>
+  <Folder Name="/samples/TypeScript/Node/">
+    <File Path="samples/TypeScript/Node/README.md" />
+    <File Path="samples/TypeScript/Node/package.json" />
+    <File Path="samples/TypeScript/Node/package-lock.json" />
+    <File Path="samples/TypeScript/Node/tsconfig.json" />
+    <File Path="samples/TypeScript/Node/salep.typescript.json" />
+    <File Path="samples/TypeScript/Node/schema.graphql" />
+    <File Path="samples/TypeScript/Node/client.graphql" />
+    <File Path="samples/TypeScript/Node/graphql/catalog.graphql" />
+    <File Path="samples/TypeScript/Node/graphql/parity.graphql" />
+    <File Path="samples/TypeScript/Node/embedded.tsx" />
+    <File Path="samples/TypeScript/Node/verify.ts" />
+    <File Path="samples/TypeScript/Node/masked.ts" />
+    <File Path="samples/TypeScript/Node/salep.masked.typescript.json" />
+    <File Path="samples/TypeScript/Node/network-test.mjs" />
+    <File Path="samples/TypeScript/Node/schema-source-test.mjs" />
+    <File Path="samples/TypeScript/Node/local-execution-test.mjs" />
+    <File Path="samples/TypeScript/Node/parity-validation.mjs" />
+  </Folder>
+  <Folder Name="/samples/TypeScript/Node/Generated/">
+    <File Path="samples/TypeScript/Node/Generated/.salep.lock" />
+    <File Path="samples/TypeScript/Node/Generated/.salep.manifest.json" />
+    <File Path="samples/TypeScript/Node/Generated/schema.graphql" />
+  </Folder>
+  <Folder Name="/samples/TypeScript/Node/Generated/gql/">
+    <File Path="samples/TypeScript/Node/Generated/gql/client.ts" />
+    <File Path="samples/TypeScript/Node/Generated/gql/local-execution.ts" />
+    <File Path="samples/TypeScript/Node/Generated/gql/resolvers.ts" />
+    <File Path="samples/TypeScript/Node/Generated/operations.json" />
+    <File Path="samples/TypeScript/Node/Generated/gql/fragment-masking.ts" />
+    <File Path="samples/TypeScript/Node/Generated/gql/gql.ts" />
+    <File Path="samples/TypeScript/Node/Generated/gql/graphql.ts" />
+    <File Path="samples/TypeScript/Node/Generated/gql/index.ts" />
+  </Folder>
+  <Folder Name="/samples/TypeScript/Node/MaskedGenerated/">
+    <File Path="samples/TypeScript/Node/MaskedGenerated/.salep.lock" />
+    <File Path="samples/TypeScript/Node/MaskedGenerated/.salep.manifest.json" />
+    <File Path="samples/TypeScript/Node/MaskedGenerated/schema.graphql" />
+  </Folder>
+  <Folder Name="/samples/TypeScript/Node/MaskedGenerated/gql/">
+    <File Path="samples/TypeScript/Node/MaskedGenerated/gql/client.ts" />
+    <File Path="samples/TypeScript/Node/MaskedGenerated/gql/local-execution.ts" />
+    <File Path="samples/TypeScript/Node/MaskedGenerated/gql/resolvers.ts" />
+    <File Path="samples/TypeScript/Node/MaskedGenerated/operations.json" />
+    <File Path="samples/TypeScript/Node/MaskedGenerated/gql/fragment-masking.ts" />
+    <File Path="samples/TypeScript/Node/MaskedGenerated/gql/gql.ts" />
+    <File Path="samples/TypeScript/Node/MaskedGenerated/gql/graphql.ts" />
+    <File Path="samples/TypeScript/Node/MaskedGenerated/gql/index.ts" />
+  </Folder>
   <Folder Name="/parser/">
     <File Path="../docs/parser/README.md" />
     <Project Path="../benchmarks/Salep.GraphQLParser.Benchmarks/Salep.GraphQLParser.Benchmarks.csproj" />
@@ -21,6 +70,11 @@
     <Project Path="Salep.GraphQLParser.Tests/Salep.GraphQLParser.Tests.csproj" />
   </Folder>
   <Folder Name="/client-generator/">
+    <Project Path="Salep.ClientGenerator.Core/Salep.ClientGenerator.Core.csproj" />
+    <Project Path="Salep.ClientGenerator.TypeScript/Salep.ClientGenerator.TypeScript.csproj" />
+    <Project Path="Salep.ClientGenerator.TypeScript.Cli/Salep.ClientGenerator.TypeScript.Cli.csproj" />
+    <File Path="../docs/typescript-client-generator/README.md" />
+    <File Path="../docs/typescript-client-generator/correctness-and-coverage.md" />
     <File Path="../docs/client-generator/README.md" />
     <Project Path="Salep.ClientGenerator/Salep.ClientGenerator.csproj" />
     <Project Path="Salep.ClientGenerator.Tests/Salep.ClientGenerator.Tests.csproj" />

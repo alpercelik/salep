@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>salep-typescript</AssemblyName>
+    <UseAppHost>true</UseAppHost>
+    <NoWarn>CA1305;CA1826;CA1822;CA1859;CA1869;CA1707;CA1861</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Salep.ClientGenerator.TypeScript/Salep.ClientGenerator.TypeScript.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="../../LICENSE" LogicalName="Salep.LICENSE" />
+    <EmbeddedResource Include="../../docs/client-generator/third-party-notices.md" LogicalName="Salep.ThirdPartyNotices" />
+    <EmbeddedResource Include="../../docs/client-generator/licenses/runtime-THIRD-PARTY-NOTICES.txt" LogicalName="Salep.RuntimeNotices" />
+  </ItemGroup>
+</Project>

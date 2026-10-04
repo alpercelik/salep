@@ -1,0 +1,5 @@
+{{ indent }}/**
+{{~ for line in lines # begin for documentation-lines ~}}
+{{ indent }} * {{ line }}
+{{~ end # end for documentation-lines ~}}
+{{ indent }} */

@@ -1,0 +1,1 @@
+  readonly {{ name }}{{ optional }}: {{ type }};

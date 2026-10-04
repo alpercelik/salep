@@ -179,8 +179,7 @@ public static class GraphQLPrinter
     private static string RenderOperation(OperationDefinitionNode operation, int indent)
     {
         var description = RenderDescription(operation.Description, indent);
-        var shorthand = operation.Operation == OperationType.Query && operation.Name is null
-            && operation.VariableDefinitions.Count == 0 && operation.Directives.Count == 0 && operation.Description is null;
+        var shorthand = operation is { Operation: OperationType.Query, Name: null, VariableDefinitions.Count: 0, Directives.Count: 0, Description: null };
         if (shorthand) return Render(operation.SelectionSet, indent);
         var head = OperationName(operation.Operation);
         if (operation.Name is not null) head += " " + Render(operation.Name, indent);

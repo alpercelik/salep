@@ -1,0 +1,22 @@
+schema { query: Query mutation: Mutation }
+scalar DateTime
+interface Entry { id: ID! }
+type Book { id: ID! "Book title, including a literal */ in documentation." title: String! published: DateTime authors: [String!]! }
+extend type Book implements Entry
+type Author implements Entry { id: ID! name: String! }
+union SearchHit = Book
+extend union SearchHit = Author
+"Supported book categories."
+enum Category { FICTION SCIENCE }
+"Filters used by catalog searches."
+input BookFilter { "Restricts category." category: Category limit: Int = 10 }
+input BookChoice @oneOf { id: ID title: String }
+type Query { bookBy(choice: BookChoice!): Book entry(id: ID!): Entry book(id: ID!): Book search(filter: BookFilter): [SearchHit!]! }
+type Mutation { renameBook(id: ID!, title: String!): Book! }
+
+input ReadBookResult { id: ID! }
+input GqlReadBookResult { id: ID! }
+
+
+extend type Book { label(prefix: String = "#"): String! }
+extend type Query { localTitle: String! }

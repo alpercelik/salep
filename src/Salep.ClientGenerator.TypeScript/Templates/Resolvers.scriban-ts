@@ -1,0 +1,19 @@
+export type ResolverParentTypes = {
+  {{~ for parent in parents # begin for resolver-parents ~}}
+  {{ parent.name }}: {
+    {{~ for property in parent.properties # begin for parent-properties ~}}
+{{ property }}
+    {{~ end # end for parent-properties ~}}
+  };
+  {{~ end # end for resolver-parents ~}}
+};
+
+export type LocalResolvers<TContext = unknown> = {
+  {{~ for resolver in resolvers # begin for local-resolvers ~}}
+  {{ resolver.name }}?: {
+    {{~ for field in resolver.fields # begin for resolver-fields ~}}
+    {{ field.name }}?: (parent: ResolverParentTypes[{{ resolver.name }}], args: {{ field.arguments }}, context: TContext) => {{ field.result }} | Promise<{{ field.result }}>;
+    {{~ end # end for resolver-fields ~}}
+  };
+  {{~ end # end for local-resolvers ~}}
+};

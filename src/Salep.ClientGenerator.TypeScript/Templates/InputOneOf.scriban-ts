@@ -1,0 +1,8 @@
+export type {{ name }} =
+  {{~ for variant in variants # begin for oneof-variants ~}}
+  {
+    {{~ for property in variant.properties # begin for oneof-properties ~}}
+{{ property }}
+    {{~ end # end for oneof-properties ~}}
+  }{{ variant.suffix }}
+  {{~ end # end for oneof-variants ~}}

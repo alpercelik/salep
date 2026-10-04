@@ -1,0 +1,16 @@
+{
+  "name": "salep-typescript-node-sample",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "dotnet run --project ../../../Salep.ClientGenerator.TypeScript.Cli --framework net10.0 -- generate --config salep.typescript.json && dotnet run --project ../../../Salep.ClientGenerator.TypeScript.Cli --framework net10.0 -- generate --config salep.masked.typescript.json",
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node dist/verify.js && node dist/masked.js && node network-test.mjs && node local-execution-test.mjs && node parity-validation.mjs && node schema-source-test.mjs"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "graphql": "16.14.0",
+    "@graphql-typed-document-node/core": "3.2.0",
+    "graphql-request": "7.4.0"
+  }
+}
