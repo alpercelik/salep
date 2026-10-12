@@ -777,15 +777,15 @@ public static class ScribanGenerator
                 var parentField = kind == "profile" ? "extends" : "profile";
                 if (GetString(root, parentField, path) is { } reference)
                 {
-                    var parentPath = Path.GetFullPath(GeneratorPathPolicy.Normalize(reference), directory);
+                    var parentPath = GeneratorPathPolicy.ResolvePath(reference, directory);
                     paths.Read(parentPath);
                     if (Directory.Exists(parentPath)) parentPath = Path.Combine(parentPath, "salep.json");
                     parent = Resolve(parentPath, stack, paths);
                     if (parent.Kind != "profile") throw Error("SALEPS1004", path, parentField, "The referenced configuration must have kind 'profile'.");
                 }
-                var schema = GetString(root, "schema", path) is { } schemaValue ? Path.GetFullPath(GeneratorPathPolicy.Normalize(schemaValue), directory) : parent?.Schema;
-                var operations = GetString(root, "operations", path) is { } operationsValue ? Path.GetFullPath(GeneratorPathPolicy.Normalize(operationsValue), directory) : Path.Combine(directory, "graphql");
-                var output = Path.GetFullPath(GeneratorPathPolicy.Normalize(GetString(root, "output", path) ?? (kind == "tests" ? "./GeneratedTests" : "./Generated")), directory);
+                var schema = GetString(root, "schema", path) is { } schemaValue ? GeneratorPathPolicy.ResolvePath(schemaValue, directory) : parent?.Schema;
+                var operations = GetString(root, "operations", path) is { } operationsValue ? GeneratorPathPolicy.ResolvePath(operationsValue, directory) : Path.Combine(directory, "graphql");
+                var output = GeneratorPathPolicy.ResolvePath(GetString(root, "output", path) ?? (kind == "tests" ? "./GeneratedTests" : "./Generated"), directory);
                 if (schema is not null) paths.Read(schema);
                 paths.ReadPattern(operations);
                 var clientName = GetString(root, "clientName", path) ?? parent?.ClientName ?? "GraphQLClient";
@@ -830,7 +830,7 @@ public static class ScribanGenerator
                 if (kind == "tests")
                 {
                     var clientPathValue = GetString(root, "client", path) ?? throw Error("SALEPS1001", path, "client", "Tests configuration requires a client configuration path.");
-                    var clientPath = Path.GetFullPath(GeneratorPathPolicy.Normalize(clientPathValue), directory);
+                    var clientPath = GeneratorPathPolicy.ResolvePath(clientPathValue, directory);
                     paths.Read(clientPath);
                     if (Directory.Exists(clientPath)) clientPath = Path.Combine(clientPath, "salep.json");
                     var client = Resolve(clientPath, stack, paths);
@@ -858,7 +858,7 @@ public static class ScribanGenerator
                         BaseClient = clientPath
                     };
                 }
-                var baseClient = GetString(root, "baseClient", path) is { } baseClientValue ? Path.GetFullPath(GeneratorPathPolicy.Normalize(baseClientValue), directory) : null;
+                var baseClient = GetString(root, "baseClient", path) is { } baseClientValue ? GeneratorPathPolicy.ResolvePath(baseClientValue, directory) : null;
                 if (baseClient is not null) paths.Read(baseClient);
                 if (baseClient is not null && Directory.Exists(baseClient)) baseClient = Path.Combine(baseClient, "salep.json");
                 var resolved = new Config(path, kind, schema, operations, output, ns, ns + ".Tests", clientName,
@@ -898,7 +898,7 @@ public static class ScribanGenerator
                     throw Error("SALEPS1003", path, "templates." + template.Name, "Unknown template name.", "Use a template key listed in the Scriban template customization guide.");
                 if (template.Value.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(template.Value.GetString()))
                     throw Error("SALEPS1001", path, "templates." + template.Name, "Expected a non-empty template file path.");
-                var templatePath = paths.Read(Path.GetFullPath(GeneratorPathPolicy.Normalize(template.Value.GetString()!), directory));
+                var templatePath = paths.Read(GeneratorPathPolicy.ResolvePath(template.Value.GetString()!, directory));
                 if (!File.Exists(templatePath))
                     throw Error("SALEPS1001", path, "templates." + template.Name, $"Template file '{GeneratorPathPolicy.Normalize(templatePath)}' does not exist.");
                 if (!result.TryAdd(template.Name, templatePath))

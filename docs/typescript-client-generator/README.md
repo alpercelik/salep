@@ -113,6 +113,8 @@ Unmapped keys retain defaults. Includes accept registered keys or `default:<key>
 
 The nearest `.sln`/`.slnx` folder is the boundary, falling back to the configuration folder. `--solution-directory` selects it explicitly; repeatable `--read-root` grants external reads only. Symlinks/junctions, traversal and portable-invalid path components are rejected. Inputs and output must share a filesystem volume. Manifest paths use `/` and are relative to the manifest. Publication preserves unowned files and unchanged timestamps, refuses modified owned files, and serializes writes with a lock. Verified legacy flat `graphql.ts` output migrates to the new inventory. Hashes are integrity checks, not signatures or an OS sandbox against concurrent hostile processes.
 
+Configuration paths and document globs accept `/` and `\` separators on every platform. Components ending in a dot or space are rejected before filesystem resolution can turn them into aliases; `.` and `..` navigation remains subject to the boundary checks.
+
 ```bash
 ./scripts/verify-typescript.sh
 ./scripts/publish-typescript.sh osx-arm64

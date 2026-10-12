@@ -370,6 +370,8 @@ Manifest inputs are relative to `.salep.manifest.json` itself. A local `graphql/
 
 The nearest containing `.sln` or `.slnx` directory is the default filesystem boundary. Schemas, operation files/globs, profiles, referenced clients, template overrides and generated output may live anywhere inside it: sibling projects and shared folders work without per-folder grants. This is directory containment, not solution project-membership validation. If no containing solution file exists, the selected project/configuration folder is the fallback boundary. Output must be a subdirectory of the boundary, not the boundary itself.
 
+Both generators accept `/` and `\` as path separators. Path components ending in a dot or space are rejected before resolution on every platform, because filesystems can treat those spellings as aliases. The navigation components `.` and `..` remain supported within the permitted boundary. Tracking inventories use `/` consistently.
+
 For custom layouts, detached projects or multiple solutions, pin the intended root in the consuming MSBuild project:
 
 ```xml

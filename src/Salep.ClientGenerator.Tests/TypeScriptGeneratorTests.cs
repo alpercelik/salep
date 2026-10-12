@@ -89,6 +89,9 @@ public sealed class TypeScriptGeneratorTests
     [InlineData("output-traversal")]
     [InlineData("duplicate-config")]
     [InlineData("template-traversal")]
+    [InlineData("output-alias")]
+    [InlineData("schema-alias")]
+    [InlineData("documents-alias")]
     public void Filesystem_and_configuration_redirection_are_rejected(string mutation)
     {
         var root = Path.Combine(Path.GetTempPath(), "salep-ts-paths-" + Guid.NewGuid().ToString("N"));
@@ -114,6 +117,13 @@ public sealed class TypeScriptGeneratorTests
             }
             else if (mutation == "duplicate-config")
                 File.WriteAllText(config, """{"version":1,"version":1,"target":"typescript","schema":"schema.graphql","documents":"operation.graphql","output":"Generated"}""");
+            else if (mutation.EndsWith("-alias", StringComparison.Ordinal))
+            {
+                var configuration = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(config))!.AsObject();
+                var property = mutation[..mutation.IndexOf('-', StringComparison.Ordinal)];
+                configuration[property] = property == "output" ? "Generated./nested" : "directory./" + (property == "schema" ? "schema.graphql" : "*.graphql");
+                File.WriteAllText(config, configuration.ToJsonString());
+            }
             else
                 File.WriteAllText(config, """{"version":1,"target":"typescript","schema":"schema.graphql","documents":"operation.graphql","output":"Generated","templates":{"client":"../outside.graphql"}}""");
             Assert.Throws<InvalidDataException>(() => TypeScriptGenerator.Generate(options));

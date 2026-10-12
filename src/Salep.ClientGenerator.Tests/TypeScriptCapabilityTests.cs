@@ -50,10 +50,12 @@ public sealed class TypeScriptCapabilityTests
         var schema = GraphQlModelFactory.CreateSchema(Parse("type Query { title: String }"));
         var document = GraphQlModelFactory.CreateExecutable(schema, [Parse("query Read { ...Fields } fragment Fields on Query { title }")]);
         var source = new TypeScriptSourceRenderer(schema, document, new(), new(), persistedOperations: true).Operations();
-        var query = new GraphQlOperationDocumentFormatter(schema, document).Format(document.Operations[0]);
+        var query = new GraphQlOperationDocumentFormatter(schema, document).Format(document.Operations[0])
+            .Replace("\r\n", "\n", StringComparison.Ordinal).Replace('\r', '\n');
         var id = TypeScriptSourceRenderer.OperationId(query);
         Assert.Equal(64, id.Length);
         Assert.Equal(id, TypeScriptSourceRenderer.OperationId(query.Replace("\n", "\r\n", StringComparison.Ordinal)));
+        Assert.Equal(id, TypeScriptSourceRenderer.OperationId(query.Replace('\n', '\r')));
         Assert.Contains(id, source);
         Assert.NotEqual(id, TypeScriptSourceRenderer.OperationId(query.Replace("title", "other", StringComparison.Ordinal)));
     }

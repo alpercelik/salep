@@ -27,7 +27,7 @@ public static class TypeScriptSchemaLoader
                     result.Add(Remote(uri, null, index, httpClient));
                 else
                 {
-                    var file = paths.Read(Path.GetFullPath(GeneratorPathPolicy.Normalize(name), directory));
+                    var file = paths.Read(GeneratorPathPolicy.ResolvePath(name, directory));
                     var text = File.ReadAllText(file);
                     try { result.Add(new(GeneratorPathPolicy.Normalize(file), ConvertSource(text), file, null, text.AsSpan().TrimStart().StartsWith("{"))); }
                     catch (Exception error) when (error is JsonException or InvalidDataException)

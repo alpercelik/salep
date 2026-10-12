@@ -56,8 +56,11 @@ public sealed class TypeScriptGenerationReviewRegressionTests
         Assert.All(located, document => Assert.Equal(source.IndexOf(document.Text, StringComparison.Ordinal), document.Offsets[0]));
     }
 
-    [Fact]
-    public void Generator_selects_jsx_lexing_only_for_tsx_files()
+    [Theory]
+    [InlineData("*.{ts,tsx}")]
+    [InlineData("./*.{ts,tsx}")]
+    [InlineData(".\\*.{ts,tsx}")]
+    public void Generator_selects_jsx_lexing_only_for_tsx_files(string pattern)
     {
         var root = Path.Combine(Path.GetTempPath(), "salep-ts-lexing-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
@@ -67,7 +70,7 @@ public sealed class TypeScriptGenerationReviewRegressionTests
             File.WriteAllText(Path.Combine(root, "assertion.ts"), """const result = <T>gql`query Read { value }`; const marker = "</T>";""");
             File.WriteAllText(Path.Combine(root, "view.tsx"), """const view = <div>Don't parse gql`query Fake { bad }` {gql`query Inside { value }`}</div>;""");
             var config = Path.Combine(root, "salep.json");
-            File.WriteAllText(config, """{"version":1,"target":"typescript","schema":"schema.graphql","documents":"*.{ts,tsx}"}""");
+            File.WriteAllText(config, System.Text.Json.JsonSerializer.Serialize(new { version = 1, target = "typescript", schema = "schema.graphql", documents = pattern }));
             TypeScriptGenerator.Generate(new(config));
             var generated = File.ReadAllText(Path.Combine(root, "Generated", "gql", "graphql.ts"));
             Assert.Contains("ReadDocument", generated);

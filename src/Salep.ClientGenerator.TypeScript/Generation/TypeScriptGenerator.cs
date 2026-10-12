@@ -27,7 +27,7 @@ public static class TypeScriptGenerator
         CheckProperties(config, ["version", "target", "schema", "documents", "output", "scalars", "templates", "fragmentMasking", "documentTags", "persistedOperations", "outputLayout", "clientSchema"]);
         if (config.GetProperty("version").GetInt32() != 1 || config.GetProperty("target").GetString() != "typescript")
             throw new InvalidDataException("Expected version 1 and target 'typescript'.");
-        string Resolve(string path) => Path.GetFullPath(GeneratorPathPolicy.Normalize(path), directory);
+        string Resolve(string path) => GeneratorPathPolicy.ResolvePath(path, directory);
         var schemaSources = TypeScriptSchemaLoader.Load(config.GetProperty("schema"), directory, paths, options.SchemaHttpClient);
         var clientSources = config.TryGetProperty("clientSchema", out var clientSchemaValue)
             ? TypeScriptSchemaLoader.Load(clientSchemaValue, directory, paths, options.SchemaHttpClient) : [];
@@ -319,16 +319,17 @@ public static class TypeScriptGenerator
 
     private static IEnumerable<string> Discover(string pattern, GeneratorPathPolicy paths)
     {
+        pattern = GeneratorPathPolicy.Normalize(pattern);
         paths.ReadPattern(pattern);
         if (File.Exists(pattern)) return [paths.Read(pattern)];
         if (Directory.Exists(pattern)) return Walk(pattern, paths).Where(file => Path.GetExtension(file) is ".graphql" or ".ts" or ".tsx");
         var wildcard = pattern.IndexOfAny(['*', '?']);
         if (wildcard < 0) throw new FileNotFoundException("Document input does not exist.", pattern);
         var separator = pattern.LastIndexOf('/', wildcard);
-        var root = pattern[..separator];
+        var root = pattern[..(separator + 1)];
         var matcher = new Microsoft.Extensions.FileSystemGlobbing.Matcher(StringComparison.Ordinal);
         matcher.AddInclude(pattern[(separator + 1)..]);
-        return Walk(root, paths).Where(file => matcher.Match(Path.GetRelativePath(root, file)).HasMatches);
+        return Walk(root, paths).Where(file => matcher.Match(GeneratorPathPolicy.Normalize(Path.GetRelativePath(root, file))).HasMatches);
     }
 
     private static IEnumerable<string> Walk(string root, GeneratorPathPolicy paths)

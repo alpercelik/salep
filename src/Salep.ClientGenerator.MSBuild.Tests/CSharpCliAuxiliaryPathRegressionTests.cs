@@ -82,8 +82,9 @@ public sealed class CSharpCliAuxiliaryPathRegressionTests
     [Fact]
     public void Preflight_protects_every_assembly_in_the_published_input_inventory_without_writing()
     {
-        using var fixture = new Fixture();
         var toolDirectory = Path.GetDirectoryName(typeof(ScribanGenerator).Assembly.Location)!;
+        // Manifest paths are relative: keep the fixture on the tool volume, wherever the OS temp folder lives.
+        using var fixture = new Fixture(toolDirectory);
         // Resolve hypothetical output paths within the tool boundary without publishing.
         fixture.WriteConfig(outputDirectory: Path.Combine(toolDirectory, "preflight-" + Guid.NewGuid().ToString("N")));
         var options = new ScribanGeneratorOptions(Path.Combine(fixture.Root, "salep.json"), AllowedReadRoots: [fixture.Root], SolutionDirectory: toolDirectory);

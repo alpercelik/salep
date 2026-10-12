@@ -32,6 +32,19 @@ public sealed class GeneratorPathPolicy
 
     public static string Normalize(string path) => path.Replace('\\', '/');
 
+    /// <summary>Rejects portable path aliases before the host filesystem can normalize them away.</summary>
+    public static string ResolvePath(string path, string baseDirectory)
+    {
+        var normalized = Normalize(path);
+        foreach (var segment in normalized.Split('/'))
+        {
+            if (segment is "." or "..") continue;
+            if (segment.EndsWith('.') || segment.EndsWith(' '))
+                throw new InvalidDataException($"Invalid portable path component '{segment}'.");
+        }
+        return Path.GetFullPath(normalized, baseDirectory);
+    }
+
     /// <summary>Resolves physical path identity for ownership comparisons without changing read/write boundaries.</summary>
     public static string PhysicalIdentity(string path) => PhysicalIdentity(path, new HashSet<string>(StringComparer.OrdinalIgnoreCase), 0);
 
@@ -98,7 +111,7 @@ public sealed class GeneratorPathPolicy
 
     private static string Check(string path, IReadOnlyList<string> roots, bool allowRoot)
     {
-        var full = Path.GetFullPath(Normalize(path));
+        var full = ResolvePath(path, Environment.CurrentDirectory);
         // Ordinal comparison deliberately fails closed on case-sensitive volumes, including macOS.
         foreach (var root in roots)
         {
