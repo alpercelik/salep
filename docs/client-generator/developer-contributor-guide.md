@@ -56,6 +56,8 @@ dotnet run --project src/Salep.ClientGenerator.Cli --framework net10.0 -- genera
 
 For complete package and sample verification, run `./build-salep.sh` or `pwsh ./build-salep.ps1`. The paired workflows test core/MSBuild on both frameworks, pack `Salep.ClientGenerator`, restore the exact version into samples, export the server schema, and run generated client/module tests plus server acceptance. Opinionated runs on .NET 10/11; MinimalDependencies and server acceptance run on .NET 11. Shared acceptance tests start Hot Chocolate in memory with Alba.
 
+Sample restores explicitly use the repository's `NuGet.config`, preserving the named feeds and source mappings in both shells. Keep feed URLs in that configuration rather than overriding them with `--source` in the dogfooding scripts.
+
 Package layout checks pack concurrently with separate `--artifacts-path` roots for restore, compilation and CLI staging. Keep `scriban_cli_publish` under the invocation’s intermediate output rather than a shared directory.
 
 For release verification, run `./scripts/pack-release.sh <version>` or `pwsh ./scripts/pack-release.ps1 <version>`, then `npm run packages:verify -- <version>` for fresh-cache consumers. Parser package compatibility uses `./scripts/verify-package-compatibility.sh` or `pwsh ./scripts/verify-package-compatibility.ps1`.
