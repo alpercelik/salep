@@ -115,6 +115,8 @@ The nearest `.sln`/`.slnx` folder is the boundary, falling back to the configura
 
 Configuration paths and document globs accept `/` and `\` separators on every platform. Components ending in a dot or space are rejected before filesystem resolution can turn them into aliases; `.` and `..` navigation remains subject to the boundary checks.
 
+Tracked sample output under `Generated/` and `MaskedGenerated/` is marked `-text` in `.gitattributes`. Ownership manifests hash exact bytes, so Git must preserve those bytes during checkout rather than converting line endings. Keep these attributes when copying the samples into another repository.
+
 ```bash
 ./scripts/verify-typescript.sh
 ./scripts/publish-typescript.sh osx-arm64
