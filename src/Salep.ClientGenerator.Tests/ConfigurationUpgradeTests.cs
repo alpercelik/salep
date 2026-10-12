@@ -147,7 +147,9 @@ public sealed class ConfigurationUpgradeTests : IDisposable
         var original = Client(1);
         File.WriteAllText(ConfigPath, original);
         Directory.CreateDirectory(Path.Combine(root, "Generated", "SchemaTypes.cs"));
-        Assert.ThrowsAny<IOException>(() => ScribanGenerator.Generate(Options()));
+        var error = Record.Exception(() => ScribanGenerator.Generate(Options()));
+        // Replacing a directory with a file reports different filesystem errors across platforms.
+        Assert.True(error is IOException or UnauthorizedAccessException, $"Expected a filesystem publication failure, got {error?.GetType().FullName ?? "no exception"}.");
         Assert.Equal(original, File.ReadAllText(ConfigPath));
         Assert.Empty(Directory.EnumerateFiles(root, "*.salep-upgrade-*", SearchOption.AllDirectories));
     }
