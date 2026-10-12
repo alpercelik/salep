@@ -37,7 +37,7 @@ public sealed class GeneratorInputValidationTests
     }
 
     [Theory]
-    [InlineData("version", "2")]
+    [InlineData("version", "3")]
     [InlineData("kind", "\"unknown\"")]
     [InlineData("namespace", "\"broken-name\"")]
     [InlineData("clientName", "\"123Client\"")]

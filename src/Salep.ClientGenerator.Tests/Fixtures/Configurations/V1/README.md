@@ -1,0 +1,1 @@
+These consumer configuration files are copied verbatim from the v0.1.0 tag, under src/samples/Opinionated/. Migration tests supply minimal GraphQL inputs and preserve all configuration values except the schema version.

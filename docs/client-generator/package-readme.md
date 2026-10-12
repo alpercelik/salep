@@ -8,13 +8,13 @@ Add the package to a project that owns the generated client:
 <PackageReference Include="Salep.ClientGenerator" Version="0.1.0" PrivateAssets="all" />
 ```
 
-Add a version-1 `salep.json` file with `kind` set to `client` or `tests`. The package imports its MSBuild targets automatically and runs generation before compilation. Generated application output has no Salep or Scriban runtime dependency.
+Add a version-2 `salep.json` file with `kind` set to `client` or `tests`. The package imports its MSBuild targets automatically and runs generation before compilation. Generated application output has no Salep or Scriban runtime dependency.
 
 Consumers can replace selected methods/properties or add members through empty extension hooks, as well as replace whole embedded templates by adding file paths to the `templates` object in the configuration. Paths are relative to that configuration, and omitted entries keep using the package's embedded templates:
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "kind": "client",
   "schema": "schema.graphql",
   "operations": "graphql",
@@ -44,6 +44,6 @@ Default operation queries are formatted multiline C# raw strings with native gen
 
 ## Upgrading from the Roslyn implementation
 
-Keep the `Salep.ClientGenerator` package reference and version-1 `salep.json` configuration. Regenerate base clients before modules and generated-test projects. The default tool verifies the previous Roslyn version-1 ownership manifest and rewrites its owned files with Scriban output; unrelated consumer files remain untouched. Tampered manifests and mismatched owners still fail. Previous Scriban configurations may keep their explicit filenames; set `SalepConfigFile` accordingly. The former `.salep-scriban.manifest.json` is upgraded to `.salep.manifest.json` during generation.
+Keep the `Salep.ClientGenerator` package reference and existing `salep.json` configuration. Generation automatically upgrades supported version-1 configs to version 2, preserving settings and formatting; validation does not rewrite them. Regenerate base clients before modules and generated-test projects. The default tool verifies the previous Roslyn version-1 ownership manifest and rewrites its owned files with Scriban output; unrelated consumer files remain untouched. Tampered manifests and mismatched owners still fail. Previous Scriban configurations may keep their explicit filenames; set `SalepConfigFile` accordingly. The former `.salep-scriban.manifest.json` is upgraded to `.salep.manifest.json` during generation.
 
 Shared inputs and outputs may reside within the detected solution boundary. Use `SalepSolutionDirectory` when automatic solution discovery is insufficient, and `SalepReadRoot` items for external read-only inputs. JSON configuration cannot grant filesystem permissions. See [filesystem boundaries](https://github.com/alpercelik/salep/blob/main/docs/client-generator/consumer-guide.md#filesystem-boundaries).

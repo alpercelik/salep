@@ -16,6 +16,8 @@ The generator directly references `src/Salep.GraphQLParser/Salep.GraphQLParser.c
 
 The Roslyn implementation and its sample projects have been retired. Scriban is the sole stable generator and retains the `Salep.ClientGenerator` package ID, `SalepConfig`/`SalepToolPath` MSBuild contract, `salep.json` and `.salep.manifest.json` names. Regeneration verifies and upgrades released version-1 ownership manifests, preserving unowned consumer files. Regenerate base clients before modules and tests during an upgrade.
 
+The C# configuration schema is version 2, adding template override mappings to the version-1 contract shipped in v0.1.0. Generation automatically upgrades supported older configs while validation remains read-only. This version is independent of the package and manifest versions; the separate TypeScript configuration schema remains version 1. See [configuration upgrades](client-generator/configuration.md#upgrading-consumer-configurations).
+
 `src/Salep.slnx` is the complete solution. `src/Salep.Core.slnf` selects the parser, generator, CLI, MSBuild, tests and parser benchmarks without samples. `Salep.GraphQLParser.PublicApiConsumer` stays outside both and runs only through the paired package verification scripts.
 
 Samples live under `src/samples/Opinionated/` and `src/samples/MinimalDependencies/`. Each owns its operation inputs. Both share `src/samples/Salep.Samples.GraphQLServer/`. Root build/package configuration supplies dependency versions. `build-salep.sh` and `build-salep.ps1` restore samples against the exact package version packed by that invocation.

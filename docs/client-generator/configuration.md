@@ -1,10 +1,18 @@
 # Configuration contracts
 
-Every configuration requires `version: 1` and an explicit `kind`. Unknown properties, duplicate keys, obsolete options, and wrong-role references fail validation. The [JSON schema](config.schema.json) is also included in the generator package.
+New configurations use `version: 2` and an explicit `kind`. Unknown properties, duplicate keys, obsolete options, and wrong-role references fail validation. The [JSON schema](config.schema.json) is also included in the generator package.
+
+## Upgrading consumer configurations
+
+The configuration schema version is separate from the NuGet package version and the output manifest version. The v0.1.0 package used configuration version 1. Configuration version 2 adds `templates` mappings for profiles, clients and tests; existing fields, defaults, scalar definitions and relative references are unchanged. TypeScript has a separate configuration contract, introduced after v0.1.0, which remains version 1.
+
+`generate` and normal MSBuild generation detect supported version-1 configs and rewrite their version to 2 after configuration, GraphQL and output-ownership checks succeed. The upgrader preserves all other bytes, including settings, whitespace, line endings, encoding and BOM. It uses atomic file replacement and records the upgraded bytes in the generated manifest. A publication failure restores any configs rewritten by that invocation. Already-current files are not rewritten. Unsupported future versions are rejected without modification.
+
+Profiles in the selected client's inheritance chain are upgraded too. A module or test project does not rewrite configurations tracked by its authoritative client: build base clients before modules and tests, as usual. External profiles granted through read-only roots remain version 1 and produce an informational log; upgrade them through generation in their owning solution. `validate`, `inputs` and tracking preflight accept version 1 but never upgrade files. This migration does not change source paths to match this repository's sample-folder renames or edit NuGet dependencies.
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "kind": "client",
   "schema": "./schema.graphql",
   "operations": "./graphql",
@@ -41,7 +49,7 @@ A separate test project references the generated client project and selects its 
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "kind": "tests",
   "client": "../MyService.Client/salep.json",
   "namespace": "MyService.Client.Tests",

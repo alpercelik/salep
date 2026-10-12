@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "kind": "client",
   "schema": "../../Salep.Samples.GraphQLServer/Generated/schema.graphql",
   "operations": "graphql",

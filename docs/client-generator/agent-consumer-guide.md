@@ -70,7 +70,7 @@ Place `salep.json` in the root of the consumer project directory:
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "kind": "client",
   "schema": "./schema.graphql",
   "operations": "./graphql",
@@ -190,7 +190,7 @@ When exploring or modifying a codebase consuming Salep:
 
 ## Consumer template overrides
 
-Use `Salep.ClientGenerator` with version-1 `salep.json`. The current package catalog has 73 embedded templates; prefer empty member/annotation/transport hooks or one declaration/method/property fragment before replacing a whole file. Map registered keys to files relative to the JSON declaring them; profiles and referenced-client test mappings inherit, and local matching keys replace inherited entries. Includes use registered keys, with `default:<key>` delegating to one embedded default. Arbitrary filesystem includes are unsupported.
+Use `Salep.ClientGenerator` with version-2 `salep.json`. The current package catalog has 73 embedded templates; prefer empty member/annotation/transport hooks or one declaration/method/property fragment before replacing a whole file. Map registered keys to files relative to the JSON declaring them; profiles and referenced-client test mappings inherit, and local matching keys replace inherited entries. Includes use registered keys, with `default:<key>` delegating to one embedded default. Arbitrary filesystem includes are unsupported.
 
 Export and validate with the package's framework-matched `Salep.ClientGenerator.Cli.dll` through `dotnet exec`; locate it with `SalepToolPath` on the restored project. Do not assume a globally installed `salep` tool or the former Scriban package ID. See [the customization tutorial](template-customization.md) and its [executable examples](examples/template-customization/README.md) for tested snippets, model scopes and rebuild checks.
 

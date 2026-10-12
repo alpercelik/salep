@@ -25,10 +25,11 @@ public sealed class ScribanConfigurationException(ScribanDiagnostic diagnostic)
 /// <summary>Result of validating or generating a Scriban configuration.</summary>
 public sealed record ScribanGeneratorResult(IReadOnlyList<string> GeneratedFiles, IReadOnlyList<string> Logs);
 
-/// <summary>Resolves version-one configuration, renders Scriban-backed output, and publishes owned files.</summary>
+/// <summary>Resolves configuration, upgrades supported older versions, and publishes Scriban-backed owned files.</summary>
 public static class ScribanGenerator
 {
     public const string ManifestFileName = ".salep.manifest.json";
+    public const int ConfigurationVersion = 2;
 
     public static ScribanGeneratorResult Validate(ScribanGeneratorOptions options)
     {
@@ -42,9 +43,9 @@ public static class ScribanGenerator
     {
         var plan = Prepare(options);
         if (plan.Configuration.Kind == "profile") throw Error("SALEPS1004", plan.Configuration.ConfigurationPath, "kind", "Profiles provide defaults and cannot generate output.", "Select a client or tests configuration.");
-        Publish(plan);
+        var upgradeLogs = Publish(plan);
         return new(plan.Outputs.Keys.Select(name => GeneratorPathPolicy.Normalize(Path.Combine(plan.Configuration.Output, name))).ToArray(),
-            [$"Generated {plan.Outputs.Count} files from '{GeneratorPathPolicy.Normalize(plan.Configuration.ConfigurationPath)}'.", $"Manifest: {GeneratorPathPolicy.Normalize(Path.Combine(plan.Configuration.Output, ManifestFileName))}"]);
+            [..upgradeLogs, $"Generated {plan.Outputs.Count} files from '{GeneratorPathPolicy.Normalize(plan.Configuration.ConfigurationPath)}'.", $"Manifest: {GeneratorPathPolicy.Normalize(Path.Combine(plan.Configuration.Output, ManifestFileName))}"]);
     }
 
     /// <summary>Returns configuration, schema, operation, and currently owned output paths for build tracking.</summary>
@@ -357,7 +358,7 @@ public static class ScribanGenerator
                     if (!available.Contains(Path.GetFullPath(dependency)))
                         throw Error("SALEPS3002", path, "projectReference", $"Base client '{GeneratorPathPolicy.Normalize(dependency)}' is not available through the project-reference chain.", "Add the appropriate ProjectReference; Scriban does not modify project files.");
             }
-            return new(resolved, outputs, inputs, manifest, paths);
+            return new(resolved, outputs, inputs, manifest, paths) { DependencyInputs = baseClientPlan?.Inputs.Keys.ToArray() ?? [] };
         }
         catch (ScribanConfigurationException) { throw; }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException or FormatException or global::Scriban.Syntax.ScriptRuntimeException)
@@ -466,37 +467,81 @@ public static class ScribanGenerator
         }
     }
 
-    private static void Publish(Plan plan)
+    private static IReadOnlyList<string> Publish(Plan plan)
     {
         CheckOutputPaths(plan);
         Directory.CreateDirectory(plan.Configuration.Output);
         var lockPath = Path.Combine(plan.Configuration.Output, ".salep.lock");
         using var guard = AcquireLock(lockPath);
         CheckOwnership(plan, lockHeld: true);
-        var manifestPath = Path.Combine(plan.Configuration.Output, ManifestFileName);
-        var previous = ReadManifest(manifestPath, plan.Configuration.ConfigurationPath, plan.Paths, required: false, lockHeld: true, verifyOutputs: false);
-        var manifest = CreateManifest(plan).Serialize();
-        var stage = Path.Combine(plan.Configuration.Output, ".salep-stage-" + Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(stage);
+        var applied = new List<ConfigurationUpgrade>();
+        var logs = new List<string>();
         try
         {
-            foreach (var file in plan.Outputs) File.WriteAllText(Path.Combine(stage, file.Key), file.Value, new UTF8Encoding(false));
-            File.WriteAllText(Path.Combine(stage, ManifestFileName), manifest, new UTF8Encoding(false));
-            foreach (var file in plan.Outputs)
+            foreach (var file in plan.Configuration.ConfigurationFiles.Where(file => !plan.DependencyInputs.Contains(file, PathComparer)))
             {
-                var destination = Path.Combine(plan.Configuration.Output, file.Key);
-                if (!File.Exists(destination) || File.ReadAllText(destination) != file.Value)
-                    File.Move(Path.Combine(stage, file.Key), destination, true);
+                var upgrade = ConfigurationUpgrade.Read(file);
+                if (upgrade is null) continue;
+                if (Convert.ToHexString(SHA256.HashData(upgrade.Original)) != plan.Inputs[file])
+                    throw new IOException($"Configuration changed after validation: '{file}'. Rerun generation.");
+                try { plan.Paths.Write(file); }
+                catch (InvalidDataException)
+                {
+                    logs.Add($"Using version 1 read-only configuration '{GeneratorPathPolicy.Normalize(file)}'; upgrade it in its owning solution.");
+                    continue;
+                }
+                if (upgrade.Apply())
+                {
+                    applied.Add(upgrade);
+                    logs.Add($"Upgraded configuration '{GeneratorPathPolicy.Normalize(file)}' from version 1 to {ConfigurationVersion}.");
+                }
             }
-            if (previous is not null)
-                foreach (var oldFile in previous.Files.Keys.Where(name => !plan.Outputs.ContainsKey(name)))
-                    File.Delete(Path.Combine(plan.Configuration.Output, oldFile));
-            if (!File.Exists(manifestPath) || File.ReadAllText(manifestPath) != manifest)
-                File.Move(Path.Combine(stage, ManifestFileName), manifestPath, true);
-            if (previous is not null && previous.SourceManifestPath != manifestPath)
-                File.Delete(previous.SourceManifestPath);
+            // The migration changes no settings. Fingerprint the new bytes without re-rendering,
+            // accepting only our upgrades or the identical upgrade completed while we waited.
+            var inputs = plan.Inputs.ToDictionary(pair => pair.Key, pair => pair.Value, PathComparer);
+            foreach (var file in plan.Configuration.ConfigurationFiles)
+            {
+                var hash = HashFile(file);
+                if (hash == inputs[file]) continue;
+                var previousVersion = ConfigurationUpgrade.Read(file, targetVersion: 1);
+                if (previousVersion is null || Convert.ToHexString(SHA256.HashData(previousVersion.Updated)) != inputs[file])
+                    throw new IOException($"Configuration changed after validation: '{file}'. Rerun generation.");
+                inputs[file] = hash;
+            }
+            plan = plan with { Inputs = inputs, Manifest = (plan.Manifest with { Inputs = inputs }).Seal() };
+            CheckOutputPaths(plan);
+            CheckOwnership(plan, lockHeld: true);
+            var manifestPath = Path.Combine(plan.Configuration.Output, ManifestFileName);
+            var previous = ReadManifest(manifestPath, plan.Configuration.ConfigurationPath, plan.Paths, required: false, lockHeld: true, verifyOutputs: false);
+            var manifest = CreateManifest(plan).Serialize();
+            var stage = Path.Combine(plan.Configuration.Output, ".salep-stage-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(stage);
+            try
+            {
+                foreach (var file in plan.Outputs) File.WriteAllText(Path.Combine(stage, file.Key), file.Value, new UTF8Encoding(false));
+                File.WriteAllText(Path.Combine(stage, ManifestFileName), manifest, new UTF8Encoding(false));
+                foreach (var file in plan.Outputs)
+                {
+                    var destination = Path.Combine(plan.Configuration.Output, file.Key);
+                    if (!File.Exists(destination) || File.ReadAllText(destination) != file.Value)
+                        File.Move(Path.Combine(stage, file.Key), destination, true);
+                }
+                if (previous is not null)
+                    foreach (var oldFile in previous.Files.Keys.Where(name => !plan.Outputs.ContainsKey(name)))
+                        File.Delete(Path.Combine(plan.Configuration.Output, oldFile));
+                if (!File.Exists(manifestPath) || File.ReadAllText(manifestPath) != manifest)
+                    File.Move(Path.Combine(stage, ManifestFileName), manifestPath, true);
+                if (previous is not null && previous.SourceManifestPath != manifestPath)
+                    File.Delete(previous.SourceManifestPath);
+            }
+            finally { Directory.Delete(stage, true); }
+            return logs;
         }
-        finally { Directory.Delete(stage, true); }
+        catch
+        {
+            foreach (var upgrade in applied.AsEnumerable().Reverse()) upgrade.Rollback();
+            throw;
+        }
     }
 
     private static Manifest? ReadManifest(string path, string configuration, GeneratorPathPolicy readPaths, bool required, bool lockHeld = false, bool verifyOutputs = true)
@@ -672,12 +717,19 @@ public static class ScribanGenerator
         }
     }
 
-    private static string HashFile(string path) => Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path)));
+    private static string HashFile(string path)
+    {
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
+        return Convert.ToHexString(SHA256.HashData(stream));
+    }
     private static string Hash(string text) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text)));
     private static StringComparer PathComparer => OperatingSystem.IsWindows() || OperatingSystem.IsMacOS() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
     private static ScribanConfigurationException Error(string code, string path, string property, string message, string guidance = "Correct the configuration and rerun 'salep validate'.") => new(new(code, GeneratorPathPolicy.Normalize(path), property, message, guidance));
 
-    private sealed record Plan(Config Configuration, IReadOnlyDictionary<string, string> Outputs, IReadOnlyDictionary<string, string> Inputs, Manifest Manifest, GeneratorPathPolicy Paths);
+    private sealed record Plan(Config Configuration, IReadOnlyDictionary<string, string> Outputs, IReadOnlyDictionary<string, string> Inputs, Manifest Manifest, GeneratorPathPolicy Paths)
+    {
+        public IReadOnlyCollection<string> DependencyInputs { get; init; } = [];
+    }
 
     private sealed record Manifest
     {
@@ -754,8 +806,8 @@ public static class ScribanGenerator
                 using var document = ReadDocument(path);
                 var root = document.RootElement;
                 if (root.ValueKind != JsonValueKind.Object) throw Error("SALEPS1001", path, "$", "Expected a JSON object.");
-                if (!root.TryGetProperty("version", out var version) || version.ValueKind != JsonValueKind.Number || !version.TryGetInt32(out var versionNumber) || versionNumber != 1)
-                    throw Error("SALEPS1001", path, "version", "Expected configuration version 1.");
+                if (!root.TryGetProperty("version", out var version) || version.ValueKind != JsonValueKind.Number || !version.TryGetInt32(out var versionNumber) || versionNumber is not (1 or ConfigurationVersion))
+                    throw Error("SALEPS1001", path, "version", $"Expected configuration version {ConfigurationVersion} (or upgradeable version 1).");
                 var kind = GetString(root, "kind", path) ?? throw Error("SALEPS1001", path, "kind", "A kind is required.");
                 if (kind is not ("profile" or "client" or "tests")) throw Error("SALEPS1001", path, "kind", $"Unknown kind '{kind}'.");
                 var settingNames = new[] { "unionRepresentation", "scalarPreset", "scalars", "omitUnusedVariables", "inlineDefaultVariables", "useHttpGet", "enableBatching", "maxGetUrlLength", "indentSize", "templates" };
@@ -921,7 +973,12 @@ public static class ScribanGenerator
 
         private static JsonDocument ReadDocument(string path)
         {
-            try { return JsonDocument.Parse(File.ReadAllText(path)); }
+            try
+            {
+                using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
+                using var reader = new StreamReader(stream);
+                return JsonDocument.Parse(reader.ReadToEnd());
+            }
             catch (JsonException exception) { throw Error("SALEPS1001", path, "$", exception.Message); }
             catch (IOException exception) { throw Error("SALEPS1001", path, "$", exception.Message); }
         }

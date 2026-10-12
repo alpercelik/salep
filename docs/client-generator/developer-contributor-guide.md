@@ -23,7 +23,7 @@ Scriban is the sole stable generator. Applications reference runtime dependencie
 ## Generation flow
 
 ```text
-GraphQL SDL + operations + version-1 JSON configuration
+GraphQL SDL + operations + version-2 JSON configuration
   -> Salep.GraphQLParser syntax trees
   -> source-mapped GraphQlModelFactory models and GraphQlDocumentValidator
   -> response projection
