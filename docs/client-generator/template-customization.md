@@ -1,6 +1,6 @@
 # Customize generated code through Scriban
 
-`Salep.ClientGenerator` generates C# through 73 embedded Scriban templates: fourteen whole-output templates, plus declarations, methods, properties, test cases and empty extension hooks. Add a `templates` mapping to your existing version-1 `salep.json` and override only the pieces you need. Unspecified keys retain their defaults.
+`Salep.ClientGenerator` generates C# through 73 embedded Scriban templates: fourteen whole-output templates, plus declarations, methods, properties, test cases and empty extension hooks. Add a `templates` mapping to your existing version-2 `salep.json` and override only the pieces you need. Unspecified keys retain their defaults.
 
 These features describe the package built from this revision. Use a release containing composable templates or a package built from this checkout; installing an older published version does not add the new fragment keys. The package ID is `Salep.ClientGenerator`. The former `Salep.ClientGenerator.Scriban` ID is no longer produced, and Scriban is the sole stable generator.
 
@@ -29,7 +29,7 @@ In the project that references `Salep.ClientGenerator` with `PrivateAssets="all"
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "kind": "client",
   "schema": "schema.graphql",
   "operations": "graphql",
@@ -211,7 +211,7 @@ A profile at `profile/templates.json` can declare:
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "kind": "profile",
   "templates": {
     "client.members": "../templates/client-members.scriban-cs",
@@ -226,7 +226,7 @@ For generated tests, use a separate configuration:
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "kind": "tests",
   "client": "salep.json",
   "namespace": "Example.Api.Tests",

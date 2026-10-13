@@ -15,11 +15,11 @@ The generated client projects reference only their chosen C# runtime dependencie
 
 ## Configuration
 
-The default backend reads version-1 JSON client and tests configurations. Clients preserve the version-1 configuration contract: clients select a schema, operation files, namespace, output, profile settings, and optional `baseClient`; tests configurations select a client and test suites. Scriban writes its own output manifest so it can validate and remove only files it owns.
+The default backend reads version-2 JSON client and tests configurations and automatically upgrades version-1 configs during generation. Clients select a schema, operation files, namespace, output, profile settings, and optional `baseClient`; tests configurations select a client and test suites. Version 2 adds template overrides without renaming existing settings or changing defaults. Scriban writes its own output manifest so it can validate and remove only files it owns.
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "kind": "client",
   "schema": "schema.graphql",
   "operations": "graphql",

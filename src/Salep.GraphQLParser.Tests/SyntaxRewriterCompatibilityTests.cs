@@ -25,7 +25,7 @@ public sealed class SyntaxRewriterCompatibilityTests
         var unchanged = SyntaxRewriter.Create<object>((node, _) => node).Rewrite(document, new object());
         Assert.Same(document, unchanged);
 
-        var rewriter = SyntaxRewriter.Create<object>((node, _) => node is NameNode name && name.Value == "a"
+        var rewriter = SyntaxRewriter.Create<object>((node, _) => node is NameNode { Value: "a" } name
             ? new NameNode("x".AsMemory(), name.Location)
             : node);
         var rewritten = rewriter.Rewrite(document);
@@ -53,7 +53,7 @@ public sealed class SyntaxRewriterCompatibilityTests
     {
         var source = new SourceText("{ a b }".AsMemory());
         var document = GraphQLParser.Parse(source, new GraphQLParserOptions(noLocation: true));
-        var rewriter = SyntaxRewriter.Create<object>((node, _) => node is NameNode name && name.Value == "a"
+        var rewriter = SyntaxRewriter.Create<object>((node, _) => node is NameNode { Value: "a" } name
             ? new NameNode("x".AsMemory(), (SourceLocation)name.Location)
             : node);
 
@@ -71,7 +71,7 @@ public sealed class SyntaxRewriterCompatibilityTests
     public void RewriterUpdatesSchemaTreeNamesWithoutMutatingTheOriginal()
     {
         var document = GraphQLParser.Parse(new SourceText("type A { f: Int }".AsMemory()));
-        var rewriter = SyntaxRewriter.Create<object>((node, _) => node is NameNode name && name.Value == "A"
+        var rewriter = SyntaxRewriter.Create<object>((node, _) => node is NameNode { Value: "A" } name
             ? new NameNode("B".AsMemory(), name.Location)
             : node);
 

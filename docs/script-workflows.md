@@ -40,6 +40,12 @@ The parser package consumer is excluded from `src/Salep.slnx` and `src/Salep.Cor
 
 `./build-salep.sh` and `pwsh ./build-salep.ps1` test the generator/MSBuild projects, pack `Salep.ClientGenerator`, restore exact-version samples and run generated tests plus server acceptance. The core suite preserves 69 fixed contract fixtures, the complete configuration matrix, seeded compilation cases and transport regressions. After `./scripts/pack-release.sh <version>` or `pwsh ./scripts/pack-release.ps1 <version>`, run `npm run packages:verify -- <version>` for isolated .NET 10/11 consumers, template customization and incremental lifecycle checks. See [generator contracts](client-generator/generator-parity.md).
 
+Both dogfooding scripts restore samples with the repository's absolute `NuGet.config` path. This preserves the named `local` and `nuget.org` feeds and their package-source mappings on every platform, without passing feed URLs through command-line path normalization. Feed paths resolve relative to the configuration file, so either invocation works from another current directory.
+
 The `Generator verification` pull-request workflow runs Linux/Bash and Windows/Windows PowerShell gates. Local PowerShell execution does not prove Windows execution. Configure both OS jobs as required branch-protection checks before release. Release scripts produce only `Salep.GraphQLParser` and `Salep.ClientGenerator`.
 
 The sample workflows build `src/samples/Opinionated/` and `src/samples/MinimalDependencies/` directly. Their `Directory.Build.props` and `Directory.Packages.props` are shared from `src/samples/`; sample project names use `Salep.Samples.<Profile>.<Role>`.
+
+## TypeScript client generation
+
+`./scripts/verify-typescript.sh` and `pwsh ./scripts/verify-typescript.ps1` regenerate and test the Node sample with its locked npm dependencies. `./scripts/publish-typescript.sh <RID> [output-directory]` and `pwsh ./scripts/publish-typescript.ps1 <RID> [output-directory]` produce a self-contained single-file executable. Paths resolve from each script location; npm commands use an explicit sample prefix. See [TypeScript usage and distribution](typescript-client-generator/README.md).

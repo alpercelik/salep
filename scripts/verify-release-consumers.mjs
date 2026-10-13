@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -15,7 +15,7 @@ const packageDirectory = path.resolve(root, directory ?? `artifacts/release/${ve
 for (const id of ['Salep.ClientGenerator', 'Salep.GraphQLParser']) {
   if (!existsSync(path.join(packageDirectory, `${id}.${version}.nupkg`))) throw new Error(`Missing ${id} release package.`);
 }
-const scratch = mkdtempSync(path.join(os.tmpdir(), 'salep-release-consumers-'));
+const scratch = realpathSync(mkdtempSync(path.join(os.tmpdir(), 'salep-release-consumers-')));
 const escapeXml = value => value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 function dotnet(args) {
   const result = spawnSync('dotnet', args, {
@@ -110,6 +110,10 @@ sealed class RecordingHandler : HttpMessageHandler {
     const packages = Object.entries(assets.libraries).filter(([, value]) => value.type === 'package').map(([key]) => key);
     if (packages.length !== 1 || packages[0] !== `${expectedId}/${version}`) throw new Error(`Unexpected dependencies: ${packages}`);
     if (folder === scriban) {
+      if (JSON.parse(readFileSync(path.join(folder, 'salep.json'), 'utf8')).version !== 2) {
+        throw new Error('Packed generator did not automatically upgrade the version-1 consumer configuration.');
+      }
+      console.log('Salep.ClientGenerator: version-1 consumer config automatically upgraded to version 2');
       const packageRoot = path.join(scratch, 'packages', 'salep.clientgenerator', version);
       for (const framework of ['net10.0', 'net11.0']) {
         const tools = path.join(packageRoot, 'tools', framework, 'any');

@@ -4,7 +4,7 @@ Profiles share settings; client references share already-generated contracts. Th
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "kind": "profile",
   "schema": "./schema.graphql",
   "unionRepresentation": "dunet"
@@ -13,7 +13,7 @@ Profiles share settings; client references share already-generated contracts. Th
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "kind": "client",
   "profile": "../shared/profile.json",
   "baseClient": "../Base.Client/salep.json",

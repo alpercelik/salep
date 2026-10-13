@@ -138,7 +138,7 @@ public sealed class ScribanGeneratorTests
     {
         using var fixture = new GeneratorFixture();
         File.WriteAllText(Path.Combine(fixture.Root, "schema.graphql"),
-            "directive @mark on OBJECT | QUERY type Query @mark @mark @mark @mark @mark { hello: String! bye: String! }");
+            "directive @mark repeatable on OBJECT | QUERY type Query @mark @mark @mark @mark @mark { hello: String! bye: String! }");
         var operations = Path.Combine(fixture.Root, "graphql");
         Directory.CreateDirectory(operations);
         File.WriteAllText(Path.Combine(operations, "hello.graphql"), "query Hello @mark @mark @mark @mark @mark { hello }");

@@ -41,6 +41,9 @@ public sealed class GeneratorPathSecurityTests : IDisposable
     [InlineData("output", "CON/generated")]
     [InlineData("output", "Generated:stream")]
     [InlineData("output", "directory./generated")]
+    [InlineData("output", "directory /generated")]
+    [InlineData("output", "directory.\\generated")]
+    [InlineData("schema", "directory./schema.graphql")]
     [InlineData("schema", "../shared/schema.graphql")]
     [InlineData("operations", "../shared/**/*.graphql")]
     [InlineData("operations", "graphql/*/../../shared/*.graphql")]
@@ -52,6 +55,16 @@ public sealed class GeneratorPathSecurityTests : IDisposable
         Assert.Throws<ScribanConfigurationException>(() => ScribanGenerator.Generate(new("salep.json", Project)));
         Assert.False(Directory.Exists(Path.Combine(Project, "Generated")));
         Assert.False(Directory.Exists(Path.Combine(Shared, "generated")));
+    }
+
+    [Theory]
+    [InlineData("directory./generated")]
+    [InlineData("directory /generated")]
+    [InlineData("directory.\\generated")]
+    public void Portable_path_aliases_are_rejected_before_filesystem_resolution(string path)
+    {
+        Assert.Throws<InvalidDataException>(() => GeneratorPathPolicy.ResolvePath(path, Project));
+        Assert.Throws<InvalidDataException>(() => new GeneratorPathPolicy(Project).Write(Path.Combine(Project, path)));
     }
 
     [Fact]

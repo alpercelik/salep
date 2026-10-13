@@ -161,7 +161,7 @@ public sealed class IntegrationContractTests
         Assert.Contains("ExecuteIncrementalAsync", File.ReadAllText(output), StringComparison.Ordinal);
         var inputList = Path.Combine(fixture.Root, "obj", "Debug", "net10.0", "salep.inputs.txt");
         Assert.Contains(File.ReadAllLines(inputList), input =>
-            input.EndsWith(Path.DirectorySeparatorChar + Path.GetFileName(fixture.Root) + Path.DirectorySeparatorChar + Path.GetFileName(fragment), StringComparison.Ordinal)
+            input.EndsWith("/" + Path.GetFileName(fixture.Root) + "/" + Path.GetFileName(fragment), StringComparison.Ordinal)
             && File.ReadAllText(input) == File.ReadAllText(fragment));
         var unchanged = BuildFixture(fixture.Root, noRestore: true);
         Assert.True(unchanged.ExitCode == 0, unchanged.Output);

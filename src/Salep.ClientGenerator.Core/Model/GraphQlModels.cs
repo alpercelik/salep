@@ -1,7 +1,10 @@
 namespace Salep.ClientGenerator.Model;
 
 /// <summary>A language-neutral source span from a GraphQL document.</summary>
-public sealed record GraphQlSourceSpan(int Start, int End, int Line, int Column, bool HasLocation);
+public sealed record GraphQlSourceSpan(int Start, int End, int Line, int Column, bool HasLocation, string? SourceName = null)
+{
+    public string Diagnostic(string message) => SourceName is null ? $"{message} (line {Line}, column {Column})" : $"{SourceName}({Line},{Column}): {message}";
+}
 
 /// <summary>Base type for all GraphQL type references.</summary>
 public abstract record GraphQlTypeReference(GraphQlSourceSpan Source)
@@ -220,7 +223,8 @@ public sealed record GraphQlResponseFieldProjection(
     string GraphQlFieldName,
     GraphQlTypeReference? Type,
     IReadOnlyList<GraphQlResponseProjection> Variants,
-    GraphQlSourceSpan Source);
+    GraphQlSourceSpan Source,
+    bool IsConditional = false);
 
 /// <summary>A reusable fragment definition.</summary>
 public sealed record GraphQlFragmentDefinition(

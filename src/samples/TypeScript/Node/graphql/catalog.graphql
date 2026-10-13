@@ -1,0 +1,19 @@
+fragment BookSummary on Book { id title }
+query ReadBook($id: ID!) { selected: book(id: $id) { ...BookSummary published authors } }
+query SearchCatalog($filter: BookFilter) {
+  search(filter: $filter) {
+    ... on Book { ...BookSummary }
+    ... on Author { id name }
+  }
+}
+mutation RenameBook($id: ID!, $title: String!) {
+  renameBook(id: $id, title: $title) { ...BookSummary }
+}
+
+query LookupEntry($id: ID!) {
+  entry(id: $id) {
+    id
+    ... on Book { title }
+    ... on Author { name }
+  }
+}

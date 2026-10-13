@@ -59,7 +59,7 @@ public sealed class DeterministicParserFuzzTests
         {
             var result = GraphQLParser.ParseWithDiagnostics(new SourceText(source.AsMemory()));
             if (shouldBeValid && !result.Success) return "valid generated input produced diagnostics";
-            if (!shouldBeValid && !result.Success && result.Diagnostics.Count == 0) return "invalid input produced no diagnostic";
+            if (!shouldBeValid && result is { Success: false, Diagnostics.Count: 0 }) return "invalid input produced no diagnostic";
             if (result.Diagnostics.Count > GraphQLParser.MaximumDiagnosticCount) return "diagnostic limit exceeded";
             foreach (var diagnostic in result.Diagnostics)
             {

@@ -126,7 +126,7 @@ public sealed partial class GeneratorContractTests
             interface Node { id: ID! }
             extend interface Node implements Entity { label: String }
             type Item { id: ID! label: String }
-            extend type Item implements Node { added: Int! }
+            extend type Item implements Node & Entity { added: Int! }
             type Other { name: String! }
             union Selection = Item
             extend union Selection = Other

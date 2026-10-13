@@ -60,7 +60,7 @@ public sealed class CSharpResponseSampleJsonFactory(GraphQlSchemaModel schema, C
             {
                 var fields = selected.Fields.Select(child => JsonSerializer.Serialize(child.ResponseName) + ":" +
                     FieldValue(child, selected.GraphQlTypeName, depth + 1)).ToList();
-                if (!selected.Fields.Any(child => child.GraphQlFieldName == "__typename" && child.ResponseName == "__typename"))
+                if (!selected.Fields.Any(child => child is { GraphQlFieldName: "__typename", ResponseName: "__typename" }))
                 {
                     fields.Insert(0, "\"__typename\":" + JsonSerializer.Serialize(selected.GraphQlTypeName));
                 }

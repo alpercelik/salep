@@ -63,7 +63,7 @@ public sealed class LanguageUtilityTests
         Assert.True(GraphQLAstVisitor.Visit(document, node =>
         {
             entered.Add(node.AstKind);
-            return node is FieldNode field && field.Name.SourceValue.Span.SequenceEqual("second")
+            return node is FieldNode { Name.SourceValue.Span: "second" }
                 ? GraphQLVisitControl.SkipChildren
                 : GraphQLVisitControl.Continue;
         }, node =>

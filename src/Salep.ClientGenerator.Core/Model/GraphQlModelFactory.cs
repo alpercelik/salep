@@ -2,11 +2,28 @@ using Salep.GraphQLParser;
 
 namespace Salep.ClientGenerator.Model;
 
-/// <summary>Builds immutable, language-neutral models from Salep GraphQL parser documents.</summary>
+/// <summary>Builds neutral models with optional source mapping for embedded documents.</summary>
 public static class GraphQlModelFactory
 {
+    public static GraphQlSchemaModel CreateSchema(DocumentNode document) => CreateSchema(document, null);
+    public static GraphQlSchemaModel CreateSchema(DocumentNode document, Func<GraphQlSourceSpan, GraphQlSourceSpan>? sourceMap)
+        => new GraphQlModelProjection(sourceMap).CreateSchema(document);
+    public static GraphQlExecutableDocument CreateExecutable(IEnumerable<DocumentNode> documents) => CreateExecutable(documents, null);
+    public static GraphQlExecutableDocument CreateExecutable(IEnumerable<DocumentNode> documents, Func<GraphQlSourceSpan, GraphQlSourceSpan>? sourceMap)
+        => new GraphQlModelProjection(sourceMap).CreateExecutable(documents);
+    public static GraphQlExecutableDocument CreateExecutable(GraphQlSchemaModel schema, IEnumerable<DocumentNode> documents) => CreateExecutable(schema, documents, null);
+    public static GraphQlExecutableDocument CreateExecutable(GraphQlSchemaModel schema, IEnumerable<DocumentNode> documents, Func<GraphQlSourceSpan, GraphQlSourceSpan>? sourceMap)
+        => new GraphQlModelProjection(sourceMap).CreateExecutable(schema, documents);
+    public static GraphQlTypeReference Type(ITypeNode type) => Type(type, null);
+    public static GraphQlTypeReference Type(ITypeNode type, Func<GraphQlSourceSpan, GraphQlSourceSpan>? sourceMap)
+        => new GraphQlModelProjection(sourceMap).Type(type);
+}
+
+/// <summary>Builds immutable, language-neutral models from Salep GraphQL parser documents.</summary>
+internal sealed class GraphQlModelProjection(Func<GraphQlSourceSpan, GraphQlSourceSpan>? map = null)
+{
     /// <summary>Projects schema definitions and extensions without adding target-language decisions.</summary>
-    public static GraphQlSchemaModel CreateSchema(DocumentNode document)
+    public GraphQlSchemaModel CreateSchema(DocumentNode document)
     {
         ArgumentNullException.ThrowIfNull(document);
         var types = new List<GraphQlSchemaType>();
@@ -70,7 +87,7 @@ public static class GraphQlModelFactory
     }
 
     /// <summary>Projects operations and fragments from one or more executable documents.</summary>
-    public static GraphQlExecutableDocument CreateExecutable(IEnumerable<DocumentNode> documents)
+    public GraphQlExecutableDocument CreateExecutable(IEnumerable<DocumentNode> documents)
     {
         ArgumentNullException.ThrowIfNull(documents);
         var operations = new List<GraphQlOperationDefinition>();
@@ -99,7 +116,7 @@ public static class GraphQlModelFactory
     }
 
     /// <summary>Projects executable documents and expands their response projections against a schema.</summary>
-    public static GraphQlExecutableDocument CreateExecutable(GraphQlSchemaModel schema, IEnumerable<DocumentNode> documents)
+    public GraphQlExecutableDocument CreateExecutable(GraphQlSchemaModel schema, IEnumerable<DocumentNode> documents)
     {
         ArgumentNullException.ThrowIfNull(schema);
         var executable = CreateExecutable(documents);
@@ -113,7 +130,7 @@ public static class GraphQlModelFactory
     }
 
     /// <summary>Converts a parser type reference to named/list/non-null language-neutral wrappers.</summary>
-    public static GraphQlTypeReference Type(ITypeNode type)
+    public GraphQlTypeReference Type(ITypeNode type)
     {
         ArgumentNullException.ThrowIfNull(type);
         return type switch
@@ -125,21 +142,21 @@ public static class GraphQlModelFactory
         };
     }
 
-    private static IReadOnlyList<GraphQlFieldDefinition> Fields(IEnumerable<FieldDefinitionNode> fields)
+    private IReadOnlyList<GraphQlFieldDefinition> Fields(IEnumerable<FieldDefinitionNode> fields)
         => fields.Select(field => new GraphQlFieldDefinition(field.Name.Value, Description(field.Description), InputValues(field.Arguments),
             Type(field.Type), Directives(field.Directives), Span(field))).ToArray();
 
-    private static IReadOnlyList<GraphQlInputValueDefinition> InputValues(IEnumerable<InputValueDefinitionNode> values)
+    private IReadOnlyList<GraphQlInputValueDefinition> InputValues(IEnumerable<InputValueDefinitionNode> values)
         => values.Select(value => new GraphQlInputValueDefinition(value.Name.Value, Description(value.Description), Type(value.Type),
             Value(value.DefaultValue), Directives(value.Directives), Span(value))).ToArray();
 
-    private static IReadOnlyList<GraphQlEnumValueDefinition> EnumValues(IEnumerable<EnumValueDefinitionNode> values)
+    private IReadOnlyList<GraphQlEnumValueDefinition> EnumValues(IEnumerable<EnumValueDefinitionNode> values)
         => values.Select(value => new GraphQlEnumValueDefinition(value.Name.Value, Description(value.Description), Directives(value.Directives), Span(value))).ToArray();
 
-    private static IReadOnlyList<GraphQlRootOperation> RootOperations(IEnumerable<OperationTypeDefinitionNode> values)
+    private IReadOnlyList<GraphQlRootOperation> RootOperations(IEnumerable<OperationTypeDefinitionNode> values)
         => values.Select(value => new GraphQlRootOperation(OperationName(value.Operation), value.Type.Name.Value, Span(value))).ToArray();
 
-    private static string OperationName(OperationType operation) => operation switch
+    private string OperationName(OperationType operation) => operation switch
     {
         OperationType.Query => "query",
         OperationType.Mutation => "mutation",
@@ -147,23 +164,23 @@ public static class GraphQlModelFactory
         _ => throw new ArgumentOutOfRangeException(nameof(operation), operation, "Unknown GraphQL operation type.")
     };
 
-    private static IReadOnlyList<string> Names(IEnumerable<NamedTypeNode> values) => values.Select(value => value.Name.Value).ToArray();
-    private static IReadOnlyList<string> Names(IEnumerable<NameNode> values) => values.Select(value => value.Value.ToString()).ToArray();
+    private IReadOnlyList<string> Names(IEnumerable<NamedTypeNode> values) => values.Select(value => value.Name.Value).ToArray();
+    private IReadOnlyList<string> Names(IEnumerable<NameNode> values) => values.Select(value => value.Value.ToString()).ToArray();
 
-    private static IReadOnlyList<GraphQlDirective> Directives(IEnumerable<DirectiveNode> directives)
+    private IReadOnlyList<GraphQlDirective> Directives(IEnumerable<DirectiveNode> directives)
         => directives.Select(directive => new GraphQlDirective(directive.Name.Value, Arguments(directive.Arguments), Span(directive))).ToArray();
 
-    private static IReadOnlyList<GraphQlArgument> Arguments(IEnumerable<ArgumentNode> arguments)
+    private IReadOnlyList<GraphQlArgument> Arguments(IEnumerable<ArgumentNode> arguments)
         => arguments.Select(argument => new GraphQlArgument(argument.Name.Value, Value(argument.Value)!, Span(argument))).ToArray();
 
-    private static GraphQlVariableDefinition Variable(VariableDefinitionNode variable)
+    private GraphQlVariableDefinition Variable(VariableDefinitionNode variable)
         => new(variable.Variable.Name.Value, Type(variable.Type), Value(variable.DefaultValue), Directives(variable.Directives),
             Description(variable.Description), Span(variable));
 
-    private static GraphQlSelectionSet SelectionSet(SelectionSetNode selectionSet)
+    private GraphQlSelectionSet SelectionSet(SelectionSetNode selectionSet)
         => new(selectionSet.Selections.Select(Selection).ToArray(), Span(selectionSet));
 
-    private static GraphQlSelection Selection(ISelectionNode selection)
+    private GraphQlSelection Selection(ISelectionNode selection)
         => selection switch
         {
             FieldNode field => new GraphQlFieldSelection(field.Name.Value, field.Alias?.Value, Arguments(field.Arguments), Directives(field.Directives),
@@ -173,7 +190,7 @@ public static class GraphQlModelFactory
             _ => throw new NotSupportedException($"Unsupported GraphQL selection node '{selection.GetType().Name}'.")
         };
 
-    private static GraphQlValue? Value(IValueNode? value)
+    private GraphQlValue? Value(IValueNode? value)
     {
         if (value is null) return null;
         return value switch
@@ -191,8 +208,11 @@ public static class GraphQlModelFactory
         };
     }
 
-    private static string? Description(StringValueNode? description) => description?.Value;
+    private string? Description(StringValueNode? description) => description?.Value;
 
-    private static GraphQlSourceSpan Span(AstNode node)
-        => new(node.Location.Start, node.Location.End, node.Location.Line, node.Location.Column, node.HasLocation);
+    private GraphQlSourceSpan Span(AstNode node)
+    {
+        var source = new GraphQlSourceSpan(node.Location.Start, node.Location.End, node.Location.Line, node.Location.Column, node.HasLocation);
+        return map is null ? source : map(source);
+    }
 }

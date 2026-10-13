@@ -166,11 +166,13 @@ mutation UpdateEmail($id: ID!, $email: String!) {
 
 ## 5. Configuration Reference (`salep.json`)
 
-Every configuration requires `version: 1` and an explicit `kind`. Unknown properties, duplicate keys, obsolete options, and wrong-role references fail validation. The [JSON schema](config.schema.json) is also included in the generator package.
+New configurations use `version: 2` and an explicit `kind`. Unknown properties, duplicate keys, obsolete options, and wrong-role references fail validation. The [JSON schema](config.schema.json) is also included in the generator package.
+
+Version-1 configs from v0.1.0 are still accepted and automatically rewritten to version 2 during successful generation, preserving their settings and formatting. Validation remains read-only. See [configuration upgrades](configuration.md#upgrading-consumer-configurations) for profile ownership, read-only grants and manifest behavior.
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "kind": "client",
   "schema": "./schema.graphql",
   "operations": "./graphql",
@@ -206,7 +208,7 @@ A separate test project references the generated client project and selects its 
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "kind": "tests",
   "client": "../MyService.Client/salep.json",
   "namespace": "MyService.Client.Tests",
@@ -369,6 +371,8 @@ Manifest inputs are relative to `.salep.manifest.json` itself. A local `graphql/
 ## Filesystem boundaries
 
 The nearest containing `.sln` or `.slnx` directory is the default filesystem boundary. Schemas, operation files/globs, profiles, referenced clients, template overrides and generated output may live anywhere inside it: sibling projects and shared folders work without per-folder grants. This is directory containment, not solution project-membership validation. If no containing solution file exists, the selected project/configuration folder is the fallback boundary. Output must be a subdirectory of the boundary, not the boundary itself.
+
+Both generators accept `/` and `\` as path separators. Path components ending in a dot or space are rejected before resolution on every platform, because filesystems can treat those spellings as aliases. The navigation components `.` and `..` remain supported within the permitted boundary. Tracking inventories use `/` consistently.
 
 For custom layouts, detached projects or multiple solutions, pin the intended root in the consuming MSBuild project:
 

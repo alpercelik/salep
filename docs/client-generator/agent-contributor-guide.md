@@ -124,5 +124,5 @@ Check request serialization, response JSON names, polymorphic `__typename` and s
 ## 6. Spec Coverage Tracking
 
 Whenever GraphQL SDL syntax or operation features are added or changed:
-1. Update `src/samples/Opinionated/Client/schema.coverage.graphql` or `src/samples/Opinionated/Client/graphql/` with the new syntax.
+1. Update `src/samples/Opinionated/Client/schema.coverage.graphql`, `src/samples/Opinionated/Client/operations.coverage.graphql`, or `src/samples/Opinionated/Client/graphql/` with the new syntax.
 2. Ensure `docs/client-generator/spec-coverage.md` reflects the updated status and line numbers in the evidence section.

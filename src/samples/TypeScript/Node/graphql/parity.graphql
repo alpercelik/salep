@@ -1,0 +1,42 @@
+query ParityChecks($id: ID!, $show: Boolean!) {
+  book(id: $id) { id }
+  book(id: $id) @include(if: $show) { title }
+  guaranteed: book(id: $id) {
+    title @include(if: true)
+    hidden: title @skip(if: true)
+  }
+}
+
+query ParityFragments {
+  search { ...SearchKeys }
+}
+
+fragment SearchKeys on SearchHit {
+  __typename
+  ... on Book { id }
+  ... on Author { name }
+}
+
+query LookupChoice($choice: BookChoice!) { bookBy(choice: $choice) { id } }
+
+query InspectSchema($name: String!) {
+  __schema { queryType { name kind } directives { name locations isRepeatable } }
+  __type(name: $name) { name kind fields(includeDeprecated: true) { name type { kind name ofType { name kind } } } }
+}
+
+query LocalBook($prefix: String = "#") { book(id: "book-1") { id display: label(prefix: $prefix) @client } }
+query LocalOnly { localTitle @client }
+
+query LocalMerged {
+  first: localBook @client { id }
+  first: localBook @client { kind: __typename title }
+}
+
+query LocalAbstract {
+  localEntry @client { ... on Book { title } ... on Author { name } }
+}
+
+query LocalCoercion { localInput(values: "one", options: {}) @client }
+
+query LocalExactId($id: ID = 9007199254740993) { literal: localId(id: 9007199254740993) @client argumentDefault: localId @client variableDefault: localId(id: $id) @client }
+query LocalMissingList($value: String) { localNullableList(values: [$value]) @client }

@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "target": "typescript",
+  "schema": "schema.graphql",
+  "documents": [
+    "graphql/**/*.graphql",
+    "embedded.tsx"
+  ],
+  "output": "MaskedGenerated",
+  "scalars": {
+    "DateTime": {
+      "input": "string",
+      "output": "string"
+    }
+  },
+  "fragmentMasking": true,
+  "documentTags": [
+    "gql",
+    "graphql",
+    "request"
+  ],
+  "clientSchema": "client.graphql",
+  "persistedOperations": true,
+  "outputLayout": "per-operation"
+}

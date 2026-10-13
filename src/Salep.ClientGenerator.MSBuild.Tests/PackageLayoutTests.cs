@@ -55,6 +55,17 @@ public class PackageLayoutTests
             entryNames.ShouldContain("build/Salep.ClientGenerator.targets");
 
             entryNames.ShouldContain("package-readme.md");
+            entryNames.ShouldContain("config.schema.json");
+            using (var schemaStream = archive.GetEntry("config.schema.json")!.Open())
+            using (var schema = JsonDocument.Parse(schemaStream))
+            {
+                foreach (var role in schema.RootElement.GetProperty("oneOf").EnumerateArray())
+                {
+                    role.GetProperty("properties").GetProperty("version").GetProperty("const").GetInt32()
+                        .ShouldBe(Salep.ClientGenerator.Generation.ScribanGenerator.ConfigurationVersion);
+                    role.GetProperty("properties").TryGetProperty("templates", out _).ShouldBeTrue();
+                }
+            }
             entryNames.ShouldContain("LICENSE");
             entryNames.ShouldContain("third-party-notices.md");
             entryNames.ShouldContain("licenses/runtime-THIRD-PARTY-NOTICES.txt");

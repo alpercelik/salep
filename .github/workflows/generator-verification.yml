@@ -26,11 +26,17 @@ jobs:
             shell: bash
             tests: ./scripts/test.sh --max-parallel-test-modules 1
             dogfood: ./build-salep.sh
+            typescript: ./scripts/verify-typescript.sh
+            publish_typescript: ./scripts/publish-typescript.sh linux-x64
+            standalone_typescript: ./artifacts/typescript/linux-x64/salep-typescript validate --config src/samples/TypeScript/Node/salep.typescript.json
             pack: ./scripts/pack-release.sh
           - os: windows-latest
             shell: powershell
             tests: ./scripts/test.ps1 --max-parallel-test-modules 1
             dogfood: ./build-salep.ps1
+            typescript: ./scripts/verify-typescript.ps1
+            publish_typescript: ./scripts/publish-typescript.ps1 win-x64
+            standalone_typescript: ./artifacts/typescript/win-x64/salep-typescript.exe validate --config src/samples/TypeScript/Node/salep.typescript.json
             pack: ./scripts/pack-release.ps1
     defaults:
       run:
@@ -56,6 +62,12 @@ jobs:
         run: ${{ matrix.tests }}
       - name: Pack and execute the generator against samples and GraphQL server
         run: ${{ matrix.dogfood }}
+      - name: Generate and test TypeScript Node consumer
+        run: ${{ matrix.typescript }}
+      - name: Publish self-contained TypeScript executable
+        run: ${{ matrix.publish_typescript }}
+      - name: Execute standalone TypeScript validation
+        run: ${{ matrix.standalone_typescript }}
       - name: Pack isolated verification version
         run: ${{ matrix.pack }} 0.0.0-generator.${{ github.run_id }}.${{ github.run_attempt }}
       - name: Compare packed consumers and verify incremental generation

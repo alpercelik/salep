@@ -41,6 +41,8 @@ artifacts/release/0.1.0/
 
 `PackageLayoutTests` checks generator metadata, private CLI layout, isolated concurrent packing and parser portable symbols/Source Link. The package-only parser consumer checks public API behavior and framework assemblies. Release consumer verification asserts the generator contains Scriban without compiler tooling, installs it with a fresh cache, runs .NET 10/11 consumers and verifies incremental regeneration, owned-file cleanup, template export/composition/invalidation and runtime customization. Generator dogfooding restores the exact invocation package version and runs both Scriban sample profiles against the shared server. See [generator contracts](client-generator/generator-parity.md). Release output is ignored by Git.
 
+Package layout also checks the bundled C# configuration schema version. Fresh generator consumers begin with a version-1 configuration and must be upgraded automatically to version 2 by the packed MSBuild tool. The configuration version is independent of the NuGet package version and the ownership manifest version.
+
 For a final release, rebuild from the clean, committed release source so the repository commit recorded in the package and symbols identifies that source. Preserve these verified artifacts for upload. Confirm that your NuGet account owns or can register both public package IDs and that the chosen version has not already been published.
 
 ## Publish through GitHub Trusted Publishing

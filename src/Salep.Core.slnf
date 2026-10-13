@@ -9,7 +9,10 @@
       "Salep.ClientGenerator.MSBuild.Tests/Salep.ClientGenerator.MSBuild.Tests.csproj",
       "../benchmarks/Salep.GraphQLParser.Benchmarks/Salep.GraphQLParser.Benchmarks.csproj",
       "Salep.GraphQLParser/Salep.GraphQLParser.csproj",
-      "Salep.GraphQLParser.Tests/Salep.GraphQLParser.Tests.csproj"
+      "Salep.GraphQLParser.Tests/Salep.GraphQLParser.Tests.csproj",
+      "Salep.ClientGenerator.TypeScript.Cli/Salep.ClientGenerator.TypeScript.Cli.csproj",
+      "Salep.ClientGenerator.Core/Salep.ClientGenerator.Core.csproj",
+      "Salep.ClientGenerator.TypeScript/Salep.ClientGenerator.TypeScript.csproj"
     ]
   }
 }

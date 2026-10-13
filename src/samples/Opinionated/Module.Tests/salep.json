@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "kind": "tests",
   "client": "../Module/salep.json",
   "output": "GeneratedTests",

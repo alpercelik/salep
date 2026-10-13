@@ -141,7 +141,7 @@ query GetUser($id: ID!) {
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "kind": "client",
   "schema": "./schema.graphql",
   "operations": "./graphql",

@@ -1,0 +1,3 @@
+{{~ for declaration in declarations # begin for declarations ~}}
+{{ declaration }}
+{{~ end # end for declarations ~}}

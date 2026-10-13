@@ -8,7 +8,7 @@ Use the .NET SDK pinned by `global.json`. Core projects target .NET 10 and .NET 
 | --- | --- |
 | `src/Salep.GraphQLParser/` | Independent language library |
 | `src/Salep.ClientGenerator/Generation/` | Configuration, orchestration, input discovery and ownership manifests |
-| `src/Salep.ClientGenerator/Model/` | Target-neutral schema/executable models and GraphQL semantics |
+| `src/Salep.ClientGenerator.Core/Model/` | Target-neutral schema/executable models and GraphQL semantics |
 | `src/Salep.ClientGenerator/Targets/` | C# policies, template projections, sample values and rendering |
 | `src/Salep.ClientGenerator/Templates/` | Embedded whole-output templates and composable fragments/hooks |
 | `src/Salep.ClientGenerator.Cli/` | Out-of-process CLI |
@@ -23,9 +23,10 @@ Scriban is the sole stable generator. Applications reference runtime dependencie
 ## Generation flow
 
 ```text
-GraphQL SDL + operations + version-1 JSON configuration
+GraphQL SDL + operations + version-2 JSON configuration
   -> Salep.GraphQLParser syntax trees
-  -> GraphQlModelFactory neutral semantic models
+  -> source-mapped GraphQlModelFactory models and GraphQlDocumentValidator
+  -> response projection
   -> CSharpCodeGenerationTarget and template model factories
   -> ScribanCSharpTemplateGenerator embedded/custom composition
   -> generated C# and verified .salep.manifest.json ownership
@@ -55,6 +56,8 @@ dotnet run --project src/Salep.ClientGenerator.Cli --framework net10.0 -- genera
 
 For complete package and sample verification, run `./build-salep.sh` or `pwsh ./build-salep.ps1`. The paired workflows test core/MSBuild on both frameworks, pack `Salep.ClientGenerator`, restore the exact version into samples, export the server schema, and run generated client/module tests plus server acceptance. Opinionated runs on .NET 10/11; MinimalDependencies and server acceptance run on .NET 11. Shared acceptance tests start Hot Chocolate in memory with Alba.
 
+Sample restores explicitly use the repository's `NuGet.config`, preserving the named feeds and source mappings in both shells. Keep feed URLs in that configuration rather than overriding them with `--source` in the dogfooding scripts.
+
 Package layout checks pack concurrently with separate `--artifacts-path` roots for restore, compilation and CLI staging. Keep `scriban_cli_publish` under the invocation’s intermediate output rather than a shared directory.
 
 For release verification, run `./scripts/pack-release.sh <version>` or `pwsh ./scripts/pack-release.ps1 <version>`, then `npm run packages:verify -- <version>` for fresh-cache consumers. Parser package compatibility uses `./scripts/verify-package-compatibility.sh` or `pwsh ./scripts/verify-package-compatibility.ps1`.
@@ -65,7 +68,7 @@ For release verification, run `./scripts/pack-release.sh <version>` or `pwsh ./s
 2. Project values into the owning template model and add the smallest useful template fragment. Keep existing keys/model scopes compatible; verify overrides and `default:` composition.
 3. Add positive, negative, boundary and regression tests appropriate to the behavior. Extend configuration interactions, compile generated output and assert observable runtime effects.
 4. Review affected fixtures under `Fixtures/Contracts/`: these 69 baselines preserve verified APIs, queries, inventories and generated-test coverage. Do not auto-refresh expectations. Preserve native and Dunet modes and no-implicit-usings compilation.
-5. Update the owning sample inputs, the full `src/samples/Opinionated/Client/schema.coverage.graphql` fixture and [spec evidence](spec-coverage.md) as relevant. Regenerate through the package/MSBuild workflow.
+5. Update the owning sample inputs, the split `src/samples/Opinionated/Client/schema.coverage.graphql` and `src/samples/Opinionated/Client/operations.coverage.graphql` fixtures and [spec evidence](spec-coverage.md) as relevant. Regenerate through the package/MSBuild workflow.
 6. Update consumer documentation, template examples and paired scripts whenever their contract changes.
 
 See [generator verification](generator-parity.md) for fixed contract, seeded, runtime, ownership and package gates. Finite fixture coverage is not exhaustive proof of all GraphQL inputs.
