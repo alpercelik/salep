@@ -129,6 +129,84 @@ public sealed class CSharpClientRuntimeTests
         Assert.Equal("p-42", incrementalProduct.GetType().GetProperty("Id")!.GetValue(incrementalProduct));
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task IntrospectionResponsesCompileAndDeserializeWithoutSalepRuntimeReferences(
+        bool hasSimilarTypeNames, bool filterOutBusinessTypes)
+    {
+        var schema = GraphQlModelFactory.CreateSchema(Parse(hasSimilarTypeNames
+            ? "type Schema { id: ID! } type TypeKind { name: String } type Query { value: String schemaRecord: Schema kindRecord: TypeKind }"
+            : "type Query { value: String }"));
+        var executable = GraphQlModelFactory.CreateExecutable(schema, [Parse("""
+            query Inspect {
+              __schema {
+                queryType { name kind }
+                mutationType { name }
+                subscriptionType { name }
+                types { name kind fields { name type { name kind ofType { name kind } } args { name type { kind } } } enumValues { name } inputFields { name } }
+                directives { name locations args { name } }
+              }
+              __type(name: "Query") { name kind }
+            }
+            """)]);
+        var bundle = new ScribanCSharpTemplateGenerator().GenerateClientSources(schema, executable,
+            new CSharpCodeGenerationTarget(new() { DefaultNamespace = "Consumer.Introspection" }),
+            new CSharpClientGenerationOptions { RegisterUnionConverters = false },
+            localTypeNames: filterOutBusinessTypes ? new HashSet<string>(StringComparer.Ordinal) : null);
+        var references = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator)
+            .Where(path => !Path.GetFileName(path).StartsWith("Salep.", StringComparison.Ordinal))
+            .Select(path => MetadataReference.CreateFromFile(path));
+        var compilation = CSharpCompilation.Create("IntrospectionConsumer_" + Guid.NewGuid().ToString("N"),
+            bundle.Select(file => CSharpSyntaxTree.ParseText(file.Content, cancellationToken: TestContext.Current.CancellationToken)),
+            references, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable));
+        using var image = new MemoryStream();
+        var emit = compilation.Emit(image, cancellationToken: TestContext.Current.CancellationToken);
+        Assert.True(emit.Success, string.Join(Environment.NewLine, emit.Diagnostics.Where(item => item.Severity == DiagnosticSeverity.Error)));
+        var assembly = AssemblyLoadContext.Default.LoadFromStream(new MemoryStream(image.ToArray()));
+        Assert.DoesNotContain(assembly.GetReferencedAssemblies(), reference => reference.Name!.StartsWith("Salep.", StringComparison.Ordinal));
+        var responseType = assembly.GetType("Consumer.Introspection.InspectResponse", throwOnError: true)!;
+        var responseJson = """
+            {"__schema":{"queryType":{"name":"Query","kind":"OBJECT"},"mutationType":null,"subscriptionType":null,
+              "types":[{"name":"Query","kind":"OBJECT","fields":[{"name":"value","type":{"name":null,"kind":"NON_NULL","ofType":{"name":"String","kind":"SCALAR"}},"args":[]}]}],
+              "directives":[{"name":"skip","locations":["FIELD"],"args":[{"name":"if"}]}]},
+              "__type":{"name":"Query","kind":"OBJECT"}}
+            """;
+        var handler = new RecordingHandler("{\"data\":" + responseJson + "}");
+        using var httpClient = new HttpClient(handler);
+        var clientType = assembly.GetType("Consumer.Introspection.GraphQLClient", throwOnError: true)!;
+        var client = Activator.CreateInstance(clientType, httpClient, new Uri("https://example.test/graphql"))!;
+        var operationType = assembly.GetType("Consumer.Introspection.InspectOperation", throwOnError: true)!;
+        var variablesType = assembly.GetType("Consumer.Introspection.InspectVariables", throwOnError: true)!;
+        var operation = Activator.CreateInstance(operationType, new object?[] { null })!;
+        var execute = clientType.GetMethods().Single(method => method.Name == "ExecuteAsync").MakeGenericMethod(responseType, variablesType);
+        var running = (Task)execute.Invoke(client, [operation, TestContext.Current.CancellationToken])!;
+        await running.WaitAsync(TestContext.Current.CancellationToken);
+        var result = running.GetType().GetProperty("Result")!.GetValue(running)!;
+        var response = Read(result, "Data");
+        Assert.Equal(HttpMethod.Post, handler.Method);
+        Assert.Contains("__schema", handler.RequestBody!, StringComparison.Ordinal);
+        Assert.Contains("__type", handler.RequestBody!, StringComparison.Ordinal);
+        var schemaResponse = Read(response, "Schema");
+        Assert.Equal("Query", Read(Read(schemaResponse, "QueryType"), "Name"));
+        Assert.Equal("OBJECT", Read(Read(schemaResponse, "QueryType"), "Kind").ToString());
+        Assert.Null(schemaResponse.GetType().GetProperty("MutationType")!.GetValue(schemaResponse));
+        Assert.Null(schemaResponse.GetType().GetProperty("SubscriptionType")!.GetValue(schemaResponse));
+        var types = (System.Collections.IList)Read(schemaResponse, "Types");
+        var fields = (System.Collections.IList)Read(types[0]!, "Fields");
+        var nestedType = Read(fields[0]!, "Type");
+        Assert.Equal("NONNULL", Read(nestedType, "Kind").ToString());
+        Assert.Equal("String", Read(Read(nestedType, "OfType"), "Name"));
+        var directives = (System.Collections.IList)Read(schemaResponse, "Directives");
+        var locations = (System.Collections.IList)Read(directives[0]!, "Locations");
+        Assert.Equal("FIELD", locations[0]!.ToString());
+        Assert.Equal("Query", Read(Read(response, "Type"), "Name"));
+
+        static object Read(object instance, string property) => instance.GetType().GetProperty(property)!.GetValue(instance)!;
+    }
+
     private static DocumentNode Parse(string source)
         => global::Salep.GraphQLParser.GraphQLParser.Parse(new SourceText(source.AsMemory()));
 

@@ -12,7 +12,7 @@ This guide provides a comprehensive tutorial for developers consuming the **Sale
 - **Compile-Time Safety**: Typed C# models for all queries, mutations, subscriptions, and schema types.
 - **System.Text.Json Serialization**: Generated converters handle GraphQL unions; ordinary models use System.Text.Json.
 - **First-Class Discriminated Unions**: Emits idiomatic Dunet unions by default, or native C# 15 unions when opted in.
-- **Zero Salep Runtime Lock-in**: Consuming projects do not reference Salep assemblies at runtime (`PrivateAssets="all"`).
+- **Zero Salep Runtime Lock-in**: Consuming projects do not reference Salep assemblies at runtime (`PrivateAssets="all"`). Introspection operations such as `__schema` and `__type` generate their standard DTOs and enums in the client output. Their reserved names (for example, `__Schema`, `__Type`, `__TypeKind`) are retained to avoid binding to application models or `System.Type`; no parser package is needed at runtime.
 - **Automated Mock Test Generation**: Optionally generates ready-to-run xUnit tests with an in-memory HTTP handler.
 
 ---

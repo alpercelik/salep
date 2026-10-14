@@ -38,6 +38,16 @@ public sealed class ScribanCSharpTemplateGenerator(ScribanTemplateEngine? engine
         ArgumentNullException.ThrowIfNull(executable);
         ArgumentNullException.ThrowIfNull(target);
         clientOptions ??= new CSharpClientGenerationOptions();
+        if (executable.Operations.Any(operation => UsesIntrospection(
+                operation.ResponseProjection ?? new GraphQlResponseProjector(schema, executable).Project(operation))))
+        {
+            var introspectionTypes = GraphQlIntrospection.Types
+                .Where(type => type.Name.StartsWith("__", StringComparison.Ordinal)
+                    && !schema.Types.Any(existing => existing.Name == type.Name)).ToArray();
+            schema = schema with { Types = schema.Types.Concat(introspectionTypes).ToArray() };
+            if (localTypeNames is not null)
+                localTypeNames = localTypeNames.Concat(introspectionTypes.Select(type => type.Name)).ToHashSet(StringComparer.Ordinal);
+        }
         var interfaceName = clientOptions.OperationInterfaceTypeName;
         var files = new List<CSharpGeneratedFile>();
         if (localTypeNames is null ? schema.Types.Count > 0 : localTypeNames.Count > 0)
@@ -76,6 +86,10 @@ public sealed class ScribanCSharpTemplateGenerator(ScribanTemplateEngine? engine
 
         return files;
     }
+
+    private static bool UsesIntrospection(GraphQlResponseProjection projection) => projection.Fields.Any(field =>
+        (field.Type is not null && GraphQlSchemaSemantics.NamedType(field.Type).StartsWith("__", StringComparison.Ordinal))
+        || field.Variants.Any(UsesIntrospection));
 
     /// <summary>Renders schema declarations; a supplied template replaces the embedded default.</summary>
     public string GenerateSchema(

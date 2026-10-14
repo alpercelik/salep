@@ -94,7 +94,10 @@ public sealed class CSharpCodeGenerationTarget : ICodeGenerationTarget
     public string DefaultNamespace => options.DefaultNamespace;
 
     /// <inheritdoc />
-    public string TypeName(string graphQlName) => ApplyName(graphQlName, options.TypeName, PascalCase);
+    public string TypeName(string graphQlName) => ApplyName(graphQlName, options.TypeName, static name =>
+        name.StartsWith("__", StringComparison.Ordinal) && GraphQlIntrospection.Types.Any(type => type.Name == name)
+            ? name
+            : PascalCase(name));
 
     /// <inheritdoc />
     public string InterfaceName(string graphQlName)
