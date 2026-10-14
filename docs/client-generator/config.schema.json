@@ -217,7 +217,8 @@
         "operations": {
           "type": "string",
           "minLength": 1,
-          "description": "Path relative to this configuration. Inputs outside the solution require caller-granted SalepReadRoot or --read-root; linked descendants are rejected."
+          "default": "./graphql",
+          "description": "Optional operation file, directory or glob relative to this configuration. Omission defaults to ./graphql; no matched files generates schema and transport contracts without concrete operations. Inputs outside the solution require caller-granted SalepReadRoot or --read-root; linked descendants are rejected."
         },
         "namespace": {
           "type": "string",

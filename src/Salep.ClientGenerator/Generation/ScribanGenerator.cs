@@ -154,7 +154,6 @@ public static class ScribanGenerator
         var schemaPath = resolved.Schema ?? throw Error("SALEPS1001", path, "schema", "A schema path is required for client generation.");
         if (!File.Exists(schemaPath)) throw Error("SALEPS1001", path, "schema", $"Schema '{GeneratorPathPolicy.Normalize(schemaPath)}' does not exist.");
         var operationFiles = ResolveOperationFiles(resolved.Operations, paths);
-        if (operationFiles.Count == 0) throw Error("SALEPS1001", path, "operations", $"No GraphQL operation files matched '{GeneratorPathPolicy.Normalize(resolved.Operations)}'.");
         foreach (var input in operationFiles)
             if (!File.Exists(input)) throw Error("SALEPS1001", path, "operations", $"Operation input '{input}' does not exist.");
 
@@ -836,7 +835,10 @@ public static class ScribanGenerator
                     if (parent.Kind != "profile") throw Error("SALEPS1004", path, parentField, "The referenced configuration must have kind 'profile'.");
                 }
                 var schema = GetString(root, "schema", path) is { } schemaValue ? GeneratorPathPolicy.ResolvePath(schemaValue, directory) : parent?.Schema;
-                var operations = GetString(root, "operations", path) is { } operationsValue ? GeneratorPathPolicy.ResolvePath(operationsValue, directory) : Path.Combine(directory, "graphql");
+                var operationsValue = GetString(root, "operations", path);
+                // Check wildcard traversal before full-path normalization can remove it.
+                if (operationsValue is not null) paths.ReadPattern(Path.Combine(directory, GeneratorPathPolicy.Normalize(operationsValue)));
+                var operations = operationsValue is not null ? GeneratorPathPolicy.ResolvePath(operationsValue, directory) : Path.Combine(directory, "graphql");
                 var output = GeneratorPathPolicy.ResolvePath(GetString(root, "output", path) ?? (kind == "tests" ? "./GeneratedTests" : "./Generated"), directory);
                 if (schema is not null) paths.Read(schema);
                 paths.ReadPattern(operations);

@@ -10,6 +10,51 @@ namespace Salep.ClientGenerator.MSBuild.Tests;
 public sealed class IntegrationContractTests
 {
     [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Imported_targets_compile_operation_free_clients_and_detect_added_and_removed_operations(bool omitOperations)
+    {
+        using var fixture = new Fixture();
+        fixture.WriteInputs();
+        Directory.Delete(Path.Combine(fixture.Root, "graphql"), recursive: true);
+        var operationsProperty = omitOperations ? "" : "\"operations\":\"graphql\",";
+        fixture.WriteConfig($$"""
+            {"version":1,"kind":"client","schema":"schema.graphql",{{operationsProperty}}"output":"Generated","namespace":"Example.Client"}
+            """);
+        var tool = AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar);
+        File.WriteAllText(Path.Combine(fixture.Root, "Fixture.csproj"), $$"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>net10.0</TargetFramework>
+                <LangVersion>latest</LangVersion>
+                <Nullable>enable</Nullable>
+                <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+                <SalepToolPath>{{SecurityElement.Escape(tool)}}</SalepToolPath>
+              </PropertyGroup>
+              <Import Project="{{SecurityElement.Escape(Path.Combine(tool, "Salep.ClientGenerator.props"))}}" />
+              <Import Project="{{SecurityElement.Escape(Path.Combine(tool, "Salep.ClientGenerator.targets"))}}" />
+            </Project>
+            """);
+
+        var first = BuildFixture(fixture.Root);
+        Assert.True(first.ExitCode == 0, first.Output);
+        var operationOutput = Path.Combine(fixture.Root, "Generated", "Operations.cs");
+        Assert.DoesNotContain("HelloOperation", File.ReadAllText(operationOutput), StringComparison.Ordinal);
+
+        var operations = Directory.CreateDirectory(Path.Combine(fixture.Root, "graphql"));
+        var operationPath = Path.Combine(operations.FullName, "hello.graphql");
+        File.WriteAllText(operationPath, "query Hello { hello }");
+        var added = BuildFixture(fixture.Root, noRestore: true);
+        Assert.True(added.ExitCode == 0, added.Output);
+        Assert.Contains("HelloOperation", File.ReadAllText(operationOutput), StringComparison.Ordinal);
+
+        File.Delete(operationPath);
+        var removed = BuildFixture(fixture.Root, noRestore: true);
+        Assert.True(removed.ExitCode == 0, removed.Output);
+        Assert.DoesNotContain("HelloOperation", File.ReadAllText(operationOutput), StringComparison.Ordinal);
+    }
+
+    [Theory]
     [InlineData("--sources-file")]
     [InlineData("--stamp-file")]
     [InlineData("--inputs-file")]

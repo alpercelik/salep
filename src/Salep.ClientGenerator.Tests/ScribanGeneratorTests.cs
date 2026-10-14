@@ -5,6 +5,45 @@ namespace Salep.ClientGenerator.Tests;
 
 public sealed class ScribanGeneratorTests
 {
+    [Theory]
+    [InlineData(null, false)]
+    [InlineData(null, true)]
+    [InlineData("graphql", false)]
+    [InlineData("graphql", true)]
+    [InlineData("graphql/**/*.graphql", true)]
+    public void Operation_free_clients_generate_schema_and_track_added_and_removed_operations(string? operations, bool createDirectory)
+    {
+        using var fixture = new GeneratorFixture();
+        File.WriteAllText(Path.Combine(fixture.Root, "schema.graphql"), "type Query { hello: String! }");
+        if (createDirectory) Directory.CreateDirectory(Path.Combine(fixture.Root, "graphql"));
+        var operationsProperty = operations is null ? "" : $"\"operations\":\"{operations}\",";
+        fixture.WriteConfig($$"""
+            {"version":1,"kind":"client","schema":"schema.graphql",{{operationsProperty}}"namespace":"Example.Client","output":"Generated"}
+            """);
+        var options = new ScribanGeneratorOptions("scriban.json", fixture.Root);
+
+        Assert.Empty(ScribanGenerator.Validate(options).GeneratedFiles);
+        Assert.Contains(GeneratorPathPolicy.Normalize(Path.Combine(fixture.Root, "schema.graphql")), ScribanGenerator.GetInputFiles(options));
+        var generated = ScribanGenerator.Generate(options);
+        Assert.Equal(6, generated.GeneratedFiles.Count);
+        Assert.Contains("record Query", File.ReadAllText(Path.Combine(fixture.Root, "Generated", "SchemaTypes.cs")), StringComparison.Ordinal);
+        var operationOutput = Path.Combine(fixture.Root, "Generated", "Operations.cs");
+        Assert.Contains("interface IGraphQLOperation", File.ReadAllText(operationOutput), StringComparison.Ordinal);
+        Assert.DoesNotContain("HelloOperation", File.ReadAllText(operationOutput), StringComparison.Ordinal);
+
+        Directory.CreateDirectory(Path.Combine(fixture.Root, "graphql"));
+        var operationPath = Path.Combine(fixture.Root, "graphql", "hello.graphql");
+        File.WriteAllText(operationPath, "query Hello { hello }");
+        Assert.Contains(GeneratorPathPolicy.Normalize(operationPath), ScribanGenerator.GetInputFiles(options));
+        ScribanGenerator.Generate(options);
+        Assert.Contains("HelloOperation", File.ReadAllText(operationOutput), StringComparison.Ordinal);
+
+        File.Delete(operationPath);
+        ScribanGenerator.Generate(options);
+        Assert.DoesNotContain("HelloOperation", File.ReadAllText(operationOutput), StringComparison.Ordinal);
+        ScribanGenerator.Validate(options);
+    }
+
     [Fact]
     public async Task Concurrent_manifest_reads_and_generation_observe_complete_owned_outputs()
     {
@@ -232,14 +271,16 @@ public sealed class ScribanGeneratorTests
         Assert.Contains("_jsonOptions.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);", client, StringComparison.Ordinal);
     }
 
-    [Fact]
-    public void Base_client_shares_schema_and_transport_contracts_and_tests_select_owned_operations()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Base_client_shares_schema_and_transport_contracts_and_tests_select_owned_operations(bool hasBaseOperations)
     {
         using var fixture = new GeneratorFixture();
         File.WriteAllText(Path.Combine(fixture.Root, "schema.graphql"), "type Product { id: ID! } type Query { hello: String! product: Product! }");
         Directory.CreateDirectory(Path.Combine(fixture.Root, "parent-ops"));
         Directory.CreateDirectory(Path.Combine(fixture.Root, "child-ops"));
-        File.WriteAllText(Path.Combine(fixture.Root, "parent-ops", "operation.graphql"), "query ParentHello { hello }");
+        if (hasBaseOperations) File.WriteAllText(Path.Combine(fixture.Root, "parent-ops", "operation.graphql"), "query ParentHello { hello }");
         File.WriteAllText(Path.Combine(fixture.Root, "child-ops", "operation.graphql"), "query ChildHello { product { id } }");
         fixture.WriteConfig("{\"version\":1,\"kind\":\"client\",\"schema\":\"schema.graphql\",\"operations\":\"parent-ops\",\"namespace\":\"Example.Parent\",\"output\":\"ParentGenerated\"}", "parent.json");
         fixture.WriteConfig("{\"version\":1,\"kind\":\"client\",\"schema\":\"schema.graphql\",\"operations\":\"child-ops\",\"namespace\":\"Example.Child\",\"output\":\"ChildGenerated\",\"baseClient\":\"parent.json\"}", "child.json");

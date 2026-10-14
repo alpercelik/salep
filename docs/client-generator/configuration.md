@@ -28,6 +28,20 @@ Profiles in the selected client's inheritance chain are upgraded too. A module o
 | `client` | Optional `profile`, `baseClient`; `schema` locally or from a profile; `operations` (default `./graphql`), `namespace` (default `Salep.Generated`), `clientName` (default `GraphQLClient`), `output` (default `./Generated`), `emitSample` (default false), shared settings. |
 | `tests` | Required `client`; `output` (default `./GeneratedTests`), `namespace` (default client namespace plus `.Tests`), `indentSize`, `rawJsonLiterals` (default true), `templates`, `suites`. Client settings are forbidden. |
 
+`operations` is optional. Omit it when generating schema types and transport contracts without operations:
+
+```json
+{
+  "version": 2,
+  "kind": "client",
+  "schema": "./schema.graphql",
+  "namespace": "MyService.GraphQL",
+  "output": "./Generated"
+}
+```
+
+The default remains `./graphql` for compatibility: if files exist there, they are included. An absent folder or an empty directory/glob emits schema, transport and the shared operation contract without concrete operations. Adding or removing matching operation files is tracked by MSBuild and regenerates the client. Matched documents still undergo normal GraphQL validation.
+
 Client and tests roles also accept `emitAgentInstructions` (default true). All relative paths resolve from the file declaring them. A `baseClient` establishes ownership only; consume the same `profile` explicitly to share settings.
 
 | Shared setting | Default | Meaning |
